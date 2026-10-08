@@ -4,6 +4,8 @@
     <h3 class="mb-1">Create your account</h3>
     <p class="text-muted mb-4">Free to start. Pick the apps your profession needs in the next step.</p>
 
+    @include('auth.partials.sign-in-options')
+
     <form method="POST" action="{{ route('register') }}">
         @csrf
         <x-form.input name="name" label="Your full name" required autofocus autocomplete="name" />

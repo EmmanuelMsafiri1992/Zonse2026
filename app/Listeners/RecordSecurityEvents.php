@@ -15,6 +15,8 @@ use Laravel\Fortify\Events\RecoveryCodesGenerated;
 use Laravel\Fortify\Events\TwoFactorAuthenticationConfirmed;
 use Laravel\Fortify\Events\TwoFactorAuthenticationDisabled;
 use Laravel\Fortify\Events\TwoFactorAuthenticationFailed;
+use Laravel\Passkeys\Events\PasskeyDeleted;
+use Laravel\Passkeys\Events\PasskeyRegistered;
 
 /**
  * Logs sign-ins and account security changes to the audit log of the user's
@@ -69,6 +71,16 @@ class RecordSecurityEvents
         $this->record($event->user, '2fa-failed', 'Entered a wrong two-factor code', causer: false);
     }
 
+    public function onPasskeyRegistered(PasskeyRegistered $event): void
+    {
+        $this->record($event->user, 'passkey-added', 'Added the passkey "'.$event->passkey->name.'"');
+    }
+
+    public function onPasskeyDeleted(PasskeyDeleted $event): void
+    {
+        $this->record($event->user, 'passkey-removed', 'Removed the passkey "'.$event->passkey->name.'"');
+    }
+
     /** @return array<class-string, string> */
     public function subscribe(Dispatcher $events): array
     {
@@ -82,6 +94,8 @@ class RecordSecurityEvents
             TwoFactorAuthenticationDisabled::class => 'onTwoFactorDisabled',
             RecoveryCodesGenerated::class => 'onRecoveryCodesGenerated',
             TwoFactorAuthenticationFailed::class => 'onTwoFactorFailed',
+            PasskeyRegistered::class => 'onPasskeyRegistered',
+            PasskeyDeleted::class => 'onPasskeyDeleted',
         ];
     }
 

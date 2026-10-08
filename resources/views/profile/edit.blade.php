@@ -93,6 +93,69 @@
                 </div>
             </div>
 
+            <div class="card mb-3" id="passkeys">
+                <div class="card-header"><h5 class="card-title">Passkeys</h5></div>
+                <div class="card-body">
+                    <p class="fs-7">Sign in with your fingerprint, face or phone screen lock instead of typing a password.</p>
+                    @forelse($passkeys as $passkey)
+                        <div class="d-flex align-items-center justify-content-between gap-2 py-2 border-bottom" data-passkey="{{ $passkey->id }}">
+                            <div class="d-flex align-items-center gap-2">
+                                <x-icon name="key-round" />
+                                <div>
+                                    <div class="fw-600 fs-7">{{ $passkey->name }}</div>
+                                    <div class="fs-8 text-muted">{{ $passkey->authenticator ? $passkey->authenticator.' · ' : '' }}Added {{ $passkey->created_at->diffForHumans() }} · {{ $passkey->last_used_at ? 'last used '.$passkey->last_used_at->diffForHumans() : 'not used yet' }}</div>
+                                </div>
+                            </div>
+                            <form method="POST" action="{{ route('passkey.destroy', $passkey) }}" onsubmit="return confirm('Remove this passkey? You will not be able to sign in with it any more.')">
+                                @csrf @method('DELETE')
+                                <button class="btn btn-sm btn-link text-danger p-0">Remove</button>
+                            </form>
+                        </div>
+                    @empty
+                        <p class="fs-8 text-muted mb-0">No passkeys yet.</p>
+                    @endforelse
+
+                    <div class="mt-3" x-data="passkeyRegister(@js(route('passkey.registration-options')), @js(route('passkey.store')), @js(route('profile.passkeys.confirm')))">
+                        <template x-if="supported">
+                            <form class="d-flex gap-2" @submit.prevent="add()">
+                                <input type="text" class="form-control form-control-sm" x-model="name" maxlength="255" placeholder="Name, e.g. My laptop" aria-label="Passkey name">
+                                <button class="btn btn-sm btn-primary text-nowrap" :disabled="busy"><x-icon name="plus" /> Add passkey</button>
+                            </form>
+                        </template>
+                        <template x-if="! supported">
+                            <p class="fs-8 text-muted mb-0">This browser cannot make passkeys here. Passkeys need a secure (https) connection.</p>
+                        </template>
+                        <div class="text-danger fs-8 mt-1" x-show="error" x-text="error"></div>
+                    </div>
+                </div>
+            </div>
+
+            @if($ssoProviders || $socialAccounts->isNotEmpty())
+                <div class="card mb-3">
+                    <div class="card-header"><h5 class="card-title">Linked accounts</h5></div>
+                    <div class="card-body">
+                        @foreach(\App\Support\SingleSignOn::PROVIDERS as $provider => $label)
+                            @php($account = $socialAccounts->get($provider))
+                            @continue(! $account && ! isset($ssoProviders[$provider]))
+                            <div class="d-flex align-items-center justify-content-between gap-2 py-2 border-bottom" data-linked="{{ $provider }}">
+                                <div>
+                                    <div class="fw-600 fs-7">{{ $label }}</div>
+                                    <div class="fs-8 text-muted">{{ $account ? 'Linked'.($account->email ? ' as '.$account->email : '') : 'Not linked' }}</div>
+                                </div>
+                                @if($account)
+                                    <form method="POST" action="{{ route('sso.destroy', $provider) }}" onsubmit="return confirm('Unlink {{ $label }}? You will need your password or a passkey to sign in.')">
+                                        @csrf @method('DELETE')
+                                        <button class="btn btn-sm btn-white">Unlink</button>
+                                    </form>
+                                @else
+                                    <a href="{{ route('sso.redirect', $provider) }}" class="btn btn-sm btn-white">Link</a>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
             <div class="card">
                 <div class="card-header"><h5 class="card-title">My workspaces</h5></div>
                 <div class="card-body z-kpi-list">

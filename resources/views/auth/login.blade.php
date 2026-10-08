@@ -4,6 +4,8 @@
     <h3 class="mb-1">Welcome back</h3>
     <p class="text-muted mb-4">Sign in to continue to your workspace.</p>
 
+    @include('auth.partials.sign-in-options', ['passkey' => true])
+
     <form method="POST" action="{{ route('login') }}">
         @csrf
         <x-form.input name="email" label="Email address" type="email" required autofocus autocomplete="username" />

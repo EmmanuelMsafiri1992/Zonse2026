@@ -1,5 +1,6 @@
 import * as bootstrap from 'bootstrap';
 import Alpine from 'alpinejs';
+import { passkeyLogin, passkeyRegister } from './passkeys';
 
 window.bootstrap = bootstrap;
 window.Alpine = Alpine;
@@ -44,6 +45,9 @@ Alpine.data('selectable', (initial = []) => ({
     has(key) { return this.selected.has(key); },
     get list() { return Array.from(this.selected); },
 }));
+
+Alpine.data('passkeyLogin', passkeyLogin);
+Alpine.data('passkeyRegister', passkeyRegister);
 
 Alpine.start();
 

@@ -32,6 +32,7 @@ use App\Http\Controllers\Settings\WebhookController;
 use App\Http\Controllers\Settings\WorkspaceSettingsController;
 use App\Http\Controllers\SignatureRequestController;
 use App\Http\Controllers\SmsController;
+use App\Http\Controllers\SocialLoginController;
 use App\Http\Controllers\UssdCallbackController;
 use App\Http\Controllers\UssdController;
 use App\Http\Controllers\WorkspaceController;
@@ -56,6 +57,12 @@ Route::prefix('sign/{token}')->name('signing.')->middleware('throttle:30,1')->gr
 // Called by the USSD gateway for every screen a feature phone shows; the token picks the workspace.
 Route::post('/webhooks/ussd/{token}', UssdCallbackController::class)->middleware('throttle:120,1')->name('ussd.callback');
 
+// Sign in with Google or Microsoft (guests), or link one to the signed-in user's profile.
+Route::prefix('auth/{provider}')->name('sso.')->whereIn('provider', ['google', 'microsoft'])->middleware('throttle:20,1')->group(function () {
+    Route::get('/redirect', [SocialLoginController::class, 'redirect'])->name('redirect');
+    Route::get('/callback', [SocialLoginController::class, 'callback'])->name('callback');
+});
+
 Route::middleware(['auth', 'workspace'])->group(function () {
     // Setup wizard
     Route::get('/onboarding', [OnboardingController::class, 'start'])->name('onboarding.start');
@@ -71,6 +78,9 @@ Route::middleware(['auth', 'workspace'])->group(function () {
         Route::get('/search', SearchController::class)->name('search');
 
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        // Plain page visit through password confirmation, so the user lands back on the profile ready to add a passkey.
+        Route::get('/profile/passkeys/confirm', fn () => redirect()->route('profile.edit'))->middleware('password.confirm')->name('profile.passkeys.confirm');
+        Route::delete('/profile/sign-in/{provider}', [SocialLoginController::class, 'destroy'])->whereIn('provider', ['google', 'microsoft'])->name('sso.destroy');
         Route::put('/profile/notifications', [NotificationController::class, 'updatePreferences'])->name('profile.notifications.update');
 
         Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
