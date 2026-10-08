@@ -97,6 +97,12 @@ a { color: $z-primary; }
     .zi-lg { width: 1.25rem; height: 1.25rem; }
     &:hover { background: $z-hover; color: $z-text; }
     .z-dot { position: absolute; top: 7px; right: 7px; width: 8px; height: 8px; border-radius: 50%; background: $z-danger; border: 2px solid $z-shell-bg; }
+    .z-badge-dot { position: absolute; top: 1px; left: 19px; min-width: 16px; height: 16px; padding: 0 3px; border-radius: 8px; background: $z-danger; color: #fff; font-size: .625rem; font-weight: 600; line-height: 16px; text-align: center; border: 2px solid $z-shell-bg; box-sizing: content-box; }
+  }
+  .z-alerts {
+    width: 360px; max-width: calc(100vw - 2rem);
+    .z-alert { display: flex; gap: .65rem; align-items: flex-start; padding: .6rem 1rem; white-space: normal; border-bottom: 1px solid $z-border; }
+    .z-alert.is-unread { background: rgba($z-primary-soft, .35); }
   }
   .z-workspace-switch {
     display: flex; align-items: center; gap: .5rem; padding: .25rem .6rem .25rem .3rem; border-radius: $z-radius-sm; border: 0; background: transparent; cursor: pointer; color: $z-text; text-decoration: none;
@@ -330,3 +336,5 @@ $z-color-map: (primary: $z-primary, success: $z-success, info: $z-info, warning:
 .shadow-z { box-shadow: $z-shadow; }
 .hover-raise { transition: box-shadow .15s; &:hover { box-shadow: 0 4px 12px rgba(0, 0, 0, .1); } }
 [x-cloak] { display: none !important; }
+
+.z-unread { background: rgba($z-primary-soft, .35); }

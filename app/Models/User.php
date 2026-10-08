@@ -33,6 +33,7 @@ class User extends Authenticatable
             'last_seen_at' => 'datetime',
             'password' => 'hashed',
             'is_super_admin' => 'boolean',
+            'notification_preferences' => 'array',
         ];
     }
 

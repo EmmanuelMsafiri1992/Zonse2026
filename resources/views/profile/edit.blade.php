@@ -33,6 +33,32 @@
                     <div class="card-footer d-flex justify-content-end"><button class="btn btn-primary">Update password</button></div>
                 </form>
             </div>
+
+            <div class="card mb-3" id="notifications">
+                <div class="card-header"><h5 class="card-title">Notifications</h5></div>
+                <form method="POST" action="{{ route('profile.notifications.update') }}">
+                    @csrf @method('PUT')
+                    <div class="z-table-wrap">
+                        <table class="table z-table align-middle mb-0">
+                            <thead><tr><th>Tell me about</th>@foreach(\App\Support\Notifier::CHANNELS as $label)<th class="text-center">{{ $label }}</th>@endforeach</tr></thead>
+                            <tbody>
+                            @foreach(\App\Support\Notifier::KINDS as $kind => $meta)
+                                <tr>
+                                    <td><span class="z-row-title">{{ $meta['label'] }}</span><div class="z-row-sub">{{ $meta['hint'] }}</div></td>
+                                    @foreach(array_keys(\App\Support\Notifier::CHANNELS) as $channel)
+                                        <td class="text-center">
+                                            <input type="hidden" name="preferences[{{ $kind }}][{{ $channel }}]" value="0">
+                                            <input type="checkbox" class="form-check-input" name="preferences[{{ $kind }}][{{ $channel }}]" value="1" aria-label="{{ $meta['label'] }}: {{ \App\Support\Notifier::CHANNELS[$channel] }}" @checked(\App\Support\Notifier::wants($user, $kind, $channel))>
+                                        </td>
+                                    @endforeach
+                                </tr>
+                            @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card-footer d-flex justify-content-end"><button class="btn btn-primary">Save notification choices</button></div>
+                </form>
+            </div>
         </div>
 
         <div class="col-lg-5">

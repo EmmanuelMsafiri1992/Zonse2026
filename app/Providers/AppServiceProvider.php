@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Listeners\RecordSecurityEvents;
+use App\Listeners\SendWorkspaceNotifications;
 use App\Models\User;
 use App\Registries\MenuItem;
 use App\Registries\MenuRegistry;
@@ -13,6 +14,7 @@ use App\Support\Health;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Foundation\Events\DiagnosingHealth;
 use Illuminate\Http\Middleware\TrustProxies;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -60,6 +62,10 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Event::subscribe(RecordSecurityEvents::class);
+        Event::subscribe(SendWorkspaceNotifications::class);
+        DatabaseNotification::creating(function (DatabaseNotification $notification) {
+            $notification->workspace_id ??= $notification->data['workspace_id'] ?? null;
+        });
 
         // Copy the workspace onto its own indexed column so the audit log can filter by it.
         Activity::creating(function (Activity $activity) {

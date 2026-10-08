@@ -7,6 +7,7 @@ use App\Http\Controllers\Apps\RecordWorkflowController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InvitationController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
@@ -44,6 +45,12 @@ Route::middleware(['auth', 'workspace'])->group(function () {
         Route::get('/search', SearchController::class)->name('search');
 
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/profile/notifications', [NotificationController::class, 'updatePreferences'])->name('profile.notifications.update');
+
+        Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('/notifications/read', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
+        Route::get('/notifications/{notification}', [NotificationController::class, 'open'])->whereUuid('notification')->name('notifications.open');
+        Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])->whereUuid('notification')->name('notifications.destroy');
 
         // Blueprint apps: every data-driven catalogue module runs on these generic screens.
         Route::get('/apps', [AppController::class, 'index'])->name('apps.index');

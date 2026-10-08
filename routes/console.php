@@ -12,6 +12,7 @@ Artisan::command('inspire', function () {
 
 Schedule::command('zonseo:run-app-schedules')->dailyAt('02:00')->withoutOverlapping()->onOneServer();
 Schedule::command('zonseo:send-sms-reminders')->dailyAt('09:00')->withoutOverlapping()->onOneServer();
+Schedule::command('zonseo:send-plan-reminders')->dailyAt('08:00')->withoutOverlapping()->onOneServer();
 
 // Monitoring, backups and housekeeping (see docs/03-DEPLOYMENT.md).
 Schedule::call(fn () => Health::beat('scheduler'))->name('scheduler-heartbeat')->everyMinute();

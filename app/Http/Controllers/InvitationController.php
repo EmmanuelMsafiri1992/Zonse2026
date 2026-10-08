@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Invitation;
+use App\Support\Notifier;
 use Illuminate\Http\Request;
 
 class InvitationController extends Controller
@@ -35,6 +36,11 @@ class InvitationController extends Controller
                 'role' => $invitation->role ?: 'member',
                 'joined_at' => now(),
             ]);
+
+            Notifier::send(
+                Notifier::admins($workspace)->push($invitation->inviter)->filter(), 'team', $user->name.' joined the workspace',
+                'Accepted the invitation as '.($invitation->role ?: 'member').'.', route('settings.members.index'), 'user-plus', $workspace, $user,
+            );
         }
 
         $invitation->forceFill(['accepted_at' => now()])->save();

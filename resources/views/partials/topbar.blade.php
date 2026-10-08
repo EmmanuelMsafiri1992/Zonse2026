@@ -36,9 +36,45 @@
             </div>
         @endif
 
-        <button type="button" class="z-icon-btn" aria-label="Notifications">
-            <x-icon name="bell" class="zi zi-lg" />
-        </button>
+        @if($workspace)
+            @php
+                $inbox = $user->notifications()->where('workspace_id', $workspace->id);
+                $unreadAlerts = (clone $inbox)->whereNull('read_at')->count();
+                $latestAlerts = (clone $inbox)->latest()->limit(6)->get();
+            @endphp
+            <div class="dropdown">
+                <button type="button" class="z-icon-btn position-relative" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false"
+                        aria-label="Notifications{{ $unreadAlerts ? ' ('.$unreadAlerts.' unread)' : '' }}">
+                    <x-icon name="bell" class="zi zi-lg" />
+                    @if($unreadAlerts)
+                        <span class="z-badge-dot" data-unread="{{ $unreadAlerts }}">{{ $unreadAlerts > 9 ? '9+' : $unreadAlerts }}</span>
+                    @endif
+                </button>
+                <div class="dropdown-menu dropdown-menu-end shadow-z p-0 z-alerts">
+                    <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
+                        <span class="fw-600">Notifications</span>
+                        @if($unreadAlerts)
+                            <form method="POST" action="{{ route('notifications.read-all') }}">
+                                @csrf
+                                <button class="btn btn-link btn-sm p-0">Mark all read</button>
+                            </form>
+                        @endif
+                    </div>
+                    @forelse($latestAlerts as $alert)
+                        <a href="{{ route('notifications.open', $alert->id) }}" class="dropdown-item z-alert {{ $alert->read_at ? '' : 'is-unread' }}">
+                            <x-icon :name="$alert->data['icon'] ?? 'bell'" class="zi text-primary flex-shrink-0" />
+                            <span class="flex-grow-1 min-w-0">
+                                <span class="d-block text-wrap fs-7 {{ $alert->read_at ? '' : 'fw-600' }}">{{ $alert->data['title'] ?? '' }}</span>
+                                <span class="d-block fs-8 text-muted">{{ $alert->created_at->diffForHumans() }}</span>
+                            </span>
+                        </a>
+                    @empty
+                        <div class="px-3 py-4 text-center fs-7 text-muted">You're all caught up.</div>
+                    @endforelse
+                    <a href="{{ route('notifications.index') }}" class="d-block text-center fs-7 py-2 border-top">See all notifications</a>
+                </div>
+            </div>
+        @endif
 
         <div class="dropdown">
             <div class="z-user" data-bs-toggle="dropdown" aria-expanded="false">
