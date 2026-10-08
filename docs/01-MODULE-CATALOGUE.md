@@ -36,7 +36,7 @@ Every module below is designed as an installable **module** inside one codebase.
 | 0.19 | Mobile app (PWA + native wrapper), offline mode | ✔ |
 | 0.20 | USSD / feature-phone access for field users | ✔ |
 | 0.21 | Two-factor auth, SSO (Google, Microsoft), passkeys | ✔ |
-| 0.22 | White-label & reseller program (custom domain, logo, colours) | ➕ |
+| 0.22 | White-label & reseller program (custom domain, logo, colours) | ✔ |
 | 0.23 | Portals: customer, vendor, employee, patient, student/parent, tenant, member, donor | ✔ partial → ➕ unified |
 | 0.24 | Public booking / ordering / payment pages (link-in-bio style) | ➕ |
 | 0.25 | Hardware: receipt printers, barcode scanners, weighing scales, card readers, QR | ➕ |

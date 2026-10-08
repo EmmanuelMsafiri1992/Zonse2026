@@ -4,16 +4,17 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Sign in') · {{ config('app.name') }}</title>
+    <title>@yield('title', 'Sign in') · {{ $brand['name'] }}</title>
     @include('partials.fonts')
     @vite(['resources/scss/app.scss', 'resources/js/app.js'])
+    @if($brandCss = app(\App\Support\Branding::class)->css($brand['color']))<style>{!! $brandCss !!}</style>@endif
 </head>
 <body>
 <div class="z-auth">
     <aside class="z-auth-side">
         <a href="{{ route('home') }}" class="d-inline-flex align-items-center gap-2 text-white text-decoration-none font-heading fw-600 fs-5">
-            <span class="d-grid place-items-center rounded-3 bg-primary text-white fw-bold" style="width:36px;height:36px;display:grid;place-items:center">Z</span>
-            {{ config('app.name') }}
+            @include('partials.brand-mark', ['class' => 'rounded-3 bg-primary text-white fw-bold'])
+            {{ $brand['name'] }}
         </a>
         <div class="position-relative" style="z-index:1">
             <h2 class="mb-3">Run your whole business<br>from one place.</h2>
@@ -22,7 +23,7 @@
             <div class="z-auth-feature"><x-icon name="check-circle-2" /> <span>Built for clinics, schools, shops, farms, churches, agencies, freelancers</span></div>
             <div class="z-auth-feature"><x-icon name="check-circle-2" /> <span>Multi-branch, multi-currency, roles and audit trail out of the box</span></div>
         </div>
-        <div class="text-white-50 fs-8 position-relative" style="z-index:1">&copy; {{ date('Y') }} {{ config('app.name') }}</div>
+        <div class="text-white-50 fs-8 position-relative" style="z-index:1">&copy; {{ date('Y') }} {{ $brand['name'] }}</div>
     </aside>
 
     <section class="z-auth-form">

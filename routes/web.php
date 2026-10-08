@@ -22,11 +22,13 @@ use App\Http\Controllers\Settings\AuditLogController;
 use App\Http\Controllers\Settings\AutomationController;
 use App\Http\Controllers\Settings\BillingController;
 use App\Http\Controllers\Settings\BranchController;
+use App\Http\Controllers\Settings\BrandingController;
 use App\Http\Controllers\Settings\CustomFieldController;
 use App\Http\Controllers\Settings\DataExportController;
 use App\Http\Controllers\Settings\MemberController;
 use App\Http\Controllers\Settings\ModuleController;
 use App\Http\Controllers\Settings\OcrSettingsController;
+use App\Http\Controllers\Settings\PartnerController;
 use App\Http\Controllers\Settings\SmsSettingsController;
 use App\Http\Controllers\Settings\WebhookController;
 use App\Http\Controllers\Settings\WorkspaceSettingsController;
@@ -198,6 +200,18 @@ Route::middleware(['auth', 'workspace'])->group(function () {
             Route::resource('custom-fields', CustomFieldController::class)->except('show');
             Route::resource('approval-rules', ApprovalRuleController::class)->except('show');
             Route::post('/custom-fields/{custom_field}/move', [CustomFieldController::class, 'move'])->name('custom-fields.move');
+
+            Route::get('/branding', [BrandingController::class, 'edit'])->name('branding.edit');
+            Route::put('/branding', [BrandingController::class, 'update'])->name('branding.update');
+            Route::put('/branding/domain', [BrandingController::class, 'updateDomain'])->name('branding.domain.update');
+            Route::post('/branding/domain/verify', [BrandingController::class, 'verifyDomain'])->middleware('throttle:10,1')->name('branding.domain.verify');
+            Route::delete('/branding/domain', [BrandingController::class, 'destroyDomain'])->name('branding.domain.destroy');
+
+            Route::get('/partners', [PartnerController::class, 'index'])->name('partners.index');
+            Route::post('/partners', [PartnerController::class, 'enable'])->name('partners.enable');
+            Route::put('/partners', [PartnerController::class, 'update'])->name('partners.update');
+            Route::delete('/partners', [PartnerController::class, 'disable'])->name('partners.disable');
+            Route::post('/partners/clients', [PartnerController::class, 'storeClient'])->name('partners.clients.store');
 
             Route::get('/sms', [SmsSettingsController::class, 'edit'])->name('sms.edit');
             Route::put('/sms', [SmsSettingsController::class, 'update'])->name('sms.update');

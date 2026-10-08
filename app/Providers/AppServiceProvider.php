@@ -12,6 +12,7 @@ use App\Registries\MenuRegistry;
 use App\Registries\ModuleRegistry;
 use App\Registries\SearchRegistry;
 use App\Registries\WidgetRegistry;
+use App\Support\Branding;
 use App\Support\Health;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -39,6 +40,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(ModuleRegistry::class);
         $this->app->singleton(SearchRegistry::class);
         $this->app->singleton(WidgetRegistry::class);
+        $this->app->scoped(Branding::class);
     }
 
     public function boot(): void
@@ -99,6 +101,9 @@ class AppServiceProvider extends ServiceProvider
         View::composer('*', function ($view) {
             $view->with('workspace', app(WorkspaceContext::class)->get());
         });
+        View::composer(['layouts.app', 'layouts.auth', 'layouts.onboarding', 'partials.sidebar'], function ($view) {
+            $view->with('brand', app(Branding::class)->current());
+        });
     }
 
     /** Safety rails for the live site, plus the checks behind /up. */
@@ -135,7 +140,7 @@ class AppServiceProvider extends ServiceProvider
 
         $menu->section('settings', 'Workspace', 900)
             ->add(MenuItem::make('Settings', 'settings.workspace.edit', 'settings')->order(10)
-                ->active(['settings.workspace.*', 'settings.members.*', 'settings.branches.*', 'settings.audit.*', 'settings.data-export.*', 'settings.api.*', 'settings.webhooks.*', 'settings.automations.*', 'settings.custom-fields.*', 'settings.approval-rules.*'])
+                ->active(['settings.workspace.*', 'settings.members.*', 'settings.branches.*', 'settings.audit.*', 'settings.data-export.*', 'settings.api.*', 'settings.webhooks.*', 'settings.automations.*', 'settings.custom-fields.*', 'settings.approval-rules.*', 'settings.branding.*', 'settings.partners.*'])
                 ->children([
                     MenuItem::make('General', 'settings.workspace.edit', 'building-2')->order(1)->active('settings.workspace.*'),
                     MenuItem::make('Team members', 'settings.members.index', 'users')->order(2)->active('settings.members.*'),
@@ -145,6 +150,8 @@ class AppServiceProvider extends ServiceProvider
                     MenuItem::make('Approval rules', 'settings.approval-rules.index', 'shield-check')->order(6)->active('settings.approval-rules.*'),
                     MenuItem::make('Automations', 'settings.automations.index', 'zap')->order(7)->active('settings.automations.*'),
                     MenuItem::make('API & webhooks', 'settings.api.index', 'webhook')->order(8)->active(['settings.api.*', 'settings.webhooks.*']),
+                    MenuItem::make('Branding', 'settings.branding.edit', 'palette')->order(9)->active('settings.branding.*'),
+                    MenuItem::make('Partner program', 'settings.partners.index', 'handshake')->order(10)->active('settings.partners.*'),
                 ]))
             ->add(MenuItem::make('Apps & modules', 'settings.modules.index', 'layout-grid')->order(20)->active('settings.modules.*'))
             ->add(MenuItem::make('Plan & billing', 'settings.billing.index', 'credit-card')->order(30)->active('settings.billing.*'))

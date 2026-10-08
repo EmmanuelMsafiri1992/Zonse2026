@@ -9,6 +9,7 @@ use App\Models\Profession;
 use App\Models\Suite;
 use App\Models\Workspace;
 use App\Support\Lists;
+use App\Support\Partners;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -110,7 +111,7 @@ class OnboardingController extends Controller
         $user = $request->user();
         $workspace = $this->context->get();
 
-        DB::transaction(function () use (&$workspace, $data, $user) {
+        DB::transaction(function () use (&$workspace, $data, $user, $request) {
             if ($workspace) {
                 $workspace->update($data);
 
@@ -123,6 +124,9 @@ class OnboardingController extends Controller
                 'onboarding_step' => 2,
                 'locale' => 'en',
             ]);
+            if ($partner = app(Partners::class)->attributionFor($request)) {
+                $workspace->forceFill(['reseller_id' => $partner->id])->save();
+            }
             $workspace->members()->attach($user->id, ['role' => 'owner', 'joined_at' => now()]);
             $this->context->set($workspace);
             Branch::create(['workspace_id' => $workspace->id, 'name' => 'Main', 'code' => 'MAIN', 'is_default' => true, 'is_active' => true]);

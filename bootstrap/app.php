@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CapturePartnerReferral;
 use App\Http\Middleware\EnsureBlueprintEnabled;
 use App\Http\Middleware\EnsureModuleEnabled;
 use App\Http\Middleware\EnsureOnboarded;
@@ -41,7 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'abilities' => CheckAbilities::class,
         ]);
 
-        $middleware->web(append: [SecurityHeaders::class]);
+        $middleware->web(append: [SecurityHeaders::class, CapturePartnerReferral::class]);
 
         // Payment gateways post their notifications without a session; each one is verified in the controller.
         $middleware->validateCsrfTokens(except: ['webhooks/*']);

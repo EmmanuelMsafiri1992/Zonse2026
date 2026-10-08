@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Branch;
 use App\Models\Workspace;
+use App\Support\Partners;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -14,8 +15,9 @@ class WorkspaceController extends Controller
     {
         $data = $request->validate(['name' => ['required', 'string', 'max:120']]);
         $user = $request->user();
+        $partner = app(Partners::class)->attributionFor($request);
 
-        $workspace = DB::transaction(function () use ($data, $user) {
+        $workspace = DB::transaction(function () use ($data, $user, $partner) {
             $workspace = Workspace::create([
                 'name' => $data['name'],
                 'type' => 'company',
@@ -24,6 +26,9 @@ class WorkspaceController extends Controller
                 'onboarding_step' => 1,
                 'locale' => 'en',
             ]);
+            if ($partner) {
+                $workspace->forceFill(['reseller_id' => $partner->id])->save();
+            }
             $workspace->members()->attach($user->id, ['role' => 'owner', 'joined_at' => now()]);
             Branch::create(['workspace_id' => $workspace->id, 'name' => 'Main', 'code' => 'MAIN', 'is_default' => true, 'is_active' => true]);
             $user->switchWorkspace($workspace);

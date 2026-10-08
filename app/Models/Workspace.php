@@ -35,6 +35,7 @@ class Workspace extends Model
             'onboarded_at' => 'datetime',
             'trial_ends_at' => 'datetime',
             'is_active' => 'boolean',
+            'custom_domain_verified_at' => 'datetime',
         ];
     }
 
@@ -59,6 +60,18 @@ class Workspace extends Model
     }
 
     // ---- Relationships -------------------------------------------------
+
+    /** The partner (reseller) workspace that brought this workspace in, if any. */
+    public function reseller(): BelongsTo
+    {
+        return $this->belongsTo(Workspace::class, 'reseller_id');
+    }
+
+    /** Workspaces this partner brought in or set up. */
+    public function clients(): HasMany
+    {
+        return $this->hasMany(Workspace::class, 'reseller_id');
+    }
 
     public function owner(): BelongsTo
     {
@@ -217,6 +230,22 @@ class Workspace extends Model
     {
         return collect(explode(' ', trim($this->name)))->filter()->take(2)
             ->map(fn ($p) => Str::upper(Str::substr($p, 0, 1)))->implode('');
+    }
+
+    public function isPartner(): bool
+    {
+        return (bool) $this->setting('partner.enabled', false);
+    }
+
+    /** Partners with white-label on hide the platform name from their own and their clients' screens. */
+    public function isWhiteLabelPartner(): bool
+    {
+        return $this->isPartner() && (bool) $this->setting('partner.white_label', false);
+    }
+
+    public function hasVerifiedDomain(): bool
+    {
+        return $this->custom_domain !== null && $this->custom_domain_verified_at !== null;
     }
 
     public function getLogoUrlAttribute(): ?string

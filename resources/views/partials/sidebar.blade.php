@@ -1,8 +1,12 @@
 @php $sections = app(\App\Registries\MenuRegistry::class)->visible(); @endphp
 <aside class="z-sidebar">
     <a href="{{ route('dashboard') }}" class="z-brand">
-        <span class="z-brand-mark">Z</span>
-        <span>{{ config('app.name') }}</span>
+        @if($brand['logo_url'])
+            <img src="{{ $brand['logo_url'] }}" alt="" class="rounded-2" style="height:32px;max-width:120px;object-fit:contain">
+        @else
+            <span class="z-brand-mark">{{ $brand['mark'] }}</span>
+        @endif
+        <span class="text-truncate">{{ $brand['name'] }}</span>
     </a>
 
     <nav class="z-nav">

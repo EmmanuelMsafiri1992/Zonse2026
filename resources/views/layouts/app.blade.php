@@ -4,10 +4,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Dashboard') · {{ config('app.name') }}</title>
+    <title>@yield('title', 'Dashboard') · {{ $brand['name'] }}</title>
     @include('partials.fonts')
     @vite(['resources/scss/app.scss', 'resources/js/app.js'])
     @stack('head')
+    @if($brandCss = app(\App\Support\Branding::class)->css($brand['color']))<style>{!! $brandCss !!}</style>@endif
 </head>
 <body>
 <div class="z-app">
@@ -22,7 +23,7 @@
         </main>
 
         <footer class="z-footer">
-            <span>&copy; {{ date('Y') }} {{ config('app.name') }}. One platform, every profession.</span>
+            <span>&copy; {{ date('Y') }} {{ $brand['name'] }}.@unless($brand['hide_powered_by']) One platform, every profession.@endunless</span>
             <span>{{ $workspace?->name }}</span>
         </footer>
     </div>

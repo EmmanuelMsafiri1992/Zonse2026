@@ -57,4 +57,20 @@ return [
         'repeat_alert_hours' => 6,
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Partner (reseller) program
+    |--------------------------------------------------------------------------
+    |
+    | Partners earn commission_percent of each paying client's monthly plan
+    | price. Payouts are made by hand; the partner page shows what is owed.
+    | Custom domains point a CNAME at cname_target (defaults to the app host).
+    |
+    */
+
+    'partners' => [
+        'commission_percent' => (float) env('PARTNER_COMMISSION_PERCENT', 20),
+        'cname_target' => env('CUSTOM_DOMAIN_TARGET'),
+    ],
+
 ];
