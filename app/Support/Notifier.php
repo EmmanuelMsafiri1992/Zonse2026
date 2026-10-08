@@ -39,7 +39,7 @@ class Notifier
         if (! $workspace) {
             return 0;
         }
-        $actorId = $actor?->id ?? auth()->id();
+        $actorId = $actor ? $actor->id : auth()->id();
 
         $people = Collection::wrap($recipients instanceof User ? [$recipients] : ($recipients ?? []))
             ->filter(fn ($user) => $user instanceof User && $user->id !== $actorId && $user->belongsToWorkspace($workspace))

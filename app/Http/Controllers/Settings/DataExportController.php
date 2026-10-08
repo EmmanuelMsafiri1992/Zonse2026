@@ -22,7 +22,7 @@ class DataExportController extends Controller
 {
     /** Tables left out: secrets, access-control internals and rows exported separately. */
     public const EXCLUDED_TABLES = [
-        'settings', 'sequences', 'invitations', 'model_has_permissions', 'model_has_roles', 'roles', 'workspace_user',
+        'settings', 'sequences', 'invitations', 'model_has_permissions', 'model_has_roles', 'roles', 'workspace_user', 'personal_access_tokens',
     ];
 
     /** Columns never written to an export. */

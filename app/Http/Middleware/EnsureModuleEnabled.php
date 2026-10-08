@@ -27,12 +27,16 @@ class EnsureModuleEnabled
         }
 
         if (! $module->is_core && ! $this->context->hasModule($key)) {
+            abort_if($request->is('api/*'), 403, $module->name.' is not enabled for this workspace.');
+
             return redirect()->route('settings.modules.index')
                 ->with('flash', ['type' => 'warning', 'message' => $module->name.' is not enabled for this workspace.']);
         }
 
         $plan = $workspace->plan();
         if ($plan && ! $plan->includesModule($module)) {
+            abort_if($request->is('api/*'), 403, 'Your plan does not include '.$module->name.'.');
+
             return redirect()->route('settings.billing.index')
                 ->with('flash', ['type' => 'warning', 'message' => 'Your plan does not include '.$module->name.'. Upgrade to use it.']);
         }

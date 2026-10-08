@@ -4,6 +4,7 @@ use App\Http\Middleware\EnsureBlueprintEnabled;
 use App\Http\Middleware\EnsureModuleEnabled;
 use App\Http\Middleware\EnsureOnboarded;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\SetApiWorkspace;
 use App\Http\Middleware\SetWorkspaceContext;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Auth\Middleware\Authorize;
@@ -17,12 +18,14 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Laravel\Sanctum\Http\Middleware\CheckAbilities;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
+        api: __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
@@ -34,6 +37,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'blueprint' => EnsureBlueprintEnabled::class,
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
+            'api.workspace' => SetApiWorkspace::class,
+            'abilities' => CheckAbilities::class,
         ]);
 
         $middleware->web(append: [SecurityHeaders::class]);
@@ -50,6 +55,7 @@ return Application::configure(basePath: dirname(__DIR__))
             ValidateCsrfToken::class,
             Authenticate::class,
             SetWorkspaceContext::class,
+            SetApiWorkspace::class,
             SubstituteBindings::class,
             Authorize::class,
         ]);

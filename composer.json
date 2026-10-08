@@ -12,6 +12,7 @@
         "php": "^8.3",
         "laravel/fortify": "^1.40",
         "laravel/framework": "^13.17",
+        "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
         "mallardduck/blade-lucide-icons": "^2.0",
         "nwidart/laravel-modules": "^13.0",

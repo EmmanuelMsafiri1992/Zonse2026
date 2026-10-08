@@ -11,6 +11,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\Settings\ApiKeyController;
 use App\Http\Controllers\Settings\AuditLogController;
 use App\Http\Controllers\Settings\BillingController;
 use App\Http\Controllers\Settings\BranchController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\Settings\DataExportController;
 use App\Http\Controllers\Settings\MemberController;
 use App\Http\Controllers\Settings\ModuleController;
 use App\Http\Controllers\Settings\SmsSettingsController;
+use App\Http\Controllers\Settings\WebhookController;
 use App\Http\Controllers\Settings\WorkspaceSettingsController;
 use App\Http\Controllers\SmsController;
 use App\Http\Controllers\WorkspaceController;
@@ -108,6 +110,17 @@ Route::middleware(['auth', 'workspace'])->group(function () {
             Route::get('/audit/export', [AuditLogController::class, 'export'])->name('audit.export');
             Route::get('/data-export', [DataExportController::class, 'index'])->name('data-export.index');
             Route::post('/data-export', [DataExportController::class, 'store'])->middleware('throttle:3,10')->name('data-export.store');
+
+            Route::get('/api', [ApiKeyController::class, 'index'])->name('api.index');
+            Route::post('/api/keys', [ApiKeyController::class, 'store'])->middleware('throttle:10,1')->name('api.keys.store');
+            Route::delete('/api/keys/{token}', [ApiKeyController::class, 'destroy'])->whereNumber('token')->name('api.keys.destroy');
+            Route::post('/webhooks', [WebhookController::class, 'store'])->name('webhooks.store');
+            Route::get('/webhooks/{webhook}', [WebhookController::class, 'show'])->name('webhooks.show');
+            Route::put('/webhooks/{webhook}', [WebhookController::class, 'update'])->name('webhooks.update');
+            Route::delete('/webhooks/{webhook}', [WebhookController::class, 'destroy'])->name('webhooks.destroy');
+            Route::post('/webhooks/{webhook}/test', [WebhookController::class, 'test'])->middleware('throttle:10,1')->name('webhooks.test');
+            Route::post('/webhooks/{webhook}/secret', [WebhookController::class, 'rotateSecret'])->name('webhooks.secret');
+            Route::post('/webhooks/{webhook}/deliveries/{delivery}/resend', [WebhookController::class, 'redeliver'])->middleware('throttle:10,1')->name('webhooks.redeliver');
 
             Route::get('/sms', [SmsSettingsController::class, 'edit'])->name('sms.edit');
             Route::put('/sms', [SmsSettingsController::class, 'update'])->name('sms.update');
