@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Models\Plan;
+use App\Support\Audit;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -62,6 +63,8 @@ class BillingController extends Controller
         $workspace->forceFill(['trial_ends_at' => $trialEnds])->save();
         $workspace->unsetRelation('subscription');
 
+        Audit::log('settings', 'plan-changed', "Switched to the {$plan->name} plan ({$cycle})", $plan);
+
         return back()->with('flash', ['type' => 'success', 'message' => "You're now on the {$plan->name} plan."]);
     }
 
@@ -77,6 +80,8 @@ class BillingController extends Controller
                 'ends_at' => $current->current_period_end ?? now(),
             ])->save();
         }
+
+        Audit::log('settings', 'plan-cancelled', 'Cancelled the subscription');
 
         return back()->with('flash', ['type' => 'warning', 'message' => 'Your subscription will end at the close of the current period.']);
     }

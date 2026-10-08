@@ -30,7 +30,7 @@ class DashboardController extends Controller
             'widgets' => $widgets->visible(),
             'widgetRegistry' => $widgets,
             'recentActivity' => Activity::query()
-                ->where('properties->workspace_id', $workspace->id)
+                ->where('workspace_id', $workspace->id)
                 ->latest()->limit(8)->get(),
         ]);
     }

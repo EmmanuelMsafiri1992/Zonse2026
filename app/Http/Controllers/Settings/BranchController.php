@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
+use App\Support\Audit;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Http\Request;
 
@@ -24,6 +25,8 @@ class BranchController extends Controller
         $branch = Branch::create($data + ['is_active' => true]);
         $this->applyDefault($branch, $request->boolean('is_default'));
 
+        Audit::log('settings', 'branch-created', "Added the {$branch->name} branch", $branch);
+
         return back()->with('flash', ['type' => 'success', 'message' => "Branch {$branch->name} added."]);
     }
 
@@ -32,6 +35,8 @@ class BranchController extends Controller
         $data = $this->validated($request, $branch);
         $branch->update($data + ['is_active' => $request->boolean('is_active', true)]);
         $this->applyDefault($branch, $request->boolean('is_default'));
+
+        Audit::log('settings', 'branch-updated', "Updated the {$branch->name} branch", $branch);
 
         return back()->with('flash', ['type' => 'success', 'message' => "Branch {$branch->name} updated."]);
     }
@@ -42,6 +47,8 @@ class BranchController extends Controller
             return back()->withErrors(['branch' => 'Make another branch the default before deleting this one.']);
         }
         $branch->delete();
+
+        Audit::log('settings', 'branch-deleted', "Deleted the {$branch->name} branch");
 
         return back()->with('flash', ['type' => 'success', 'message' => 'Branch deleted.']);
     }

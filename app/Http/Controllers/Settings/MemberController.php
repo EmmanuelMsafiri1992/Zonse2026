@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Invitation;
 use App\Models\User;
 use App\Notifications\WorkspaceInvitationNotification;
+use App\Support\Audit;
 use App\Support\Lists;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Http\Request;
@@ -56,6 +57,8 @@ class MemberController extends Controller
             report($e);
         }
 
+        Audit::log('settings', 'member-invited', "Invited {$invitation->email} as {$invitation->role}", $invitation);
+
         return back()->with('flash', ['type' => 'success', 'message' => "Invitation sent to {$invitation->email}."]);
     }
 
@@ -75,6 +78,8 @@ class MemberController extends Controller
 
         $workspace->members()->updateExistingPivot($user->id, $data);
 
+        Audit::log('settings', 'member-updated', "Changed {$user->name}'s role to {$data['role']}", $user);
+
         return back()->with('flash', ['type' => 'success', 'message' => "{$user->name} updated."]);
     }
 
@@ -92,6 +97,8 @@ class MemberController extends Controller
             $user->forceFill(['current_workspace_id' => null])->save();
         }
 
+        Audit::log('settings', 'member-removed', "Removed {$user->name} from the workspace", $user);
+
         return back()->with('flash', ['type' => 'success', 'message' => "{$user->name} removed from the workspace."]);
     }
 
@@ -99,6 +106,8 @@ class MemberController extends Controller
     {
         abort_unless($invitation->workspace_id === $this->context->id(), 404);
         $invitation->delete();
+
+        Audit::log('settings', 'invitation-cancelled', "Cancelled the invitation to {$invitation->email}");
 
         return back()->with('flash', ['type' => 'success', 'message' => 'Invitation cancelled.']);
     }

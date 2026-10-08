@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
+use App\Support\Audit;
 use App\Support\Lists;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Http\Request;
@@ -57,6 +58,8 @@ class WorkspaceSettingsController extends Controller
         unset($data['logo'], $data['remove_logo']);
 
         $workspace->update($data);
+
+        Audit::log('settings', 'workspace-updated', 'Updated the workspace settings', properties: ['changed' => array_values(array_diff(array_keys($workspace->getChanges()), ['updated_at']))]);
 
         return back()->with('flash', ['type' => 'success', 'message' => 'Workspace settings saved.']);
     }

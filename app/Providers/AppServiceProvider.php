@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Listeners\RecordSecurityEvents;
 use App\Models\User;
 use App\Registries\MenuItem;
 use App\Registries\MenuRegistry;
@@ -19,6 +20,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use RuntimeException;
+use Spatie\Activitylog\Models\Activity;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -55,6 +57,13 @@ class AppServiceProvider extends ServiceProvider
             $workspace = app(WorkspaceContext::class)->get();
 
             return $workspace !== null && $user->belongsToWorkspace($workspace);
+        });
+
+        Event::subscribe(RecordSecurityEvents::class);
+
+        // Copy the workspace onto its own indexed column so the audit log can filter by it.
+        Activity::creating(function (Activity $activity) {
+            $activity->workspace_id ??= $activity->properties['workspace_id'] ?? app(WorkspaceContext::class)->id();
         });
 
         $this->registerCoreMenu();
@@ -94,11 +103,12 @@ class AppServiceProvider extends ServiceProvider
 
         $menu->section('settings', 'Workspace', 900)
             ->add(MenuItem::make('Settings', 'settings.workspace.edit', 'settings')->order(10)
-                ->active(['settings.workspace.*', 'settings.members.*', 'settings.branches.*'])
+                ->active(['settings.workspace.*', 'settings.members.*', 'settings.branches.*', 'settings.audit.*', 'settings.data-export.*'])
                 ->children([
                     MenuItem::make('General', 'settings.workspace.edit', 'building-2')->order(1)->active('settings.workspace.*'),
                     MenuItem::make('Team members', 'settings.members.index', 'users')->order(2)->active('settings.members.*'),
                     MenuItem::make('Branches', 'settings.branches.index', 'map-pin')->order(3)->active('settings.branches.*'),
+                    MenuItem::make('Audit log', 'settings.audit.index', 'scroll-text')->order(4)->active(['settings.audit.*', 'settings.data-export.*']),
                 ]))
             ->add(MenuItem::make('Apps & modules', 'settings.modules.index', 'layout-grid')->order(20)->active('settings.modules.*'))
             ->add(MenuItem::make('Plan & billing', 'settings.billing.index', 'credit-card')->order(30)->active('settings.billing.*'))

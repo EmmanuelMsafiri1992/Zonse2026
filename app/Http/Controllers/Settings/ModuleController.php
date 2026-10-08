@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Models\Module;
 use App\Models\Suite;
+use App\Support\Audit;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Http\Request;
 
@@ -76,6 +77,8 @@ class ModuleController extends Controller
 
         $workspace->enableModules([$module->key], $request->user());
 
+        Audit::log('settings', 'module-enabled', "Turned on the {$module->name} app", $module);
+
         return back()->with('flash', ['type' => 'success', 'message' => "{$module->name} enabled."]);
     }
 
@@ -83,6 +86,8 @@ class ModuleController extends Controller
     {
         $workspace = $this->context->getOrFail();
         $workspace->disableModule($module->key);
+
+        Audit::log('settings', 'module-disabled', "Turned off the {$module->name} app", $module);
 
         return back()->with('flash', ['type' => 'success', 'message' => "{$module->name} disabled."]);
     }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Sms\SmsProvider;
 use App\Sms\SmsService;
+use App\Support\Audit;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -53,6 +54,7 @@ class SmsSettingsController extends Controller
         $this->sms->configure($workspace, $data['provider'] ?? null, $values, $data['notify'] ?? []);
 
         $workspace->refresh();
+        Audit::log('settings', 'sms-updated', 'Updated the text message (SMS) settings', properties: ['provider' => $workspace->setting('sms.provider')]);
         $chosen = $this->sms->find($workspace->setting('sms.provider'));
         if ($chosen && ! $this->sms->isConfigured($workspace, $chosen)) {
             return back()->with('flash', ['type' => 'warning', 'message' => 'Saved, but '.$chosen->label().' needs its credentials before any text can be sent.']);

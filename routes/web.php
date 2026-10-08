@@ -10,8 +10,10 @@ use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\Settings\AuditLogController;
 use App\Http\Controllers\Settings\BillingController;
 use App\Http\Controllers\Settings\BranchController;
+use App\Http\Controllers\Settings\DataExportController;
 use App\Http\Controllers\Settings\MemberController;
 use App\Http\Controllers\Settings\ModuleController;
 use App\Http\Controllers\Settings\SmsSettingsController;
@@ -94,6 +96,11 @@ Route::middleware(['auth', 'workspace'])->group(function () {
             Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
             Route::post('/billing/subscribe/{plan:key}', [BillingController::class, 'subscribe'])->name('billing.subscribe');
             Route::post('/billing/cancel', [BillingController::class, 'cancel'])->name('billing.cancel');
+
+            Route::get('/audit', [AuditLogController::class, 'index'])->name('audit.index');
+            Route::get('/audit/export', [AuditLogController::class, 'export'])->name('audit.export');
+            Route::get('/data-export', [DataExportController::class, 'index'])->name('data-export.index');
+            Route::post('/data-export', [DataExportController::class, 'store'])->middleware('throttle:3,10')->name('data-export.store');
 
             Route::get('/sms', [SmsSettingsController::class, 'edit'])->name('sms.edit');
             Route::put('/sms', [SmsSettingsController::class, 'update'])->name('sms.update');
