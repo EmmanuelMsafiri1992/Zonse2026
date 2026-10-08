@@ -115,19 +115,21 @@ class AppServiceProvider extends ServiceProvider
         $menu = $this->app->make(MenuRegistry::class);
 
         $menu->section('main', 'Main', 0)
-            ->add(MenuItem::make('Dashboard', 'dashboard', 'layout-dashboard')->order(0)->active('dashboard'));
+            ->add(MenuItem::make('Dashboard', 'dashboard', 'layout-dashboard')->order(0)->active('dashboard'))
+            ->add(MenuItem::make('Approvals', 'approvals.index', 'circle-check')->order(1)->active('approvals.*'));
 
         $menu->section('settings', 'Workspace', 900)
             ->add(MenuItem::make('Settings', 'settings.workspace.edit', 'settings')->order(10)
-                ->active(['settings.workspace.*', 'settings.members.*', 'settings.branches.*', 'settings.audit.*', 'settings.data-export.*', 'settings.api.*', 'settings.webhooks.*', 'settings.automations.*', 'settings.custom-fields.*'])
+                ->active(['settings.workspace.*', 'settings.members.*', 'settings.branches.*', 'settings.audit.*', 'settings.data-export.*', 'settings.api.*', 'settings.webhooks.*', 'settings.automations.*', 'settings.custom-fields.*', 'settings.approval-rules.*'])
                 ->children([
                     MenuItem::make('General', 'settings.workspace.edit', 'building-2')->order(1)->active('settings.workspace.*'),
                     MenuItem::make('Team members', 'settings.members.index', 'users')->order(2)->active('settings.members.*'),
                     MenuItem::make('Branches', 'settings.branches.index', 'map-pin')->order(3)->active('settings.branches.*'),
                     MenuItem::make('Audit log', 'settings.audit.index', 'scroll-text')->order(4)->active(['settings.audit.*', 'settings.data-export.*']),
                     MenuItem::make('Custom fields', 'settings.custom-fields.index', 'list-plus')->order(5)->active('settings.custom-fields.*'),
-                    MenuItem::make('Automations', 'settings.automations.index', 'zap')->order(6)->active('settings.automations.*'),
-                    MenuItem::make('API & webhooks', 'settings.api.index', 'webhook')->order(7)->active(['settings.api.*', 'settings.webhooks.*']),
+                    MenuItem::make('Approval rules', 'settings.approval-rules.index', 'shield-check')->order(6)->active('settings.approval-rules.*'),
+                    MenuItem::make('Automations', 'settings.automations.index', 'zap')->order(7)->active('settings.automations.*'),
+                    MenuItem::make('API & webhooks', 'settings.api.index', 'webhook')->order(8)->active(['settings.api.*', 'settings.webhooks.*']),
                 ]))
             ->add(MenuItem::make('Apps & modules', 'settings.modules.index', 'layout-grid')->order(20)->active('settings.modules.*'))
             ->add(MenuItem::make('Plan & billing', 'settings.billing.index', 'credit-card')->order(30)->active('settings.billing.*'))

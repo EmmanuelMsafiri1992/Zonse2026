@@ -5,6 +5,7 @@ namespace Modules\Invoicing\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Sms\SmsService;
+use App\Support\Approvals;
 use App\Support\Lists;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Contracts\View\View;
@@ -124,17 +125,20 @@ class InvoiceController extends Controller
         return redirect()->route('invoices.index')->with('flash', ['type' => 'success', 'message' => $number.' was deleted.']);
     }
 
-    public function send(Invoice $invoice): RedirectResponse
+    public function send(Request $request, Invoice $invoice): RedirectResponse
     {
         $this->authorize('update', $invoice);
+        if ($held = $this->heldForApproval($request, $invoice)) {
+            return $held;
+        }
 
-        $invoice->markSent();
+        $this->markSent($request, $invoice);
 
         return back()->with('flash', ['type' => 'success', 'message' => $invoice->number.' is now marked as sent. Share the public link with your customer.']);
     }
 
     /** Text the invoice, with its view-and-pay link, to the customer's mobile. */
-    public function sms(Invoice $invoice, SmsService $sms, InvoiceTexts $texts, WorkspaceContext $context): RedirectResponse
+    public function sms(Request $request, Invoice $invoice, SmsService $sms, InvoiceTexts $texts, WorkspaceContext $context): RedirectResponse
     {
         $this->authorize('update', $invoice);
 
@@ -144,14 +148,34 @@ class InvoiceController extends Controller
         if ($invoice->status === 'cancelled') {
             return back()->with('flash', ['type' => 'danger', 'message' => 'A cancelled invoice cannot be sent.']);
         }
+        if ($held = $this->heldForApproval($request, $invoice)) {
+            return $held;
+        }
 
         $message = $texts->sendFor($invoice, 'invoice', $texts->invoice($invoice));
         if (! $message) {
             return back()->with('flash', ['type' => 'warning', 'message' => 'This customer has no usable mobile number. Add one to the contact and try again.']);
         }
-        $invoice->markSent();
+        $this->markSent($request, $invoice);
 
         return back()->with('flash', ['type' => 'success', 'message' => $invoice->number.' was texted to '.$message->to.'.']);
+    }
+
+    /** A draft that needs sign-off first goes nowhere until it has it. */
+    protected function heldForApproval(Request $request, Invoice $invoice): ?RedirectResponse
+    {
+        $rule = Approvals::blocking($invoice, 'invoice.send', $request->user());
+
+        return $rule ? back()->with('flash', ['type' => 'warning', 'message' => $invoice->number.' needs approval before it goes out ('.$rule->name.'). Ask for approval below.']) : null;
+    }
+
+    protected function markSent(Request $request, Invoice $invoice): void
+    {
+        $wasDraft = $invoice->status === 'draft';
+        $invoice->markSent();
+        if ($wasDraft) {
+            Approvals::settle($invoice, 'invoice.send', $request->user(), 'Sent it directly.');
+        }
     }
 
     public function cancel(Invoice $invoice): RedirectResponse

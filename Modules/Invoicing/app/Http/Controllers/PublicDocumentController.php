@@ -3,6 +3,7 @@
 namespace Modules\Invoicing\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Support\Approvals;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Contracts\View\View;
 use Modules\Invoicing\Models\Invoice;
@@ -20,6 +21,7 @@ class PublicDocumentController extends Controller
     {
         $invoice = Invoice::allWorkspaces()->where('uuid', $uuid)->with('workspace')->firstOrFail();
         $context->set($invoice->workspace);
+        abort_if(Approvals::blocking($invoice, 'invoice.send') !== null, 404);
         $invoice->load(['contact', 'branch', 'lines', 'payments']);
         $payable = $invoice->isOpen() && $invoice->balance > 0 && $context->hasModule('invoicing');
 
@@ -33,6 +35,7 @@ class PublicDocumentController extends Controller
     {
         $quote = Quote::allWorkspaces()->where('uuid', $uuid)->with('workspace')->firstOrFail();
         $context->set($quote->workspace);
+        abort_if(Approvals::blocking($quote, 'quote.send') !== null, 404);
         $quote->load(['contact', 'branch', 'lines']);
 
         return view('invoicing::quotes.print', ['quote' => $quote, 'document' => $quote, 'kind' => 'quote', 'public' => true]);

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\Apps\AppController;
 use App\Http\Controllers\Apps\PosController;
 use App\Http\Controllers\Apps\RecordController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\Settings\ApiKeyController;
+use App\Http\Controllers\Settings\ApprovalRuleController;
 use App\Http\Controllers\Settings\AuditLogController;
 use App\Http\Controllers\Settings\AutomationController;
 use App\Http\Controllers\Settings\BillingController;
@@ -55,6 +57,12 @@ Route::middleware(['auth', 'workspace'])->group(function () {
         Route::post('/notifications/read', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
         Route::get('/notifications/{notification}', [NotificationController::class, 'open'])->whereUuid('notification')->name('notifications.open');
         Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])->whereUuid('notification')->name('notifications.destroy');
+
+        Route::get('/approvals', [ApprovalController::class, 'index'])->name('approvals.index');
+        Route::post('/approvals', [ApprovalController::class, 'store'])->middleware('throttle:30,1')->name('approvals.store');
+        Route::post('/approvals/{approvalRequest}/approve', [ApprovalController::class, 'approve'])->name('approvals.approve');
+        Route::post('/approvals/{approvalRequest}/reject', [ApprovalController::class, 'reject'])->name('approvals.reject');
+        Route::post('/approvals/{approvalRequest}/withdraw', [ApprovalController::class, 'withdraw'])->name('approvals.withdraw');
 
         // Blueprint apps: every data-driven catalogue module runs on these generic screens.
         Route::get('/apps', [AppController::class, 'index'])->name('apps.index');
@@ -127,6 +135,7 @@ Route::middleware(['auth', 'workspace'])->group(function () {
             Route::resource('automations', AutomationController::class)->except('show');
             Route::post('/automations/{automation}/toggle', [AutomationController::class, 'toggle'])->name('automations.toggle');
             Route::resource('custom-fields', CustomFieldController::class)->except('show');
+            Route::resource('approval-rules', ApprovalRuleController::class)->except('show');
             Route::post('/custom-fields/{custom_field}/move', [CustomFieldController::class, 'move'])->name('custom-fields.move');
 
             Route::get('/sms', [SmsSettingsController::class, 'edit'])->name('sms.edit');

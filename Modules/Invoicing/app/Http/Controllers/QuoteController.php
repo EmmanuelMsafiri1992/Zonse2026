@@ -4,6 +4,7 @@ namespace Modules\Invoicing\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
+use App\Support\Approvals;
 use App\Support\Lists;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Contracts\View\View;
@@ -118,10 +119,18 @@ class QuoteController extends Controller
         return redirect()->route('quotes.index')->with('flash', ['type' => 'success', 'message' => $number.' was deleted.']);
     }
 
-    public function send(Quote $quote): RedirectResponse
+    public function send(Request $request, Quote $quote): RedirectResponse
     {
         $this->authorize('update', $quote);
+        if ($rule = Approvals::blocking($quote, 'quote.send', $request->user())) {
+            return back()->with('flash', ['type' => 'warning', 'message' => $quote->number.' needs approval before it goes out ('.$rule->name.'). Ask for approval below.']);
+        }
+
+        $wasDraft = $quote->status === 'draft';
         $quote->markSent();
+        if ($wasDraft) {
+            Approvals::settle($quote, 'quote.send', $request->user(), 'Sent it directly.');
+        }
 
         return back()->with('flash', ['type' => 'success', 'message' => $quote->number.' is marked as sent.']);
     }

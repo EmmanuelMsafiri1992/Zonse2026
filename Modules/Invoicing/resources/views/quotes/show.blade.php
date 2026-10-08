@@ -4,9 +4,11 @@
     <x-page-header :title="$quote->number" :sub="($quote->contact?->displayName() ?? '').' · issued '.$quote->issue_date->format('d M Y').($quote->valid_until ? ' · valid until '.$quote->valid_until->format('d M Y') : '')"
                    :crumbs="['Quotes' => route('quotes.index'), $quote->number]">
         <a href="{{ route('quotes.print', $quote) }}" target="_blank" class="btn btn-white"><x-icon name="printer" /> Print / PDF</a>
-        <button type="button" class="btn btn-white" onclick="navigator.clipboard.writeText('{{ $quote->publicUrl() }}').then(() => zonseo.toast('Public link copied'))"><x-icon name="link" /> Copy link</button>
+        @unless(\App\Support\Approvals::blocking($quote, 'quote.send'))
+            <button type="button" class="btn btn-white" onclick="navigator.clipboard.writeText('{{ $quote->publicUrl() }}').then(() => zonseo.toast('Public link copied'))"><x-icon name="link" /> Copy link</button>
+        @endunless
         @can('update', $quote)
-            @if($quote->status === 'draft')
+            @if($quote->status === 'draft' && ! \App\Support\Approvals::blocking($quote, 'quote.send', auth()->user()))
                 <form method="POST" action="{{ route('quotes.send', $quote) }}">@csrf<button class="btn btn-soft-primary"><x-icon name="send" /> Mark as sent</button></form>
             @endif
             @if($quote->isEditable())
@@ -26,6 +28,7 @@
 
     <div class="row g-3">
         <div class="col-lg-8">
+            <x-approvals.panel :model="$quote" subject="quote.send" />
             <div class="card mb-3">
                 <div class="card-header">
                     <div class="d-flex align-items-center gap-2">
@@ -61,10 +64,12 @@
                     </li>
                     <li class="list-group-item d-flex justify-content-between"><span class="text-muted">Sent</span><span>{{ $quote->sent_at?->format('d M Y') ?? 'Not yet' }}</span></li>
                     <li class="list-group-item d-flex justify-content-between"><span class="text-muted">Created by</span><span>{{ $quote->creator?->name ?? '—' }}</span></li>
-                    <li class="list-group-item">
-                        <div class="text-muted mb-1">Public link</div>
-                        <input type="text" class="form-control form-control-sm" readonly value="{{ $quote->publicUrl() }}" onclick="this.select()">
-                    </li>
+                    @unless(\App\Support\Approvals::blocking($quote, 'quote.send'))
+                        <li class="list-group-item">
+                            <div class="text-muted mb-1">Public link</div>
+                            <input type="text" class="form-control form-control-sm" readonly value="{{ $quote->publicUrl() }}" onclick="this.select()">
+                        </li>
+                    @endunless
                 </ul>
                 @can('delete', $quote)
                     @if($quote->status !== 'converted')
