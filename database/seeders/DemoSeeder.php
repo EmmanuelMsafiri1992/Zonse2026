@@ -28,6 +28,10 @@ class DemoSeeder extends Seeder
 {
     public function run(): void
     {
+        if (app()->isProduction()) {
+            throw new \RuntimeException('DemoSeeder creates logins with the password "password" and must never run in production.');
+        }
+
         $admin = User::updateOrCreate(['email' => 'admin@zonseo.test'], [
             'name' => 'Zonseo Admin', 'password' => 'password', 'is_super_admin' => true, 'email_verified_at' => now(),
         ]);

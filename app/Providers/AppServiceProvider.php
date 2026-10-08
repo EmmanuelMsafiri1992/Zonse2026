@@ -8,10 +8,17 @@ use App\Registries\MenuRegistry;
 use App\Registries\ModuleRegistry;
 use App\Registries\SearchRegistry;
 use App\Registries\WidgetRegistry;
+use App\Support\Health;
 use App\Tenancy\WorkspaceContext;
+use Illuminate\Foundation\Events\DiagnosingHealth;
+use Illuminate\Http\Middleware\TrustProxies;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use RuntimeException;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,6 +33,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->configureProduction();
+
         // Super admins can do anything; workspace owners/admins can do anything
         // inside their own workspace. Finer-grained permissions (spatie) apply
         // to everyone else.
@@ -53,6 +62,26 @@ class AppServiceProvider extends ServiceProvider
         // Make the active workspace available to every view as $workspace.
         View::composer('*', function ($view) {
             $view->with('workspace', app(WorkspaceContext::class)->get());
+        });
+    }
+
+    /** Safety rails for the live site, plus the checks behind /up. */
+    protected function configureProduction(): void
+    {
+        // migrate:fresh, db:wipe and friends refuse to run against the live database.
+        DB::prohibitDestructiveCommands($this->app->isProduction());
+
+        URL::forceHttps(str_starts_with((string) config('app.url'), 'https://'));
+
+        if ($proxies = config('zonseo.trusted_proxies')) {
+            TrustProxies::at($proxies === '*' ? '*' : array_map('trim', explode(',', $proxies)));
+        }
+
+        Event::listen(DiagnosingHealth::class, function () {
+            $failing = collect($this->app->make(Health::class)->critical())->reject(fn (array $check) => $check['ok']);
+            if ($failing->isNotEmpty()) {
+                throw new RuntimeException('Health check failed: '.$failing->map(fn (array $check, string $name) => $name.' - '.$check['message'])->implode('; '));
+            }
         });
     }
 

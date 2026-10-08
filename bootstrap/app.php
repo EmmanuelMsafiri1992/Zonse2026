@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsureBlueprintEnabled;
 use App\Http\Middleware\EnsureModuleEnabled;
 use App\Http\Middleware\EnsureOnboarded;
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetWorkspaceContext;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Auth\Middleware\Authorize;
@@ -34,6 +35,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
         ]);
+
+        $middleware->web(append: [SecurityHeaders::class]);
 
         // Payment gateways post their notifications without a session; each one is verified in the controller.
         $middleware->validateCsrfTokens(except: ['webhooks/*']);

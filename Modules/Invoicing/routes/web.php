@@ -43,8 +43,10 @@ Route::middleware(['auth', 'workspace', 'onboarded', 'module:quotes'])->group(fu
     Route::resource('quotes', QuoteController::class);
 });
 
-Route::get('/i/{uuid}', [PublicDocumentController::class, 'invoice'])->name('invoices.public');
-Route::get('/q/{uuid}', [PublicDocumentController::class, 'quote'])->name('quotes.public');
+Route::middleware('throttle:60,1')->group(function () {
+    Route::get('/i/{uuid}', [PublicDocumentController::class, 'invoice'])->name('invoices.public');
+    Route::get('/q/{uuid}', [PublicDocumentController::class, 'quote'])->name('quotes.public');
+});
 
 Route::middleware('throttle:20,1')->group(function () {
     Route::post('/i/{uuid}/pay/{gateway}', [OnlinePaymentController::class, 'start'])->name('invoices.public.pay');
