@@ -78,6 +78,38 @@
         </div>
 
         <div class="col-lg-5">
+            <form method="POST" action="{{ route('settings.invoicing.design.update') }}" class="card mb-3" id="design">
+                @csrf @method('PUT')
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h5 class="card-title">Document design</h5>
+                    <a href="{{ route('settings.invoicing.design.preview') }}" target="_blank" rel="noopener" class="btn btn-sm btn-white"><x-icon name="eye" class="zi zi-sm" /> Preview</a>
+                </div>
+                <div class="card-body">
+                    <div class="form-label">Layout</div>
+                    @foreach(\Modules\Invoicing\Documents\DocumentDesign::STYLES as $key => $style)
+                        <label class="d-flex gap-2 border rounded p-2 mb-2">
+                            <input type="radio" class="form-check-input mt-1" name="style" value="{{ $key }}" @checked(old('style', $design->style) === $key)>
+                            <span><span class="fw-600">{{ $style['label'] }}</span><span class="d-block fs-8 text-muted">{{ $style['description'] }}</span></span>
+                        </label>
+                    @endforeach
+                    @error('style')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                    <div class="mb-3 mt-3">
+                        <label for="design-color" class="form-label">Accent colour</label>
+                        <input type="color" id="design-color" name="color" value="{{ old('color', $design->color) }}" class="form-control form-control-color @error('color') is-invalid @enderror">
+                        @error('color')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6"><x-form.input name="invoice_title" label="Invoice title" :value="$design->invoice_title" maxlength="40" help="e.g. Tax invoice" /></div>
+                        <div class="col-md-6"><x-form.input name="quote_title" label="Quote title" :value="$design->quote_title" maxlength="40" help="e.g. Estimate" /></div>
+                    </div>
+                    <x-form.textarea name="payment_details" label="How to pay" :value="$design->payment_details" rows="3" help="Shown on unpaid invoices. Bank account, mobile money number or till." />
+                    <x-form.check name="show_logo" label="Show the workspace logo" :checked="$design->show_logo" switch />
+                    <x-form.check name="show_tax_column" label="Show a tax column on lines" :checked="$design->show_tax_column" switch />
+                    <x-form.check name="signature" label="Add signature lines" :checked="$design->signature" switch />
+                </div>
+                <div class="card-footer d-flex justify-content-end"><button class="btn btn-primary"><x-icon name="check" /> Save design</button></div>
+            </form>
+
             <div class="card mb-3">
                 <div class="card-header"><h5 class="card-title">Tax rates</h5></div>
                 @if($taxRates->isEmpty())

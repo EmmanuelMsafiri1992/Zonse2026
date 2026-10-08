@@ -3,7 +3,8 @@
 @section('content')
     <x-page-header :title="$invoice->number" :sub="($invoice->contact?->displayName() ?? '').' · issued '.$invoice->issue_date->format('d M Y').' · due '.$invoice->due_date->format('d M Y')"
                    :crumbs="['Invoices' => route('invoices.index'), $invoice->number]">
-        <a href="{{ route('invoices.print', $invoice) }}" target="_blank" class="btn btn-white"><x-icon name="printer" /> Print / PDF</a>
+        <a href="{{ route('invoices.print', $invoice) }}" target="_blank" class="btn btn-white"><x-icon name="printer" /> Print</a>
+        <a href="{{ route('invoices.pdf', $invoice) }}" target="_blank" class="btn btn-white"><x-icon name="file-down" /> PDF</a>
         @php $sendHeld = \App\Support\Approvals::blocking($invoice, 'invoice.send', auth()->user()) !== null; @endphp
         @unless(\App\Support\Approvals::blocking($invoice, 'invoice.send'))
             <button type="button" class="btn btn-white" onclick="navigator.clipboard.writeText('{{ $invoice->publicUrl() }}').then(() => zonseo.toast('Public link copied'))"><x-icon name="link" /> Copy link</button>

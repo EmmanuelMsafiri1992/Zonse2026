@@ -3,12 +3,17 @@
 namespace Modules\Invoicing\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Support\Audit;
 use App\Support\Sequence;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Modules\Contacts\Models\Contact;
+use Modules\Invoicing\Documents\DocumentDesign;
 use Modules\Invoicing\Http\Requests\TaxRateRequest;
+use Modules\Invoicing\Models\Invoice;
+use Modules\Invoicing\Models\InvoiceLine;
 use Modules\Invoicing\Models\TaxRate;
 use Modules\Invoicing\Payments\PaymentGateway;
 use Modules\Invoicing\Payments\PaymentGateways;
@@ -36,6 +41,7 @@ class InvoicingSettingsController extends Controller
                 'notes' => $workspace->setting('invoicing.notes'),
                 'footer' => $workspace->setting('invoicing.footer'),
             ],
+            'design' => DocumentDesign::for($workspace),
             'taxRates' => TaxRate::query()->orderByDesc('is_default')->orderBy('rate')->get(),
             'gateways' => collect($gateways->all())->map(fn (PaymentGateway $gateway) => [
                 'gateway' => $gateway,
@@ -111,6 +117,41 @@ class InvoicingSettingsController extends Controller
         }
 
         return back()->with('flash', ['type' => 'success', 'message' => 'Online payment settings saved.']);
+    }
+
+    public function updateDesign(Request $request, WorkspaceContext $context): RedirectResponse
+    {
+        $workspace = $context->getOrFail();
+        $data = $request->validate(DocumentDesign::rules(), ['color.regex' => 'Pick a colour like #0073ea.']);
+
+        DocumentDesign::save($workspace, $data);
+        Audit::log('settings', 'document-design-updated', 'Changed the invoice and quote design to '.DocumentDesign::STYLES[$data['style']]['label'].' in '.strtolower($data['color']));
+
+        return redirect()->to(route('settings.invoicing.edit').'#design')->with('flash', ['type' => 'success', 'message' => 'Document design saved.']);
+    }
+
+    /** A made-up invoice in the saved design, so the look can be checked before anything is sent. */
+    public function previewDesign(WorkspaceContext $context): View
+    {
+        $workspace = $context->getOrFail();
+        $currency = $workspace->currency_code ?? 'USD';
+
+        $invoice = (new Invoice)->forceFill([
+            'workspace_id' => $workspace->id, 'number' => 'SAMPLE-0001', 'status' => 'sent', 'currency_code' => $currency,
+            'issue_date' => now(), 'due_date' => now()->addDays((int) $workspace->setting('invoicing.due_days', 14)),
+            'subtotal' => 150, 'discount_amount' => 0, 'tax_total' => 15, 'total' => 165, 'amount_paid' => 0, 'balance' => 165,
+            'notes' => $workspace->setting('invoicing.notes'), 'terms' => $workspace->setting('invoicing.terms'),
+        ]);
+        $invoice->setRelation('workspace', $workspace);
+        $invoice->setRelation('branch', null);
+        $invoice->setRelation('contact', (new Contact)->forceFill(['kind' => 'company', 'name' => 'Rudo Chikwanha', 'company_name' => 'Sample Customer Ltd', 'city' => 'Harare', 'email' => 'accounts@example.com']));
+        $invoice->setRelation('payments', collect());
+        $invoice->setRelation('lines', collect([
+            (new InvoiceLine)->forceFill(['description' => 'Consultation', 'quantity' => 2, 'unit' => 'hrs', 'unit_price' => 50, 'tax_rate' => 10, 'line_total' => 100]),
+            (new InvoiceLine)->forceFill(['description' => 'Materials', 'quantity' => 1, 'unit' => null, 'unit_price' => 50, 'tax_rate' => 10, 'line_total' => 50]),
+        ]));
+
+        return view('invoicing::invoices.print', ['invoice' => $invoice, 'document' => $invoice, 'kind' => 'invoice', 'preview' => true]);
     }
 
     public function storeTaxRate(TaxRateRequest $request): RedirectResponse

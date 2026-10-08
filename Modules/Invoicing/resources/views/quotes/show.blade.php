@@ -3,7 +3,8 @@
 @section('content')
     <x-page-header :title="$quote->number" :sub="($quote->contact?->displayName() ?? '').' · issued '.$quote->issue_date->format('d M Y').($quote->valid_until ? ' · valid until '.$quote->valid_until->format('d M Y') : '')"
                    :crumbs="['Quotes' => route('quotes.index'), $quote->number]">
-        <a href="{{ route('quotes.print', $quote) }}" target="_blank" class="btn btn-white"><x-icon name="printer" /> Print / PDF</a>
+        <a href="{{ route('quotes.print', $quote) }}" target="_blank" class="btn btn-white"><x-icon name="printer" /> Print</a>
+        <a href="{{ route('quotes.pdf', $quote) }}" target="_blank" class="btn btn-white"><x-icon name="file-down" /> PDF</a>
         @unless(\App\Support\Approvals::blocking($quote, 'quote.send'))
             <button type="button" class="btn btn-white" onclick="navigator.clipboard.writeText('{{ $quote->publicUrl() }}').then(() => zonseo.toast('Public link copied'))"><x-icon name="link" /> Copy link</button>
         @endunless

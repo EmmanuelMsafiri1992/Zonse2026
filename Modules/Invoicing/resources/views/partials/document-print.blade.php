@@ -1,6 +1,8 @@
 @php
     $isInvoice = $kind === 'invoice';
     $ws = $document->workspace ?? $workspace;
+    $design ??= \Modules\Invoicing\Documents\DocumentDesign::for($ws);
+    $logo = $design->logo($ws, $pdf ?? false);
     $customer = $document->contact;
     $customerLines = array_filter([
         $customer?->displayName(),
@@ -16,76 +18,102 @@
         $ws?->tax_number ? 'Tax no. '.$ws->tax_number : null,
     ]);
     $fmtQty = fn ($q) => rtrim(rtrim(number_format((float) $q, 3), '0'), '.');
+    $showTax = $design->show_tax_column;
 @endphp
-<div class="head">
-    <div class="brand">
-        @if($ws?->logo_url)<img src="{{ $ws->logo_url }}" alt="{{ $ws->name }}"><br>@endif
-        <h1>{{ $ws?->name }}</h1>
-        {!! implode('<br>', array_map('e', $fromLines)) !!}
-    </div>
-    <div class="doc-title">
-        <h2>{{ $isInvoice ? 'Invoice' : 'Quotation' }}</h2>
-        <div class="num">{{ $document->number }}</div>
-        <span class="status {{ $document->status }}">{{ $document->statusLabel() }}</span>
-    </div>
-</div>
-
-<div class="parties">
-    <div>
-        <h4>{{ $isInvoice ? 'Bill to' : 'Prepared for' }}</h4>
-        <p>{!! implode('<br>', array_map('e', $customerLines)) !!}</p>
-    </div>
-    <div class="meta">
-        <div><b>Issue date</b>{{ $document->issue_date?->format('d M Y') }}</div>
-        @if($isInvoice)
-            <div><b>Due date</b>{{ $document->due_date?->format('d M Y') }}</div>
-        @else
-            <div><b>Valid until</b>{{ $document->valid_until?->format('d M Y') ?? '—' }}</div>
-        @endif
-        <div><b>{{ $document->reference ? 'Reference' : 'Currency' }}</b>{{ $document->reference ?: $document->currency_code }}</div>
-    </div>
-</div>
-
-<table>
-    <thead><tr><th>Description</th><th class="r">Qty</th><th class="r">Unit price</th><th class="r">Tax</th><th class="r">Amount</th></tr></thead>
-    <tbody>
-    @foreach($document->lines as $line)
+<div class="doc doc-{{ $design->style }}">
+    <table class="head">
         <tr>
-            <td>{{ $line->description }}</td>
-            <td class="r">{{ $fmtQty($line->quantity) }}{{ $line->unit ? ' '.$line->unit : '' }}</td>
-            <td class="r">{{ $document->money($line->unit_price) }}</td>
-            <td class="r">{{ $line->tax_rate > 0 ? $fmtQty($line->tax_rate).'%' : '—' }}</td>
-            <td class="r b">{{ $document->money($line->line_total) }}</td>
+            <td class="brand">
+                @if($logo)<img src="{{ $logo }}" alt="{{ $ws->name }}"><br>@endif
+                <h1>{{ $ws?->name }}</h1>
+                {!! implode('<br>', array_map('e', $fromLines)) !!}
+            </td>
+            <td class="doc-title">
+                <h2>{{ $design->title($kind) }}</h2>
+                <div class="num">{{ $document->number }}</div>
+                <span class="status {{ $document->status }}">{{ $document->statusLabel() }}</span>
+            </td>
         </tr>
-    @endforeach
-    </tbody>
-</table>
+    </table>
 
-<div class="totals">
-    <div><span>Subtotal</span><span>{{ $document->money($document->subtotal) }}</span></div>
-    @if($document->discount_amount > 0)
-        <div><span>Discount</span><span>- {{ $document->money($document->discount_amount) }}</span></div>
-    @endif
-    <div><span>Tax</span><span>{{ $document->money($document->tax_total) }}</span></div>
-    <div class="grand"><span>Total</span><span>{{ $document->money($document->total) }}</span></div>
-    @if($isInvoice && $document->amount_paid > 0)
-        <div><span>Paid</span><span>- {{ $document->money($document->amount_paid) }}</span></div>
-        <div class="due"><span>Balance due</span><span>{{ $document->money($document->balance) }}</span></div>
-    @elseif($isInvoice && $document->status !== 'cancelled')
-        <div class="due"><span>Amount due</span><span>{{ $document->money($document->balance ?: $document->total) }}</span></div>
-    @endif
-</div>
+    <table class="parties">
+        <tr>
+            <td class="to">
+                <h4>{{ $isInvoice ? 'Bill to' : 'Prepared for' }}</h4>
+                {!! implode('<br>', array_map('e', $customerLines)) !!}
+            </td>
+            <td>
+                <table class="meta">
+                    <tr>
+                        <td><b>Issue date</b>{{ $document->issue_date?->format('d M Y') }}</td>
+                        @if($isInvoice)
+                            <td><b>Due date</b>{{ $document->due_date?->format('d M Y') }}</td>
+                        @else
+                            <td><b>Valid until</b>{{ $document->valid_until?->format('d M Y') ?? '—' }}</td>
+                        @endif
+                        <td><b>{{ $document->reference ? 'Reference' : 'Currency' }}</b>{{ $document->reference ?: $document->currency_code }}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 
-@if($document->notes || $document->terms)
-    <div class="notes">
-        @if($document->notes)<h4>Notes</h4><p>{{ $document->notes }}</p>@endif
-        @if($document->terms)<h4>Terms</h4><p>{{ $document->terms }}</p>@endif
+    <table class="lines">
+        <thead><tr><th>Description</th><th class="r">Qty</th><th class="r">Unit price</th>@if($showTax)<th class="r">Tax</th>@endif<th class="r">Amount</th></tr></thead>
+        <tbody>
+        @foreach($document->lines as $line)
+            <tr>
+                <td>{{ $line->description }}</td>
+                <td class="r">{{ $fmtQty($line->quantity) }}{{ $line->unit ? ' '.$line->unit : '' }}</td>
+                <td class="r">{{ $document->money($line->unit_price) }}</td>
+                @if($showTax)<td class="r">{{ $line->tax_rate > 0 ? $fmtQty($line->tax_rate).'%' : '—' }}</td>@endif
+                <td class="r b">{{ $document->money($line->line_total) }}</td>
+            </tr>
+        @endforeach
+        </tbody>
+    </table>
+
+    <table class="totals-wrap">
+        <tr>
+            <td></td>
+            <td style="width: 300px">
+                <table class="totals">
+                    <tr><td>Subtotal</td><td class="r">{{ $document->money($document->subtotal) }}</td></tr>
+                    @if($document->discount_amount > 0)
+                        <tr><td>Discount</td><td class="r">- {{ $document->money($document->discount_amount) }}</td></tr>
+                    @endif
+                    <tr><td>Tax</td><td class="r">{{ $document->money($document->tax_total) }}</td></tr>
+                    <tr class="grand"><td>Total</td><td class="r">{{ $document->money($document->total) }}</td></tr>
+                    @if($isInvoice && $document->amount_paid > 0)
+                        <tr><td>Paid</td><td class="r">- {{ $document->money($document->amount_paid) }}</td></tr>
+                        <tr class="due"><td>Balance due</td><td class="r">{{ $document->money($document->balance) }}</td></tr>
+                    @elseif($isInvoice && $document->status !== 'cancelled')
+                        <tr class="due"><td>Amount due</td><td class="r">{{ $document->money($document->balance ?: $document->total) }}</td></tr>
+                    @endif
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    @if($isInvoice && $design->payment_details && $document->status !== 'cancelled' && $document->status !== 'paid')
+        <div class="pay-details"><h4>How to pay</h4>{{ $design->payment_details }}</div>
+    @endif
+
+    @if($document->notes || $document->terms)
+        <div class="notes">
+            @if($document->notes)<h4>Notes</h4><p>{{ $document->notes }}</p>@endif
+            @if($document->terms)<h4>Terms</h4><p>{{ $document->terms }}</p>@endif
+        </div>
+    @endif
+
+    @if($design->signature)
+        <table class="signature"><tr><td>For {{ $ws?->name }}</td><td class="gap"></td><td>{{ $isInvoice ? 'Received by' : 'Accepted by' }} (name, signature, date)</td></tr></table>
+    @endif
+
+    <div class="foot">
+        {{ $design->footer ?: 'Thank you for your business.' }}
+        @if($isInvoice && $document->payments->isNotEmpty())
+            <br>Payments received: {{ $document->payments->map(fn ($p) => $p->paid_on->format('d M Y').' '.$p->money().' ('.$p->methodLabel().')')->implode(' · ') }}
+        @endif
     </div>
-@endif
-
-<div class="foot">
-    {{ $ws?->setting('invoicing.footer') ?: 'Thank you for your business.' }}
-    @if($isInvoice && $document->payments->isNotEmpty())
-        <br>Payments received: {{ $document->payments->map(fn ($p) => $p->paid_on->format('d M Y').' '.$p->money().' ('.$p->methodLabel().')')->implode(' · ') }}
-    @endif
 </div>

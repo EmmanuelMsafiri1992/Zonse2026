@@ -1,9 +1,14 @@
 @extends('invoicing::layouts.print')
 @section('title', 'Invoice '.$invoice->number)
+@unless($preview ?? false)
+    @section('pdf', ($public ?? false) ? route('invoices.public.pdf', $invoice->uuid) : route('invoices.pdf', $invoice))
+@endunless
 @section('toolbar')
-    @unless($public ?? false)
+    @if($preview ?? false)
+        <a href="{{ route('settings.invoicing.edit') }}#design" class="btn">Back to settings</a>
+    @elseif(! ($public ?? false))
         <a href="{{ route('invoices.show', $invoice) }}" class="btn">Back to invoice</a>
-    @endunless
+    @endif
 @endsection
 @section('notice')
     @if($public ?? false)

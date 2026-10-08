@@ -15,12 +15,14 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Modules\Contacts\Models\Contact;
+use Modules\Invoicing\Documents\DocumentPdf;
 use Modules\Invoicing\Http\Requests\DocumentRequest;
 use Modules\Invoicing\Models\Invoice;
 use Modules\Invoicing\Models\Item;
 use Modules\Invoicing\Models\Payment;
 use Modules\Invoicing\Models\TaxRate;
 use Modules\Invoicing\Sms\InvoiceTexts;
+use Symfony\Component\HttpFoundation\Response;
 
 class InvoiceController extends Controller
 {
@@ -197,6 +199,14 @@ class InvoiceController extends Controller
         $invoice->load(['contact', 'branch', 'lines', 'payments']);
 
         return view('invoicing::invoices.print', ['invoice' => $invoice, 'document' => $invoice, 'kind' => 'invoice']);
+    }
+
+    public function pdf(Invoice $invoice): Response
+    {
+        $this->authorize('view', $invoice);
+        $invoice->load(['workspace', 'contact', 'branch', 'lines', 'payments']);
+
+        return DocumentPdf::response($invoice, 'invoice');
     }
 
     public function comment(Request $request, Invoice $invoice): RedirectResponse

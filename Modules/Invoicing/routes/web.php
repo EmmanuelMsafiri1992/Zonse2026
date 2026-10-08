@@ -11,6 +11,7 @@ use Modules\Invoicing\Http\Controllers\QuoteController;
 
 Route::middleware(['auth', 'workspace', 'onboarded', 'module:invoicing'])->group(function () {
     Route::get('/invoices/{invoice}/print', [InvoiceController::class, 'print'])->name('invoices.print');
+    Route::get('/invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->middleware('throttle:30,1')->name('invoices.pdf');
     Route::post('/invoices/{invoice}/send', [InvoiceController::class, 'send'])->name('invoices.send');
     Route::post('/invoices/{invoice}/sms', [InvoiceController::class, 'sms'])->middleware('throttle:10,1')->name('invoices.sms');
     Route::post('/invoices/{invoice}/cancel', [InvoiceController::class, 'cancel'])->name('invoices.cancel');
@@ -27,6 +28,8 @@ Route::middleware(['auth', 'workspace', 'onboarded', 'module:invoicing'])->group
         Route::get('/', [InvoicingSettingsController::class, 'edit'])->name('edit');
         Route::put('/', [InvoicingSettingsController::class, 'update'])->name('update');
         Route::put('/payments', [InvoicingSettingsController::class, 'updateGateways'])->name('gateways.update');
+        Route::put('/design', [InvoicingSettingsController::class, 'updateDesign'])->name('design.update');
+        Route::get('/design/preview', [InvoicingSettingsController::class, 'previewDesign'])->name('design.preview');
         Route::post('/tax-rates', [InvoicingSettingsController::class, 'storeTaxRate'])->name('tax-rates.store');
         Route::put('/tax-rates/{taxRate}', [InvoicingSettingsController::class, 'updateTaxRate'])->name('tax-rates.update');
         Route::delete('/tax-rates/{taxRate}', [InvoicingSettingsController::class, 'destroyTaxRate'])->name('tax-rates.destroy');
@@ -35,6 +38,7 @@ Route::middleware(['auth', 'workspace', 'onboarded', 'module:invoicing'])->group
 
 Route::middleware(['auth', 'workspace', 'onboarded', 'module:quotes'])->group(function () {
     Route::get('/quotes/{quote}/print', [QuoteController::class, 'print'])->name('quotes.print');
+    Route::get('/quotes/{quote}/pdf', [QuoteController::class, 'pdf'])->middleware('throttle:30,1')->name('quotes.pdf');
     Route::post('/quotes/{quote}/send', [QuoteController::class, 'send'])->name('quotes.send');
     Route::post('/quotes/{quote}/accept', [QuoteController::class, 'accept'])->name('quotes.accept');
     Route::post('/quotes/{quote}/reject', [QuoteController::class, 'reject'])->name('quotes.reject');
@@ -49,6 +53,8 @@ Route::middleware('throttle:60,1')->group(function () {
 });
 
 Route::middleware('throttle:20,1')->group(function () {
+    Route::get('/i/{uuid}/pdf', [PublicDocumentController::class, 'invoicePdf'])->name('invoices.public.pdf');
+    Route::get('/q/{uuid}/pdf', [PublicDocumentController::class, 'quotePdf'])->name('quotes.public.pdf');
     Route::post('/i/{uuid}/pay/{gateway}', [OnlinePaymentController::class, 'start'])->name('invoices.public.pay');
     Route::get('/pay/{attempt}/return', [OnlinePaymentController::class, 'complete'])->name('online-payments.return');
 });

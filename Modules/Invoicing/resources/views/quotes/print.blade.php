@@ -1,5 +1,6 @@
 @extends('invoicing::layouts.print')
 @section('title', 'Quote '.$quote->number)
+@section('pdf', ($public ?? false) ? route('quotes.public.pdf', $quote->uuid) : route('quotes.pdf', $quote))
 @section('toolbar')
     @unless($public ?? false)
         <a href="{{ route('quotes.show', $quote) }}" class="btn">Back to quote</a>

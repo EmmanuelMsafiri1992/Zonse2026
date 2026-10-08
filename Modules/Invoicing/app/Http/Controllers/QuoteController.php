@@ -14,11 +14,13 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Modules\Contacts\Models\Contact;
+use Modules\Invoicing\Documents\DocumentPdf;
 use Modules\Invoicing\Http\Requests\DocumentRequest;
 use Modules\Invoicing\Models\Invoice;
 use Modules\Invoicing\Models\Item;
 use Modules\Invoicing\Models\Quote;
 use Modules\Invoicing\Models\TaxRate;
+use Symfony\Component\HttpFoundation\Response;
 
 class QuoteController extends Controller
 {
@@ -170,6 +172,14 @@ class QuoteController extends Controller
         $quote->load(['contact', 'branch', 'lines']);
 
         return view('invoicing::quotes.print', ['quote' => $quote, 'document' => $quote, 'kind' => 'quote']);
+    }
+
+    public function pdf(Quote $quote): Response
+    {
+        $this->authorize('view', $quote);
+        $quote->load(['workspace', 'contact', 'branch', 'lines']);
+
+        return DocumentPdf::response($quote, 'quote');
     }
 
     public function comment(Request $request, Quote $quote): RedirectResponse
