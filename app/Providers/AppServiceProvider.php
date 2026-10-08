@@ -14,6 +14,7 @@ use App\Registries\SearchRegistry;
 use App\Registries\WidgetRegistry;
 use App\Support\Branding;
 use App\Support\Health;
+use App\Support\Help\HelpCentre;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Events\DiagnosingHealth;
@@ -41,6 +42,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(SearchRegistry::class);
         $this->app->singleton(WidgetRegistry::class);
         $this->app->scoped(Branding::class);
+        $this->app->singleton(HelpCentre::class);
     }
 
     public function boot(): void

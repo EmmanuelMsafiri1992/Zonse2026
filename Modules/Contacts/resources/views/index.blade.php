@@ -4,14 +4,14 @@
     <x-page-header title="Contacts" sub="Customers, suppliers, leads and everyone else you do business with." :crumbs="['Contacts']">
         <a href="{{ route('contacts.export', request()->query()) }}" class="btn btn-white"><x-icon name="download" /> Export CSV</a>
         @can('manage-workspace')
-            <a href="{{ route('settings.imports.index', ['target' => 'contacts']) }}" class="btn btn-white"><x-icon name="file-up" /> Import</a>
+            <a href="{{ route('settings.imports.index', ['target' => 'contacts']) }}" class="btn btn-white" data-tour="import"><x-icon name="file-up" /> Import</a>
         @endcan
         @can('create', \Modules\Contacts\Models\Contact::class)
-            <a href="{{ route('contacts.create') }}" class="btn btn-primary"><x-icon name="plus" /> New contact</a>
+            <a href="{{ route('contacts.create') }}" class="btn btn-primary" data-tour="new-contact"><x-icon name="plus" /> New contact</a>
         @endcan
     </x-page-header>
 
-    <div class="row g-3 mb-4">
+    <div class="row g-3 mb-4" data-tour="contact-types">
         @foreach(\Modules\Contacts\Models\Contact::TYPES as $key => $label)
             <div class="col-6 col-xl-3">
                 <x-stat :label="\Illuminate\Support\Str::plural($label)" :value="$counts[$key] ?? 0"

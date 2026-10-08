@@ -9,6 +9,7 @@ use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentCaptureController;
 use App\Http\Controllers\FiscalVerificationController;
+use App\Http\Controllers\HelpController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\NotificationController;
@@ -168,6 +169,14 @@ Route::middleware(['auth', 'workspace'])->group(function () {
         Route::get('/assistant/{conversation}/status', [AssistantController::class, 'status'])->name('assistant.status');
         Route::post('/assistant/{conversation}/retry', [AssistantController::class, 'retry'])->middleware('throttle:10,1')->name('assistant.retry');
         Route::delete('/assistant/{conversation}', [AssistantController::class, 'destroy'])->name('assistant.destroy');
+
+        Route::get('/help', [HelpController::class, 'index'])->name('help.index');
+        Route::get('/help/whats-new', [HelpController::class, 'releases'])->name('help.releases');
+        Route::get('/help/feedback', [HelpController::class, 'feedbackReport'])->name('help.feedback.index');
+        Route::post('/help/tours/{tour}', [HelpController::class, 'tourDone'])->where('tour', '[a-z0-9-]+')->middleware('throttle:30,1')->name('help.tours.done');
+        Route::post('/help/tours/{tour}/start', [HelpController::class, 'tourStart'])->where('tour', '[a-z0-9-]+')->name('help.tours.start');
+        Route::get('/help/{slug}', [HelpController::class, 'show'])->where('slug', '[a-z0-9-]+')->name('help.show');
+        Route::post('/help/{slug}/feedback', [HelpController::class, 'feedback'])->where('slug', '[a-z0-9-]+')->middleware('throttle:20,1')->name('help.feedback');
 
         Route::middleware('can:access-workspace')->group(function () {
             Route::get('/phone-access', [UssdController::class, 'index'])->name('ussd.index');

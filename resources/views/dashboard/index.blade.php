@@ -4,7 +4,7 @@
     <x-page-header :title="'Good '.(now($workspace->timezone)->hour < 12 ? 'morning' : (now($workspace->timezone)->hour < 17 ? 'afternoon' : 'evening')).', '.auth()->user()->name"
                    :sub="'Here is what is happening in '.$workspace->name.' today.'">
         @can('manage-workspace')
-            <a href="{{ route('settings.modules.index') }}" class="btn btn-white"><x-icon name="layout-grid" /> Add apps</a>
+            <a href="{{ route('settings.modules.index') }}" class="btn btn-white" data-tour="add-apps"><x-icon name="layout-grid" /> Add apps</a>
             <a href="{{ route('settings.members.index') }}" class="btn btn-primary"><x-icon name="user-plus" /> Invite team</a>
         @endcan
     </x-page-header>

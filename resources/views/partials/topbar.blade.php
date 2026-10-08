@@ -36,9 +36,42 @@
             </div>
         @endif
 
+        @php
+            $helpCentre = app(\App\Support\Help\HelpCentre::class);
+            $pageGuides = $helpCentre->forRoute(request()->route()?->getName(), $workspace);
+            $pageTour = \App\Support\Help\Tours::forRoute(request()->route()?->getName(), $user, $workspace);
+            $newReleases = $helpCentre->unreadReleases($user);
+        @endphp
+        <div class="dropdown" data-tour="help">
+            <button type="button" class="z-icon-btn position-relative" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Help{{ $newReleases ? ' ('.$newReleases.' new updates)' : '' }}">
+                <x-icon name="life-buoy" class="zi zi-lg" />
+                @if($newReleases)<span class="z-badge-dot z-badge-dot-info">{{ $newReleases > 9 ? '9+' : $newReleases }}</span>@endif
+            </button>
+            <div class="dropdown-menu dropdown-menu-end shadow-z" style="min-width:280px">
+                @if($pageGuides->isNotEmpty())
+                    <div class="dropdown-header">Help with this page</div>
+                    @foreach($pageGuides as $guide)
+                        <a href="{{ route('help.show', $guide->slug) }}" class="dropdown-item text-wrap"><x-icon name="book-open" /> {{ $guide->title }}</a>
+                    @endforeach
+                    <div class="dropdown-divider"></div>
+                @endif
+                @if($pageTour)
+                    <button type="button" class="dropdown-item" onclick="window.dispatchEvent(new CustomEvent('zonseo:tour'))"><x-icon name="map" /> Take the tour of this page</button>
+                @endif
+                <a href="{{ route('help.index') }}" class="dropdown-item"><x-icon name="circle-help" /> Help centre</a>
+                <a href="{{ route('help.releases') }}" class="dropdown-item d-flex align-items-center"><x-icon name="sparkles" /> <span class="flex-grow-1">What's new</span>@if($newReleases)<span class="z-pill z-pill-info ms-2">{{ $newReleases }} new</span>@endif</a>
+                @if($user->is_super_admin)
+                    <a href="{{ route('help.feedback.index') }}" class="dropdown-item"><x-icon name="thumbs-up" /> Guide ratings</a>
+                @endif
+            </div>
+        </div>
+        @if($pageTour)
+            @include('partials.tour', ['tour' => $pageTour, 'autoStart' => \App\Support\Help\Tours::isPending($pageTour['key'], $user)])
+        @endif
+
         @if($workspace)
             @php
-                $inbox = $user->notifications()->where('workspace_id', $workspace->id);
+                $inbox =$user->notifications()->where('workspace_id', $workspace->id);
                 $unreadAlerts = (clone $inbox)->whereNull('read_at')->count();
                 $latestAlerts = (clone $inbox)->latest()->limit(6)->get();
             @endphp

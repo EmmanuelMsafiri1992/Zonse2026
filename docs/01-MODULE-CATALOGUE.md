@@ -44,7 +44,7 @@ Every module below is designed as an installable **module** inside one codebase.
 | 0.27 | Data import / migration wizard (CSV, Excel, QuickBooks, Sage, Excel templates) | ✔ |
 | 0.28 | Calendar & scheduling engine shared by all booking modules | ✔ |
 | 0.29 | File storage & document management | ✔ |
-| 0.30 | Help centre, in-app tours, release notes | ➕ |
+| 0.30 | Help centre, in-app tours, release notes | ✔ |
 
 ---
 

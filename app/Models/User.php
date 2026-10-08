@@ -38,6 +38,8 @@ class User extends Authenticatable implements PasskeyUser
             'password' => 'hashed',
             'is_super_admin' => 'boolean',
             'notification_preferences' => 'array',
+            'help_tours' => 'array',
+            'release_notes_seen_at' => 'datetime',
         ];
     }
 

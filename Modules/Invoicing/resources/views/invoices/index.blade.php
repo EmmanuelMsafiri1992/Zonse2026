@@ -3,11 +3,11 @@
 @section('content')
     <x-page-header title="Invoices" :sub="$contact ? 'Invoices for '.$contact->displayName() : 'Everything you have billed, what is paid and what is still owed.'" :crumbs="['Invoices']">
         @can('create', \Modules\Invoicing\Models\Invoice::class)
-            <a href="{{ route('invoices.create', $contact ? ['contact' => $contact->id] : []) }}" class="btn btn-primary"><x-icon name="plus" /> New invoice</a>
+            <a href="{{ route('invoices.create', $contact ? ['contact' => $contact->id] : []) }}" class="btn btn-primary" data-tour="new-invoice"><x-icon name="plus" /> New invoice</a>
         @endcan
     </x-page-header>
 
-    <div class="row g-3 mb-4">
+    <div class="row g-3 mb-4" data-tour="invoice-stats">
         <div class="col-6 col-xl-3"><x-stat label="Outstanding" :value="\App\Support\Money::format($stats['outstanding'])" icon="hourglass" color="primary" :href="route('invoices.index', ['status' => 'open'])" /></div>
         <div class="col-6 col-xl-3"><x-stat label="Overdue" :value="\App\Support\Money::format($stats['overdue'])" icon="alert-circle" color="danger" :href="route('invoices.index', ['status' => 'overdue'])" /></div>
         <div class="col-6 col-xl-3"><x-stat label="Collected this month" :value="\App\Support\Money::format($stats['collected'])" icon="banknote" color="success" :href="route('payments.index')" /></div>
