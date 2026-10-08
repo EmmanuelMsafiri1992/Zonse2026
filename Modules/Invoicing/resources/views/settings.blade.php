@@ -27,6 +27,54 @@
                 </div>
                 <div class="card-footer d-flex justify-content-end"><button class="btn btn-primary"><x-icon name="check" /> Save settings</button></div>
             </form>
+
+            <form method="POST" action="{{ route('settings.invoicing.gateways.update') }}" class="card mb-3" autocomplete="off">
+                @csrf @method('PUT')
+                <div class="card-header"><h5 class="card-title">Online payments</h5></div>
+                <div class="card-body">
+                    <p class="fs-7 text-muted">Switch on a gateway and every invoice link you share gets a <strong>Pay online</strong> button. Payments are recorded against the invoice automatically once the gateway confirms them.</p>
+                    @foreach($gateways as $key => $row)
+                        <div class="border rounded p-3 mb-3">
+                            <div class="d-flex align-items-start justify-content-between gap-2">
+                                <div>
+                                    <div class="fw-600">{{ $row['gateway']->label() }}</div>
+                                    <div class="fs-8 text-muted mb-2">{{ $row['gateway']->methods() }}</div>
+                                </div>
+                                @if($row['enabled'] && $row['configured'])
+                                    <span class="badge bg-soft-success text-success">Live on invoices</span>
+                                @elseif($row['enabled'])
+                                    <span class="badge bg-soft-warning text-warning">Needs credentials</span>
+                                @else
+                                    <span class="badge bg-soft-secondary text-secondary">Off</span>
+                                @endif
+                            </div>
+                            <x-form.check name="{{ $key }}[enabled]" :label="'Accept payments with '.$row['gateway']->label()" :checked="$row['enabled']" switch />
+                            <div class="row">
+                                @foreach($row['gateway']->fields() as $field => $meta)
+                                    <div class="col-md-6">
+                                        @if($meta['secret'])
+                                            <x-form.input name="{{ $key }}[{{ $field }}]" type="password" :label="$meta['label']" autocomplete="new-password"
+                                                :placeholder="$row['values'][$field] ? 'Saved '.$row['values'][$field].' · leave blank to keep' : ''" :help="$meta['help'] ?? null" />
+                                        @else
+                                            <x-form.input name="{{ $key }}[{{ $field }}]" :label="$meta['label']" :value="$row['values'][$field]" :help="$meta['help'] ?? null" />
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                            @if($key === 'stripe')
+                                <div class="fs-8 text-muted">
+                                    Webhook endpoint (event <code>checkout.session.completed</code>): <code class="user-select-all">{{ route('online-payments.webhook', ['gateway' => 'stripe', 'workspace' => $workspace->slug]) }}</code>
+                                    @if($row['values']['webhook_secret'])
+                                        <label class="form-check fs-8 mt-1"><input type="checkbox" class="form-check-input" name="stripe[forget_webhook_secret]" value="1"> Remove the saved webhook secret</label>
+                                    @endif
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+                    <div class="fs-8 text-muted">Keys are stored encrypted. Test keys (Paynow integration in test mode, Stripe <code>sk_test_</code>) work the same way, so you can try a payment before going live.</div>
+                </div>
+                <div class="card-footer d-flex justify-content-end"><button class="btn btn-primary"><x-icon name="check" /> Save online payments</button></div>
+            </form>
         </div>
 
         <div class="col-lg-5">

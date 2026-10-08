@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Invoicing\Http\Controllers\InvoiceController;
 use Modules\Invoicing\Http\Controllers\InvoicingSettingsController;
 use Modules\Invoicing\Http\Controllers\ItemController;
+use Modules\Invoicing\Http\Controllers\OnlinePaymentController;
 use Modules\Invoicing\Http\Controllers\PaymentController;
 use Modules\Invoicing\Http\Controllers\PublicDocumentController;
 use Modules\Invoicing\Http\Controllers\QuoteController;
@@ -24,6 +25,7 @@ Route::middleware(['auth', 'workspace', 'onboarded', 'module:invoicing'])->group
     Route::prefix('settings/invoicing')->name('settings.invoicing.')->middleware('can:manage-workspace')->group(function () {
         Route::get('/', [InvoicingSettingsController::class, 'edit'])->name('edit');
         Route::put('/', [InvoicingSettingsController::class, 'update'])->name('update');
+        Route::put('/payments', [InvoicingSettingsController::class, 'updateGateways'])->name('gateways.update');
         Route::post('/tax-rates', [InvoicingSettingsController::class, 'storeTaxRate'])->name('tax-rates.store');
         Route::put('/tax-rates/{taxRate}', [InvoicingSettingsController::class, 'updateTaxRate'])->name('tax-rates.update');
         Route::delete('/tax-rates/{taxRate}', [InvoicingSettingsController::class, 'destroyTaxRate'])->name('tax-rates.destroy');
@@ -42,3 +44,10 @@ Route::middleware(['auth', 'workspace', 'onboarded', 'module:quotes'])->group(fu
 
 Route::get('/i/{uuid}', [PublicDocumentController::class, 'invoice'])->name('invoices.public');
 Route::get('/q/{uuid}', [PublicDocumentController::class, 'quote'])->name('quotes.public');
+
+Route::middleware('throttle:20,1')->group(function () {
+    Route::post('/i/{uuid}/pay/{gateway}', [OnlinePaymentController::class, 'start'])->name('invoices.public.pay');
+    Route::get('/pay/{attempt}/return', [OnlinePaymentController::class, 'complete'])->name('online-payments.return');
+});
+Route::post('/webhooks/payments/{gateway}/{workspace:slug}', [OnlinePaymentController::class, 'webhook'])
+    ->middleware('throttle:120,1')->name('online-payments.webhook');

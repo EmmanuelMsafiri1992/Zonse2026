@@ -35,6 +35,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => PermissionMiddleware::class,
         ]);
 
+        // Payment gateways post their notifications without a session; each one is verified in the controller.
+        $middleware->validateCsrfTokens(except: ['webhooks/*']);
+
         // Resolve the tenant before route-model binding so scoped models never leak across workspaces.
         $middleware->priority([
             HandlePrecognitiveRequests::class,

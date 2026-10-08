@@ -20,7 +20,7 @@ class Payment extends Model
 
     public const METHODS = [
         'cash' => 'Cash', 'bank' => 'Bank transfer', 'mobile_money' => 'Mobile money', 'card' => 'Card',
-        'cheque' => 'Cheque', 'other' => 'Other',
+        'cheque' => 'Cheque', 'online' => 'Online payment', 'other' => 'Other',
     ];
 
     protected $fillable = ['workspace_id', 'invoice_id', 'contact_id', 'number', 'amount', 'currency_code', 'paid_on', 'method', 'reference', 'notes', 'received_by'];

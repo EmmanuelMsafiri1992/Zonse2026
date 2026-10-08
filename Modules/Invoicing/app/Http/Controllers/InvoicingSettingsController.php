@@ -10,14 +10,16 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Modules\Invoicing\Http\Requests\TaxRateRequest;
 use Modules\Invoicing\Models\TaxRate;
+use Modules\Invoicing\Payments\PaymentGateway;
+use Modules\Invoicing\Payments\PaymentGateways;
 
 /**
- * Numbering, defaults and tax rates. Reachable by workspace admins only
+ * Numbering, defaults, tax rates and online payment gateways. Reachable by workspace admins only
  * (the routes sit behind can:manage-workspace).
  */
 class InvoicingSettingsController extends Controller
 {
-    public function edit(WorkspaceContext $context): View
+    public function edit(WorkspaceContext $context, PaymentGateways $gateways): View
     {
         $workspace = $context->getOrFail();
 
@@ -35,6 +37,14 @@ class InvoicingSettingsController extends Controller
                 'footer' => $workspace->setting('invoicing.footer'),
             ],
             'taxRates' => TaxRate::query()->orderByDesc('is_default')->orderBy('rate')->get(),
+            'gateways' => collect($gateways->all())->map(fn (PaymentGateway $gateway) => [
+                'gateway' => $gateway,
+                'enabled' => (bool) $workspace->setting('payments.'.$gateway->key().'.enabled'),
+                'configured' => $gateways->isConfigured($workspace, $gateway),
+                'values' => collect($gateways->credentials($workspace, $gateway))
+                    ->map(fn (string $value, string $field) => $gateway->fields()[$field]['secret'] ? ($value === '' ? null : '••••'.substr($value, -4)) : $value)
+                    ->all(),
+            ])->all(),
         ]);
     }
 
@@ -65,6 +75,42 @@ class InvoicingSettingsController extends Controller
         }
 
         return back()->with('flash', ['type' => 'success', 'message' => 'Invoicing settings saved.']);
+    }
+
+    /** Switch gateways on or off and store their credentials. Secret fields left blank keep their saved value. */
+    public function updateGateways(Request $request, WorkspaceContext $context, PaymentGateways $gateways): RedirectResponse
+    {
+        $workspace = $context->getOrFail();
+        $rules = [];
+        foreach ($gateways->all() as $key => $gateway) {
+            $rules[$key.'.enabled'] = ['nullable', 'boolean'];
+            foreach ($gateway->fields() as $field => $meta) {
+                $rules[$key.'.'.$field] = ['nullable', 'string', 'max:255'];
+            }
+        }
+        $rules['stripe.secret_key'][] = 'regex:/^(sk|rk)_(live|test)_[A-Za-z0-9]+$/';
+        $rules['stripe.webhook_secret'][] = 'regex:/^whsec_[A-Za-z0-9]+$/';
+        $data = $request->validate($rules, [
+            'stripe.secret_key.regex' => 'That does not look like a Stripe secret key (sk_live_… or sk_test_…).',
+            'stripe.webhook_secret.regex' => 'That does not look like a Stripe webhook secret (whsec_…).',
+        ]);
+
+        foreach ($gateways->all() as $key => $gateway) {
+            $gateways->configure($workspace, $gateway, (bool) ($data[$key]['enabled'] ?? false), $data[$key] ?? []);
+            if ($request->boolean($key.'.forget_webhook_secret')) {
+                $gateways->forget($workspace, $gateway, 'webhook_secret');
+            }
+        }
+
+        $workspace->refresh();
+        $missing = collect($gateways->all())
+            ->filter(fn (PaymentGateway $gateway) => $workspace->setting('payments.'.$gateway->key().'.enabled') && ! $gateways->isConfigured($workspace, $gateway))
+            ->map(fn (PaymentGateway $gateway) => $gateway->label());
+        if ($missing->isNotEmpty()) {
+            return back()->with('flash', ['type' => 'warning', 'message' => 'Saved, but '.$missing->implode(' and ').' needs its credentials before customers can pay with it.']);
+        }
+
+        return back()->with('flash', ['type' => 'success', 'message' => 'Online payment settings saved.']);
     }
 
     public function storeTaxRate(TaxRateRequest $request): RedirectResponse

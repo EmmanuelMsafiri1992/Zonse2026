@@ -39,6 +39,12 @@
         .notes h4 { margin: 0 0 4px; color: var(--ink); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
         .notes p { margin: 0 0 14px; white-space: pre-line; }
         .foot { margin-top: 32px; border-top: 1px solid var(--line); padding-top: 12px; font-size: 12px; color: var(--muted); text-align: center; }
+        .notice, .pay { max-width: 820px; margin: 16px auto 0; padding: 12px 16px; border-radius: 10px; font-size: 14px; }
+        .notice-success { background: #ecfdf5; color: #047857; } .notice-info, .notice-warning { background: var(--soft); color: #1e40af; } .notice-danger { background: #fef2f2; color: #b91c1c; }
+        .pay { background: #fff; border: 1px solid var(--line); display: flex; gap: 16px; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .pay-title { font-weight: 700; font-size: 16px; } .pay-sub { font-size: 12px; color: var(--muted); }
+        .pay-options { display: flex; gap: 12px; flex-wrap: wrap; } .pay-options form { margin: 0; max-width: 220px; } .pay-options .btn { font-size: 14px; padding: 10px 18px; }
+        @media print { .notice, .pay { display: none; } }
         @media print { body { background: #fff; } .sheet { box-shadow: none; margin: 0; max-width: none; border-radius: 0; padding: 0; } .toolbar { display: none; } }
         @media (max-width: 640px) { .sheet { padding: 24px 18px; } .parties, .meta { grid-template-columns: 1fr; } .totals { width: 100%; } }
     </style>
@@ -48,6 +54,7 @@
     @yield('toolbar')
     <button class="btn btn-primary" onclick="window.print()">Print / Save as PDF</button>
 </div>
+@yield('notice')
 <div class="sheet">
     @yield('content')
 </div>
