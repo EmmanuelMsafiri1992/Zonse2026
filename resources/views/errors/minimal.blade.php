@@ -6,20 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex">
     <title>@yield('title') · {{ config('app.name') }}</title>
+    @include('partials.fonts')
     <style>
-        :root { --bg: #f6f7fb; --card: #fff; --text: #1d2433; --muted: #667085; --primary: #4f46e5; --border: #e4e7ec; }
-        @media (prefers-color-scheme: dark) { :root { --bg: #0f1320; --card: #171c2c; --text: #e7eaf3; --muted: #98a2b3; --primary: #818cf8; --border: #2a3147; } }
+        :root { --bg: #eceff8; --card: #fff; --text: #323338; --muted: #676879; --primary: #0073ea; --border: #d0d4e4; }
+        @media (prefers-color-scheme: dark) { :root { --bg: #181b34; --card: #292f4c; --text: #d5d8df; --muted: #9699a6; --primary: #579bfc; --border: #4b4e69; } }
         * { box-sizing: border-box; }
         body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px; background: var(--bg); color: var(--text);
-            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.5; }
-        .box { width: 100%; max-width: 440px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 36px 32px; text-align: center; }
+            font-family: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 14px; line-height: 1.5; }
+        .box { width: 100%; max-width: 440px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 36px 32px; text-align: center; }
         .brand { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; color: var(--text); text-decoration: none; margin-bottom: 28px; }
-        .mark { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; background: var(--primary); color: #fff; font-weight: 700; }
-        .code { font-size: 44px; font-weight: 700; color: var(--primary); letter-spacing: -1px; }
-        h1 { font-size: 20px; margin: 4px 0 8px; }
+        .mark { width: 32px; height: 32px; border-radius: 6px; display: grid; place-items: center; background: var(--primary); color: #fff; font-weight: 700; }
+        .code { font-family: "Poppins", sans-serif; font-size: 44px; font-weight: 600; color: var(--primary); letter-spacing: -1px; }
+        h1 { font-family: "Poppins", sans-serif; font-weight: 500; font-size: 24px; margin: 4px 0 8px; }
         p { color: var(--muted); margin: 0 0 24px; }
         .actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-        .btn { display: inline-block; padding: 9px 16px; border-radius: 8px; border: 1px solid var(--border); color: var(--text); text-decoration: none; font-size: 14px; }
+        .btn { display: inline-block; padding: 8px 16px; border-radius: 4px; border: 1px solid var(--border); color: var(--text); text-decoration: none; font-size: 14px; }
         .btn-primary { background: var(--primary); border-color: var(--primary); color: #fff; }
     </style>
 </head>

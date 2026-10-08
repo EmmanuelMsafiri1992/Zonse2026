@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'One platform for every profession') · {{ config('app.name') }}</title>
+    @include('partials.fonts')
     @vite(['resources/scss/app.scss', 'resources/js/app.js'])
 </head>
 <body>

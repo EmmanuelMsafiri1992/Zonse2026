@@ -5,23 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
     <title>@yield('title') · {{ $workspace?->name ?? config('app.name') }}</title>
+    @include('partials.fonts')
     <style>
-        :root { --ink: #1f2937; --muted: #6b7280; --line: #e5e7eb; --brand: #2563eb; --soft: #eff6ff; }
+        :root { --ink: #323338; --muted: #676879; --line: #d0d4e4; --brand: #0073ea; --soft: #e6f1fd; }
         * { box-sizing: border-box; }
-        body { margin: 0; background: #f3f4f6; color: var(--ink); font: 14px/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-        .sheet { background: #fff; max-width: 820px; margin: 24px auto; padding: 40px 44px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
+        body { margin: 0; background: #eceff8; color: var(--ink); font: 14px/1.5 "Figtree", -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        .sheet { background: #fff; max-width: 820px; margin: 24px auto; padding: 40px 44px; border-radius: 8px; border: 1px solid var(--line); }
         .toolbar { max-width: 820px; margin: 16px auto 0; display: flex; gap: 8px; justify-content: flex-end; padding: 0 4px; }
-        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: #fff; color: var(--ink); font-weight: 600; text-decoration: none; cursor: pointer; font-size: 13px; }
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 4px; border: 1px solid var(--line); background: #fff; color: var(--ink); font-weight: 400; text-decoration: none; cursor: pointer; font-size: 13px; }
         .btn-primary { background: var(--brand); border-color: var(--brand); color: #fff; }
         .head { display: flex; justify-content: space-between; gap: 24px; align-items: flex-start; }
         .brand img { max-height: 56px; max-width: 180px; }
-        .brand h1 { font-size: 20px; margin: 0 0 4px; }
+        .brand h1 { font-family: "Poppins", sans-serif; font-weight: 500; font-size: 20px; margin: 0 0 4px; }
         .brand, .doc-meta { font-size: 13px; color: var(--muted); }
         .doc-title { text-align: right; }
-        .doc-title h2 { margin: 0; font-size: 28px; letter-spacing: .04em; color: var(--brand); text-transform: uppercase; }
+        .doc-title h2 { margin: 0; font-family: "Poppins", sans-serif; font-weight: 500; font-size: 28px; letter-spacing: .04em; color: var(--brand); text-transform: uppercase; }
         .doc-title .num { font-size: 15px; font-weight: 600; color: var(--ink); }
-        .status { display: inline-block; margin-top: 6px; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; background: var(--soft); color: var(--brand); }
-        .status.paid { background: #ecfdf5; color: #047857; } .status.overdue, .status.cancelled, .status.rejected, .status.expired { background: #fef2f2; color: #b91c1c; }
+        .status { display: inline-block; margin-top: 6px; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: 500; background: #579bfc; color: #fff; }
+        .status.paid { background: #00c875; } .status.draft { background: #c4c4c4; } .status.partial { background: #fdab3d; } .status.overdue, .status.cancelled, .status.rejected, .status.expired { background: #df2f4a; }
         .parties { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 32px 0 24px; }
         .parties h4 { margin: 0 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
         .parties p { margin: 0; white-space: pre-line; }

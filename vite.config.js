@@ -8,8 +8,8 @@ export default defineConfig({
             input: ['resources/scss/app.scss', 'resources/js/app.js'],
             refresh: ['resources/views/**', 'modules/**/resources/views/**', 'routes/**', 'modules/**/routes/**'],
             fonts: [
-                bunny('Montserrat', { weights: [500, 600, 700] }),
-                bunny('Open Sans', { weights: [400, 600, 700] }),
+                bunny('Figtree', { weights: [400, 500, 600, 700] }),
+                bunny('Poppins', { weights: [400, 500, 600] }),
             ],
         }),
     ],

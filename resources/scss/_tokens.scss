@@ -1,53 +1,57 @@
 // =====================================================================
 //  Zonseo UI — design tokens
-//  Palette and typography ported from the reference theme (Stack / Geo POS)
-//  Layout and components are our own.
+//  Work-management look in the style of monday.com: Figtree text, Poppins
+//  headings, a grey-blue app frame around a white workspace, solid
+//  status colours. Values are our own tokens; no third-party assets.
 // =====================================================================
 
 // Brand palette
-$z-primary:        #00B5B8;
-$z-primary-dark:   #009DA0;
-$z-primary-soft:   #E0F6F6;
-$z-success:        #16D39A;
-$z-success-soft:   #E3FAF3;
-$z-info:           #2DCEE3;
-$z-info-soft:      #E6F9FC;
-$z-warning:        #FFA87D;
-$z-warning-soft:   #FFF5EF;
-$z-danger:         #FF7588;
-$z-danger-soft:    #FFEFF1;
-$z-purple:         #845DFB;
-$z-purple-soft:    #EFEAFF;
-$z-navy:           #1B2942;
-$z-navy-2:         #233455;
+$z-primary:        #0073EA;
+$z-primary-dark:   #0060B9;
+$z-primary-soft:   #CCE5FF;
+$z-success:        #00C875;
+$z-success-soft:   #BBDBC9;
+$z-info:           #579BFC;
+$z-info-soft:      #D7E7FE;
+$z-warning:        #FDAB3D;
+$z-warning-soft:   #FEEBCE;
+$z-danger:         #DF2F4A;
+$z-danger-soft:    #F9D5DB;
+$z-purple:         #A25DDC;
+$z-purple-soft:    #EDDCF8;
+$z-navy:           #323338;   // primary text / dark surfaces
+$z-navy-2:         #181B34;   // deepest surface (auth side, toasts)
 
 // Neutrals
-$z-body-bg:        #F5F7FA;
+$z-shell-bg:       #ECEFF8;   // app frame behind sidebar, topbar and content panel
+$z-body-bg:        #F6F7FB;   // subtle fills: table heads, inputs on hover
 $z-surface:        #FFFFFF;
-$z-text:           #2A2E30;
-$z-text-muted:     #626E82;
-$z-text-light:     #98A4B8;
-$z-border:         #E4E7EC;
-$z-border-strong:  #D5DAE2;
+$z-hover:          #DCDFEC;   // row / menu hover
+$z-text:           #323338;
+$z-text-muted:     #676879;
+$z-text-light:     #9699A6;
+$z-border:         #D0D4E4;
+$z-border-strong:  #C3C6D4;
 
-// Typography
-$z-font-heading:   "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-$z-font-body:      "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+// Typography (sizes follow monday's scale: 14px body, 16px large text, 24px titles)
+$z-font-heading:   "Poppins", "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+$z-font-body:      "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 $z-font-size:      .875rem;   // 14px
 
 // Shape & elevation
-$z-radius:         6px;
-$z-radius-lg:      10px;
+$z-radius:         8px;
+$z-radius-sm:      4px;
+$z-radius-lg:      16px;
 $z-radius-pill:    999px;
-$z-shadow:         0 10px 40px 0 rgba(62, 57, 107, .07), 0 2px 9px 0 rgba(62, 57, 107, .06);
-$z-shadow-sm:      0 1px 3px rgba(27, 41, 66, .06);
-$z-shadow-lg:      0 18px 50px rgba(27, 41, 66, .14);
+$z-shadow:         0 1px 2px rgba(0, 0, 0, .04);
+$z-shadow-sm:      0 1px 2px rgba(0, 0, 0, .04);
+$z-shadow-lg:      0 6px 20px rgba(0, 0, 0, .2);
 
 // Layout
-$z-sidebar-width:          260px;
-$z-sidebar-width-collapsed: 72px;
-$z-topbar-height:          64px;
-$z-content-max:            1480px;
+$z-sidebar-width:          256px;
+$z-sidebar-width-collapsed: 64px;
+$z-topbar-height:          56px;
+$z-content-max:            1600px;
 
 // ---------------------------------------------------------------------
 // Bootstrap 5 overrides (must be before bootstrap import)
@@ -61,73 +65,93 @@ $danger:    $z-danger;
 $light:     $z-body-bg;
 $dark:      $z-navy;
 
-$body-bg:          $z-body-bg;
+$body-bg:          $z-surface;
+$card-bg:          $z-surface;
 $body-color:       $z-text;
 $font-family-base: $z-font-body;
 $headings-font-family: $z-font-heading;
 $headings-font-weight: 500;
-$headings-color:   $z-navy;
+$headings-color:   $z-text;
 $font-size-base:   $z-font-size;
-$line-height-base: 1.55;
+$line-height-base: 1.5;
+$h1-font-size: 2rem;      // 32px
+$h2-font-size: 1.5rem;    // 24px
+$h3-font-size: 1.125rem;  // 18px
+$h4-font-size: 1rem;      // 16px
+$h5-font-size: .9375rem;  // 15px
+$h6-font-size: .875rem;   // 14px
 $border-color:     $z-border;
-$border-radius:    $z-radius;
-$border-radius-sm: 4px;
-$border-radius-lg: $z-radius-lg;
+$border-radius:    $z-radius-sm;
+$border-radius-sm: $z-radius-sm;
+$border-radius-lg: $z-radius;
 $box-shadow:       $z-shadow;
 $box-shadow-sm:    $z-shadow-sm;
 $box-shadow-lg:    $z-shadow-lg;
+$link-color:       $z-primary;
 $link-decoration:  none;
 $link-hover-decoration: underline;
 
-$card-border-width: 0;
+$card-border-width: 1px;
+$card-border-color: $z-border;
 $card-border-radius: $z-radius;
-$card-box-shadow:   $z-shadow;
+$card-box-shadow:   none;
 $card-spacer-y:     1.25rem;
-$card-spacer-x:     1.25rem;
+$card-spacer-x:     1.5rem;
 $card-cap-bg:       transparent;
 
 $input-border-color: $z-border-strong;
 $input-focus-border-color: $z-primary;
-$input-focus-box-shadow: 0 0 0 .2rem rgba($z-primary, .15);
-$input-padding-y: .55rem;
-$input-padding-x: .85rem;
+$input-focus-box-shadow: none;
+$input-padding-y: .5rem;
+$input-padding-x: .75rem;
 $input-font-size: $z-font-size;
-$form-label-font-weight: 600;
-$form-label-color: $z-navy;
-$form-label-margin-bottom: .35rem;
+$input-border-radius: $z-radius-sm;
+$input-color: $z-text;
+$form-label-font-weight: 400;
+$form-label-color: $z-text;
+$form-label-margin-bottom: .3rem;
+$form-check-input-checked-bg-color: $z-primary;
 
-$btn-padding-y: .55rem;
-$btn-padding-x: 1.1rem;
-$btn-font-weight: 600;
+$btn-padding-y: .5rem;
+$btn-padding-x: 1rem;
+$btn-font-weight: 400;
 $btn-font-size: $z-font-size;
-$btn-focus-width: .2rem;
+$btn-border-radius: $z-radius-sm;
+$btn-border-radius-sm: $z-radius-sm;
+$btn-focus-width: .15rem;
 
 $table-color: $z-text;
 $table-border-color: $z-border;
-$table-hover-bg: rgba($z-primary, .04);
-$table-striped-bg: rgba($z-navy, .015);
-$table-cell-padding-y: .8rem;
-$table-cell-padding-x: 1rem;
+$table-hover-bg: $z-body-bg;
+$table-striped-bg: $z-body-bg;
+$table-cell-padding-y: .65rem;
+$table-cell-padding-x: .9rem;
 
-$dropdown-border-color: $z-border;
+$dropdown-border-color: transparent;
 $dropdown-box-shadow: $z-shadow-lg;
 $dropdown-border-radius: $z-radius;
-$dropdown-item-padding-y: .5rem;
-$dropdown-item-padding-x: 1rem;
+$dropdown-item-padding-y: .45rem;
+$dropdown-item-padding-x: .75rem;
+$dropdown-link-hover-bg: $z-hover;
 
 $modal-content-border-width: 0;
-$modal-content-border-radius: $z-radius-lg;
-$modal-header-border-color: $z-border;
-$modal-footer-border-color: $z-border;
+$modal-content-border-radius: $z-radius;
+$modal-content-box-shadow-sm-up: $z-shadow-lg;
+$modal-header-border-color: transparent;
+$modal-footer-border-color: transparent;
+$modal-backdrop-bg: #000;
+$modal-backdrop-opacity: .7;
 
 $nav-tabs-border-color: $z-border;
-$nav-tabs-link-active-color: $z-primary;
+$nav-tabs-link-active-color: $z-text;
 $nav-tabs-link-active-border-color: transparent transparent $z-primary;
-$badge-font-weight: 600;
+$nav-link-color: $z-text-muted;
+$badge-font-weight: 500;
 $badge-padding-y: .35em;
-$badge-padding-x: .7em;
+$badge-padding-x: .65em;
+$badge-border-radius: $z-radius-sm;
 $progress-height: .5rem;
-$progress-bg: $z-border;
+$progress-bg: $z-hover;
 $tooltip-bg: $z-navy;
 $alert-border-width: 0;
 $breadcrumb-divider: quote("›");
