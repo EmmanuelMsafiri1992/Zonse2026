@@ -10,7 +10,11 @@ use Illuminate\Support\Str;
  *
  * Compact definition: [label, titleLabel, "status,status", [field specs], extras]
  * where extras may set icon, plural, prefix, contact, amount, date, due,
- * assignee, list and description.
+ * assignee, list, description and bill.
+ *
+ * `bill` makes records invoiceable through the Invoicing module: true, or a map of
+ * invoice status => record status (e.g. ['paid' => 'paid', 'partial' => 'part_paid'])
+ * plus `via` (a record field whose record's contact pays, e.g. a visit's patient).
  */
 class Entity
 {
@@ -42,6 +46,7 @@ class Entity
         public bool $hasAssignee = false,
         public array $listColumns = [],
         public ?string $description = null,
+        public ?array $billing = null,
     ) {
         $this->statuses = $statuses;
         $this->fields = $fields;
@@ -83,6 +88,7 @@ class Entity
             hasAssignee: (bool) ($extras['assignee'] ?? false),
             listColumns: $extras['list'] ?? [],
             description: $extras['description'] ?? null,
+            billing: isset($extras['bill']) ? (is_array($extras['bill']) ? $extras['bill'] : []) : null,
         );
     }
 
@@ -170,6 +176,12 @@ class Entity
     public function hasDate(): bool
     {
         return $this->dateLabel !== null;
+    }
+
+    /** Whether records can be turned into invoices. */
+    public function isBillable(): bool
+    {
+        return $this->billing !== null;
     }
 
     public function hasDue(): bool

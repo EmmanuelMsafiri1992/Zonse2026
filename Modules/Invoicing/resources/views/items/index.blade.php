@@ -37,7 +37,7 @@
         @else
             <div class="z-table-wrap">
                 <table class="table z-table align-middle">
-                    <thead><tr><th>Item</th><th>Type</th><th>SKU</th><th>Unit</th><th>Tax</th><th class="text-end">Price</th><th></th></tr></thead>
+                    <thead><tr><th>Item</th><th>Type</th><th>SKU</th><th>Unit</th><th>Stock</th><th>Tax</th><th class="text-end">Price</th><th></th></tr></thead>
                     <tbody>
                     @foreach($items as $item)
                         <tr>
@@ -45,6 +45,7 @@
                             <td><x-pill :status="$item->type === 'product' ? 'info' : 'purple'">{{ \Modules\Invoicing\Models\Item::TYPES[$item->type] ?? $item->type }}</x-pill></td>
                             <td class="fs-7">{{ $item->sku ?: '—' }}</td>
                             <td class="fs-7">{{ $item->unit ?: '—' }}</td>
+                            <td class="fs-7 {{ $item->isLowOnStock() ? 'text-danger fw-600' : '' }}">{{ $item->tracksStock() ? rtrim(rtrim(number_format($item->stock_qty, 3), '0'), '.') : '—' }}</td>
                             <td class="fs-7">{{ $item->taxRate ? $item->taxRate->name.' '.rtrim(rtrim(number_format($item->taxRate->rate, 2), '0'), '.').'%' : '—' }}</td>
                             <td class="text-end fs-7 fw-600">{{ \App\Support\Money::format($item->price) }}</td>
                             <td class="text-end">

@@ -1,5 +1,7 @@
 <?php
 
+use App\Blueprints\Logic\ChurchLogic;
+
 /*
  * Events & community apps. Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
  */
@@ -25,7 +27,7 @@ return [
             'attendance:number',
             'notes:textarea',
         ], ['icon' => 'calendar', 'prefix' => 'SRV-', 'date' => 'Date', 'list' => ['preacher', 'attendance']]],
-    ]],
+    ], ['logic' => ChurchLogic::class]],
 
     'ngo' => ['NGO, donors & grants', 'heart-handshake', 'Donors, grants and beneficiaries for non-profits.', [
         'grants' => ['Grant', 'Grant name', 'pipeline,applied,awarded,reporting,closed,declined', [

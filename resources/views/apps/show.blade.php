@@ -2,6 +2,10 @@
 @section('title', $app->name)
 @section('content')
     <x-page-header :title="$app->name" :sub="$app->description" :crumbs="['Apps' => route('apps.index'), $app->name]">
+        @if($app->key === 'pos')
+            <a href="{{ route('apps.pos.till') }}" class="btn btn-success"><x-icon name="shopping-cart" /> Open till</a>
+        @endif
+        <a href="{{ route('apps.reports', $app->key) }}" class="btn btn-white"><x-icon name="chart-column" /> Reports</a>
         @can('create', \App\Models\Record::class)
             @php $primary = $app->primaryEntity(); @endphp
             <a href="{{ route('apps.records.create', [$app->key, $primary->key]) }}" class="btn btn-primary"><x-icon name="plus" /> New {{ strtolower($primary->label) }}</a>
@@ -16,6 +20,14 @@
             </div>
         @endforeach
     </div>
+
+    @if($cards)
+        <div class="row g-3 mb-4">
+            @foreach($cards as $card)
+                <div class="col-lg-6">@include($card['view'], $card['data'])</div>
+            @endforeach
+        </div>
+    @endif
 
     <div class="row g-3">
         @foreach($entities as $entity)

@@ -2,6 +2,7 @@
 
 namespace Modules\Invoicing\Models;
 
+use App\Models\Record;
 use App\Support\Money;
 use App\Support\Sequence;
 use App\Tenancy\BelongsToWorkspace;
@@ -33,7 +34,7 @@ class Invoice extends Model
 
     protected $fillable = [
         'workspace_id', 'branch_id', 'contact_id', 'number', 'status', 'issue_date', 'due_date', 'currency_code', 'reference',
-        'discount_type', 'discount_value', 'notes', 'terms', 'quote_id', 'created_by',
+        'discount_type', 'discount_value', 'notes', 'terms', 'quote_id', 'record_id', 'period', 'created_by',
     ];
 
     /** @var list<string> */
@@ -53,6 +54,14 @@ class Invoice extends Model
         static::creating(function (Invoice $invoice) {
             $invoice->number ??= Sequence::next('invoice', 'INV-', $invoice->workspace_id);
             $invoice->due_date ??= $invoice->issue_date->copy()->addDays((int) ($invoice->workspace?->setting('invoicing.due_days', 14) ?? 14));
+        });
+
+        // Payments move the invoice's status; the app record it came from (a fee, a visit) follows.
+        static::saved(function (Invoice $invoice) {
+            if ($invoice->record_id && ($invoice->wasRecentlyCreated || $invoice->wasChanged(['status', 'amount_paid']))) {
+                $record = $invoice->record()->first();
+                $record?->appLogic()?->invoiceChanged($record, $invoice);
+            }
         });
     }
 
@@ -74,6 +83,12 @@ class Invoice extends Model
     public function quote(): BelongsTo
     {
         return $this->belongsTo(Quote::class);
+    }
+
+    /** The app record (visit, lease, fee, sale…) this invoice was raised from, if any. */
+    public function record(): BelongsTo
+    {
+        return $this->belongsTo(Record::class);
     }
 
     public function scopeOpen(Builder $query): Builder

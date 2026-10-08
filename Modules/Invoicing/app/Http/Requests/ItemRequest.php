@@ -24,6 +24,8 @@ class ItemRequest extends FormRequest
             'unit' => ['nullable', 'string', 'max:20'],
             'price' => ['required', 'numeric', 'min:0', 'max:99999999'],
             'cost' => ['nullable', 'numeric', 'min:0', 'max:99999999'],
+            'stock_qty' => ['nullable', 'numeric', 'min:-99999999', 'max:99999999'],
+            'reorder_level' => ['nullable', 'numeric', 'min:0', 'max:99999999'],
             'tax_rate_id' => ['nullable', Rule::exists('tax_rates', 'id')->where('workspace_id', $this->user()->current_workspace_id)],
             'is_active' => ['nullable', 'boolean'],
         ];

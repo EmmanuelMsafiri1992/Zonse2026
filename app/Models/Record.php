@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Blueprints\AppLogic;
 use App\Blueprints\Blueprint;
 use App\Blueprints\BlueprintRegistry;
 use App\Blueprints\Entity;
@@ -16,10 +17,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Modules\Contacts\Models\Contact;
+use Modules\Invoicing\Models\Invoice;
 
 /**
  * A row in any blueprint-driven app. The blueprint + entity keys say which
@@ -62,7 +65,12 @@ class Record extends Model
         });
 
         static::saving(function (Record $record) {
+            $record->appLogic()?->saving($record);
             $record->search_text = $record->buildSearchText();
+        });
+
+        static::saved(function (Record $record) {
+            $record->appLogic()?->saved($record);
         });
     }
 
@@ -72,6 +80,12 @@ class Record extends Model
     {
         return app(BlueprintRegistry::class)->get($this->blueprint)
             ?? throw new \RuntimeException("Unknown blueprint [{$this->blueprint}].");
+    }
+
+    /** The app's behaviour class, or null when the blueprint no longer exists. */
+    public function appLogic(): ?AppLogic
+    {
+        return app(BlueprintRegistry::class)->get((string) $this->blueprint)?->logic();
     }
 
     public function definition(): Entity
@@ -121,6 +135,18 @@ class Record extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /** Invoices raised from this record (a visit's bill, each month's rent). */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    /** The newest invoice that still has money owing. */
+    public function openInvoice(): ?Invoice
+    {
+        return $this->invoices()->whereIn('status', Invoice::OPEN_STATUSES)->latest('id')->first();
     }
 
     /** The record a "record" field points to, if any. */

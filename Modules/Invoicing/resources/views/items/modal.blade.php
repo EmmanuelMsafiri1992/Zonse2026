@@ -21,6 +21,10 @@
                     <div class="col-md-6"><x-form.input name="sku" label="SKU / code" :value="$isOld ? old('sku') : $item?->sku" id="i_sku_{{ $sfx }}" /></div>
                     <div class="col-md-6"><x-form.input name="unit" label="Unit" placeholder="hour, each, kg…" :value="$isOld ? old('unit') : $item?->unit" id="i_unit_{{ $sfx }}" /></div>
                 </div>
+                <div class="row">
+                    <div class="col-md-6"><x-form.input name="stock_qty" type="number" step="0.001" label="In stock (products, optional)" :value="$isOld ? old('stock_qty') : $item?->stock_qty" id="i_stock_{{ $sfx }}" help="Leave blank to skip stock counting." /></div>
+                    <div class="col-md-6"><x-form.input name="reorder_level" type="number" step="0.001" min="0" label="Reorder at" :value="$isOld ? old('reorder_level') : $item?->reorder_level" id="i_reorder_{{ $sfx }}" /></div>
+                </div>
                 @if($item)<x-form.check name="is_active" label="Active (shown in pickers)" :checked="$isOld ? (bool) old('is_active') : (bool) $item->is_active" id="i_active_{{ $sfx }}" switch />@endif
             </div>
             <div class="modal-footer">

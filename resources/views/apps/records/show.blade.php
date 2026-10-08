@@ -3,6 +3,9 @@
 @section('content')
     <x-page-header :title="$record->title" :sub="$record->number.' · '.$def->label.' · '.$app->name"
                    :crumbs="['Apps' => route('apps.index'), $app->name => route('apps.show', $app->key), $def->plural => route('apps.records.index', [$app->key, $def->key]), $record->number]">
+        @foreach($documents as $documentKey => $documentLabel)
+            <a href="{{ route('apps.records.document', [$app->key, $def->key, $record->id, $documentKey]) }}" target="_blank" class="btn btn-white"><x-icon name="printer" /> {{ $documentLabel }}</a>
+        @endforeach
         @can('update', $record)
             <a href="{{ route('apps.records.edit', [$app->key, $def->key, $record->id]) }}" class="btn btn-white"><x-icon name="pencil" /> Edit</a>
         @endcan
@@ -40,6 +43,34 @@
             </div>
 
             @can('update', $record)
+                @if($actions)
+                    <div class="card mb-3">
+                        <div class="card-header"><h5 class="card-title">Actions</h5></div>
+                        <div class="card-body d-grid gap-2">
+                            @foreach($actions as $actionKey => $action)
+                                <form method="POST" action="{{ route('apps.records.action', [$app->key, $def->key, $record->id, $actionKey]) }}"
+                                      @isset($action['confirm']) onsubmit="return confirm(@js($action['confirm']))" @endisset>
+                                    @csrf
+                                    @foreach($action['fields'] ?? [] as $field)
+                                        @if($field['type'] === 'select')
+                                            <x-form.select :name="$field['name']" :label="$field['label']" :options="$field['options'] ?? []" :value="$field['value'] ?? null" class="form-select-sm" />
+                                        @else
+                                            <x-form.input :name="$field['name']" :label="$field['label']" :type="$field['type']" :value="$field['value'] ?? null" class="form-control-sm" />
+                                        @endif
+                                    @endforeach
+                                    <button class="btn btn-sm btn-soft-primary w-100"><x-icon :name="$action['icon']" class="zi zi-sm" /> {{ $action['label'] }}</button>
+                                </form>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+            @endcan
+
+            @if($billable)
+                @include('apps.records.partials.billing')
+            @endif
+
+            @can('update', $record)
                 @if(count($def->statuses) > 1)
                     <div class="card mb-3">
                         <div class="card-header"><h5 class="card-title">Move to</h5></div>
@@ -58,6 +89,10 @@
         </div>
 
         <div class="col-lg-8">
+            @foreach($cards as $card)
+                @include($card['view'], $card['data'])
+            @endforeach
+
             @if($def->fields)
                 <div class="card mb-3">
                     <div class="card-header"><h5 class="card-title">Details</h5></div>

@@ -8,6 +8,7 @@ use App\Models\Record;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 /** Validates a blueprint record from the entity definition in the URL. */
 class RecordRequest extends FormRequest
@@ -56,6 +57,27 @@ class RecordRequest extends FormRequest
         }
 
         return $rules;
+    }
+
+    /**
+     * Business rules from the app's logic class (e.g. one active lease per unit), checked once the fields are valid.
+     *
+     * @return list<callable(Validator): void>
+     */
+    public function after(): array
+    {
+        return [function (Validator $validator) {
+            if ($validator->errors()->isNotEmpty()) {
+                return;
+            }
+            $entity = $this->entity();
+            $existing = $this->route('record') ? Record::query()->ofEntity($entity->blueprintKey, $entity->key)->find($this->route('record')) : null;
+            $logic = app(BlueprintRegistry::class)->get($entity->blueprintKey)?->logic();
+
+            foreach ($logic?->validate($entity, $this->payload(), $existing) ?? [] as $field => $message) {
+                $validator->errors()->add($field, $message);
+            }
+        }];
     }
 
     /** @return array<string, string> */

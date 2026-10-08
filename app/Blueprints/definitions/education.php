@@ -1,5 +1,7 @@
 <?php
 
+use App\Blueprints\Logic\SchoolLogic;
+
 /*
  * Education apps. Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
  */
@@ -25,8 +27,8 @@ return [
             'student:record=students|Student*',
             'term:select=term_1,term_2,term_3,annual',
             'paid_to_date:money|Paid to date',
-        ], ['icon' => 'wallet', 'prefix' => 'FEE-', 'amount' => 'Amount due', 'due' => 'Due date', 'list' => ['student', 'term', 'paid_to_date']]],
-    ]],
+        ], ['icon' => 'wallet', 'prefix' => 'FEE-', 'bill' => ['via' => 'student', 'sent' => 'unpaid', 'overdue' => 'unpaid', 'partial' => 'part_paid', 'paid' => 'paid'], 'amount' => 'Amount due', 'due' => 'Due date', 'list' => ['student', 'term', 'paid_to_date']]],
+    ], ['depends' => ['contacts', 'invoicing'], 'logic' => SchoolLogic::class]],
 
     'library' => ['Library', 'library', 'Book catalogue, members and loans.', [
         'books' => ['Book', 'Title', 'available,on_loan,lost,withdrawn', [

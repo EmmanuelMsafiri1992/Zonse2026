@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Blueprints\BlueprintRegistry;
 use App\Models\Module;
 use App\Models\Suite;
 use Illuminate\Database\Seeder;
@@ -265,6 +266,8 @@ class CatalogueSeeder extends Seeder
 
         $key ??= $this->autoKey($name, $ref, $usedKeys);
         $usedKeys[$key] = true;
+        // Blueprint apps can need other modules too (e.g. Invoicing to bill clinic visits).
+        $depends = array_values(array_unique([...$depends, ...(app(BlueprintRegistry::class)->get($key)?->depends ?? [])]));
 
         $tags = collect(preg_split('/[,;\/]/', strtolower($description)))
             ->map(fn ($t) => trim($t))->filter(fn ($t) => $t !== '' && strlen($t) < 40)->take(8)->values()->all();

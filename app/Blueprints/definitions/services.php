@@ -1,5 +1,7 @@
 <?php
 
+use App\Blueprints\Logic\SalonLogic;
+
 /*
  * Service-business apps. Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
  */
@@ -23,8 +25,8 @@ return [
             'service:record=services|Main service',
             'tip:money',
             'notes:textarea',
-        ], ['icon' => 'calendar-check', 'prefix' => 'SV-', 'date' => 'Date', 'amount' => 'Total paid', 'assignee' => true, 'list' => ['client', 'service']]],
-    ]],
+        ], ['icon' => 'calendar-check', 'prefix' => 'SV-', 'bill' => ['via' => 'client'], 'date' => 'Date', 'amount' => 'Total paid', 'assignee' => true, 'list' => ['client', 'service']]],
+    ], ['depends' => ['contacts', 'invoicing'], 'logic' => SalonLogic::class]],
 
     'gym' => ['Gym & fitness', 'dumbbell', 'Members, plans, check-ins and personal-training sessions.', [
         'members' => ['Member', 'Full name', 'active,frozen,expired,cancelled', [

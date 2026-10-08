@@ -1,5 +1,7 @@
 <?php
 
+use App\Blueprints\Logic\ClinicLogic;
+
 /*
  * Healthcare apps. Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
  * Field spec: "key:type=options|Label*" (type defaults to text, * = required).
@@ -28,7 +30,7 @@ return [
             'diagnosis:textarea',
             'treatment:textarea|Treatment plan',
             'follow_up:date|Follow-up date',
-        ], ['icon' => 'clipboard-plus', 'prefix' => 'VIS-', 'date' => 'Visit date', 'amount' => 'Consultation fee', 'assignee' => true, 'list' => ['patient', 'diagnosis']]],
+        ], ['icon' => 'clipboard-plus', 'prefix' => 'VIS-', 'bill' => ['via' => 'patient'], 'date' => 'Visit date', 'amount' => 'Consultation fee', 'assignee' => true, 'list' => ['patient', 'diagnosis']]],
         'prescriptions' => ['Prescription', 'Medicine', 'active,completed,stopped', [
             'patient:record=patients|Patient*',
             'visit:record=visits|Visit',
@@ -37,7 +39,7 @@ return [
             'duration_days:number|Duration (days)',
             'instructions:textarea',
         ], ['icon' => 'pill', 'prefix' => 'RX-', 'date' => 'Prescribed on', 'list' => ['patient', 'dosage', 'frequency']]],
-    ]],
+    ], ['depends' => ['contacts', 'invoicing'], 'logic' => ClinicLogic::class]],
 
     'patient-queue' => ['Patient queue & tokens', 'list-ordered', 'Walk-in tokens and a live waiting list for reception and doctors.', [
         'tokens' => ['Token', 'Patient name', 'waiting,called,in_service,done,no_show', [

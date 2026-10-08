@@ -1,5 +1,7 @@
 <?php
 
+use App\Blueprints\Logic\PosLogic;
+
 /*
  * Finance apps: books, banking, payroll, tax and specialist money businesses.
  * Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
@@ -105,7 +107,7 @@ return [
             'tendered:money|Amount tendered',
             'change:money|Change given',
             'discount:money',
-        ], ['icon' => 'shopping-cart', 'prefix' => 'POS-', 'contact' => 'Customer', 'amount' => 'Total', 'date' => 'Sale date', 'assignee' => true, 'list' => ['till', 'payment_method']]],
+        ], ['icon' => 'shopping-cart', 'prefix' => 'POS-', 'bill' => true, 'contact' => 'Customer', 'amount' => 'Total', 'date' => 'Sale date', 'assignee' => true, 'list' => ['till', 'payment_method']]],
         'tills' => ['Till', 'Till name', 'active,inactive', [
             'mode:select=retail,restaurant,pharmacy*',
             'location',
@@ -118,7 +120,7 @@ return [
             'expected_cash:money|Expected cash',
             'counted_cash:money|Counted cash',
         ], ['icon' => 'clock', 'prefix' => 'SHF-', 'date' => 'Shift date', 'list' => ['till', 'cashier', 'counted_cash']]],
-    ]],
+    ], ['depends' => ['contacts', 'invoicing'], 'logic' => PosLogic::class]],
 
     'purchasing' => ['Purchasing & procurement', 'shopping-bag', 'Requisitions, RFQs and purchase orders to suppliers.', [
         'requisitions' => ['Requisition', 'What is needed', 'draft,submitted,approved,rejected,ordered', [

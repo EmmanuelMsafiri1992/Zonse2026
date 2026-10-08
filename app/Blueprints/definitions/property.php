@@ -1,5 +1,7 @@
 <?php
 
+use App\Blueprints\Logic\RentalsLogic;
+
 /*
  * Property apps. Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
  */
@@ -21,8 +23,8 @@ return [
             'deposit:money',
             'escalation_percent:number|Annual escalation %',
             'payment_day:number|Rent due day',
-        ], ['icon' => 'file-signature', 'prefix' => 'LS-', 'contact' => 'Tenant', 'amount' => 'Monthly rent', 'date' => 'Start date', 'due' => 'End date', 'list' => ['unit', 'deposit']]],
-    ]],
+        ], ['icon' => 'file-signature', 'prefix' => 'LS-', 'bill' => true, 'contact' => 'Tenant', 'amount' => 'Monthly rent', 'date' => 'Start date', 'due' => 'End date', 'list' => ['unit', 'deposit']]],
+    ], ['depends' => ['contacts', 'invoicing'], 'logic' => RentalsLogic::class]],
 
     'maintenance-requests' => ['Maintenance requests', 'hammer', 'Repairs reported by tenants, from report to fix.', [
         'requests' => ['Request', 'Problem', 'reported,assigned,in_progress,done,cancelled', [

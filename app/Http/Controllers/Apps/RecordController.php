@@ -108,6 +108,11 @@ class RecordController extends Controller
             'record' => $record,
             'linked' => $linked,
             'related' => collect($def->recordFields())->mapWithKeys(fn ($f) => [$f->key => $record->related($f->key)]),
+            'billable' => $def->isBillable() && $this->context->hasModule('invoicing'),
+            'invoices' => $def->isBillable() && $this->context->hasModule('invoicing') ? $record->invoices()->latest('id')->limit(12)->get() : collect(),
+            'cards' => $app->logic()->recordCards($record),
+            'actions' => $app->logic()->actions($record),
+            'documents' => $app->logic()->documents($record),
         ]);
     }
 
@@ -126,7 +131,10 @@ class RecordController extends Controller
         $record = $this->find($app, $def, $record);
         $this->authorize('update', $record);
 
-        $record->update($request->payload());
+        $payload = $request->payload();
+        // Keys starting with "_" are kept by the app logic (sale lines, billing marks), not the form.
+        $payload['data'] = array_merge(array_filter((array) $record->data, fn ($key) => str_starts_with((string) $key, '_'), ARRAY_FILTER_USE_KEY), $payload['data']);
+        $record->update($payload);
 
         return redirect()->to($record->url())
             ->with('flash', ['type' => 'success', 'message' => $def->label.' '.$record->number.' updated.']);

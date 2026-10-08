@@ -17,11 +17,11 @@ class Item extends Model
 
     public const TYPES = ['service' => 'Service', 'product' => 'Product'];
 
-    protected $fillable = ['workspace_id', 'type', 'name', 'sku', 'description', 'unit', 'price', 'cost', 'tax_rate_id', 'is_active'];
+    protected $fillable = ['workspace_id', 'type', 'name', 'sku', 'description', 'unit', 'price', 'cost', 'stock_qty', 'reorder_level', 'tax_rate_id', 'is_active'];
 
     protected function casts(): array
     {
-        return ['price' => 'float', 'cost' => 'float', 'is_active' => 'boolean'];
+        return ['price' => 'float', 'cost' => 'float', 'stock_qty' => 'float', 'reorder_level' => 'float', 'is_active' => 'boolean'];
     }
 
     protected static function newFactory(): ItemFactory
@@ -44,6 +44,32 @@ class Item extends Model
         $term = trim((string) $term);
 
         return $term === '' ? $query : $query->where(fn (Builder $q) => $q->where('name', 'like', "%{$term}%")->orWhere('sku', 'like', "%{$term}%"));
+    }
+
+    /** Products with a stock quantity are counted down when sold; null means stock is not tracked. */
+    public function tracksStock(): bool
+    {
+        return $this->type === 'product' && $this->stock_qty !== null;
+    }
+
+    public function isLowOnStock(): bool
+    {
+        return $this->tracksStock() && $this->stock_qty <= (float) ($this->reorder_level ?? 0);
+    }
+
+    /** Move stock by a signed quantity (negative when selling) without touching untracked items. */
+    public function adjustStock(float $quantity): void
+    {
+        if ($this->tracksStock()) {
+            $this->newQuery()->whereKey($this->getKey())->increment('stock_qty', $quantity);
+            $this->stock_qty = (float) $this->stock_qty + $quantity;
+        }
+    }
+
+    public function scopeLowOnStock(Builder $query): Builder
+    {
+        return $query->where('type', 'product')->whereNotNull('stock_qty')
+            ->whereRaw('stock_qty <= coalesce(reorder_level, 0)');
     }
 
     /** @return array{id: int, name: string, description: ?string, unit: ?string, price: float, tax_rate: float} */

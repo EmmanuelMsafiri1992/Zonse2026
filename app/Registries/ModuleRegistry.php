@@ -50,7 +50,7 @@ class ModuleRegistry
     /**
      * Mark catalogue rows installed/available according to what exists in Modules/.
      * Core (platform) modules are always considered installed. Blueprint apps also
-     * lend their own icon to the catalogue card.
+     * lend their own icon and dependencies (e.g. Invoicing for billing) to the catalogue row.
      */
     public function sync(): int
     {
@@ -64,10 +64,14 @@ class ModuleRegistry
             $status = $has
                 ? ($module->status === Module::STATUS_COMING_SOON ? Module::STATUS_AVAILABLE : $module->status)
                 : Module::STATUS_COMING_SOON;
-            $icon = $blueprints->get($module->key)?->icon ?? $module->icon;
+            $blueprint = $blueprints->get($module->key);
+            $icon = $blueprint?->icon ?? $module->icon;
+            $depends = $blueprint?->depends
+                ? array_values(array_unique([...($module->depends ?? []), ...$blueprint->depends]))
+                : $module->depends;
 
-            if ($module->is_installed !== $has || $module->status !== $status || $module->icon !== $icon) {
-                $module->forceFill(['is_installed' => $has, 'status' => $status, 'icon' => $icon])->save();
+            if ($module->is_installed !== $has || $module->status !== $status || $module->icon !== $icon || $module->depends !== $depends) {
+                $module->forceFill(['is_installed' => $has, 'status' => $status, 'icon' => $icon, 'depends' => $depends])->save();
                 $changed++;
             }
         });

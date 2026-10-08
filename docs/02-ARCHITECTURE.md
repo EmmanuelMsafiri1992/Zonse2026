@@ -136,6 +136,24 @@ The long tail of the catalogue (clinic, farm, gym, school, fleet, church…) run
 - **Coverage:** every non-core catalogue entry now has an app: 6 code modules plus 298 blueprints, grouped by suite (finance, sales, marketing, logistics, people, collaboration, healthcare, education, hospitality, property, construction, events, services, retail, agriculture, transport, utilities, government, industrial, personal…). Apps that sound like integrations (payment gateways, live chat, video meetings, GPS, ISP/RADIUS, scales, SMS/email sending, website builder) are record-keeping apps. They track the work but do not connect to outside systems yet.
 - **Wiring:** `BlueprintServiceProvider` adds a menu item, a dashboard widget, global search and the catalogue's "open app" link for every app. `ModuleRegistry::installedKeys()` counts blueprint keys as installed, so `php artisan zonseo:sync-modules` (or the seeder) makes them enableable. The sync also copies each blueprint's icon onto its catalogue card. Routes are gated by the `blueprint` middleware, which applies the same plan and enablement rules as `module:<key>`.
 - **Scale:** a workspace may enable all ~300 apps. Module checks come from one query per request (`Workspace::hasModule` memoises the enabled keys). The dashboard shows widgets only for the 6 most recently active apps, with batched counts. The sidebar uses `App\Support\Icon::svg()` (memoised SVG) instead of the `<x-icon>` component. `BlueprintAppsTest::test_pages_stay_light_when_every_app_is_enabled` guards this.
+- **App logic:** an app can add behaviour through an optional fifth element: `['depends' => ['contacts', 'invoicing'], 'logic' => ClinicLogic::class]`.
+  - `depends` is merged into the catalogue, so enabling the app also enables Contacts and Invoicing.
+  - The logic class extends `App\Blueprints\AppLogic` and lives in `app/Blueprints/Logic`. Its hooks:
+    - `saving`/`saved` (the salon prices visits and works out commission; rentals keep unit occupancy right);
+    - `validate` (one live lease per unit);
+    - `recordCards`/`homeCards` (the clinic's allergy alerts and waiting room);
+    - `actions`/`runAction` (school "bill class for a term", rentals "bill rent", POS "close shift");
+    - `documents`/`document` (church giving statement, POS receipt);
+    - `reports` (shown at `/apps/{app}/reports`);
+    - `daily` (monthly rent and escalation).
+  - `php artisan zonseo:run-app-schedules` runs `daily` and is scheduled at 02:00.
+  - Apps with logic so far: clinic, school, pos, tenants, salon, church. Each has a test in `AppWorkflowsTest`.
+- **Billing records:** the entity extra `'bill' => true`, or a map from invoice status to record status plus `'via' => 'patient'`, makes a record billable.
+  - The record page then shows its invoices, a "Create invoice" button and a payment form.
+  - `App\Blueprints\RecordBilling` raises the invoice. The contact is the record's own, or the `via` record's. If neither has one, a new contact is created and linked back.
+  - Payments update the record through `AppLogic::invoiceChanged`; for example, school fees move to part paid, then paid.
+  - Invoices carry `record_id`, plus `period` for recurring bills so a month is never billed twice. Only one open invoice per record is allowed.
+  - The POS till (`/apps/pos/till`, `PosController`) uses the same path: it rings up Invoicing items, decrements stock, raises the invoice and records a full payment in one transaction.
 - **Graduating:** when an app needs real workflows (stock, ledgers, scheduling), build it as a code module under `Modules/` that provides the same key. Then remove it from the definitions, because blueprint and module keys must not overlap.
 
 ## 7. Subscriptions & plans

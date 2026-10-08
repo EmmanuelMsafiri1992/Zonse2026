@@ -60,6 +60,6 @@ class AppController extends Controller
             ];
         }
 
-        return view('apps.show', ['app' => $app, 'entities' => $entities]);
+        return view('apps.show', ['app' => $app, 'entities' => $entities, 'cards' => $app->logic()->homeCards()]);
     }
 }

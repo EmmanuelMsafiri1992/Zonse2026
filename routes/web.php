@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\Apps\AppController;
+use App\Http\Controllers\Apps\PosController;
 use App\Http\Controllers\Apps\RecordController;
+use App\Http\Controllers\Apps\RecordWorkflowController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InvitationController;
@@ -41,8 +43,14 @@ Route::middleware(['auth', 'workspace'])->group(function () {
 
         // Blueprint apps: every data-driven catalogue module runs on these generic screens.
         Route::get('/apps', [AppController::class, 'index'])->name('apps.index');
+        // The point-of-sale till sits beside the generic screens (it needs Invoicing items and payments).
+        Route::prefix('apps/pos/till')->middleware('module:pos')->name('apps.pos.')->group(function () {
+            Route::get('/', [PosController::class, 'till'])->name('till');
+            Route::post('/', [PosController::class, 'sell'])->name('sell');
+        });
         Route::prefix('apps/{blueprint}')->middleware('blueprint')->group(function () {
             Route::get('/', [AppController::class, 'show'])->name('apps.show');
+            Route::get('/reports', [RecordWorkflowController::class, 'reports'])->name('apps.reports');
 
             Route::prefix('{entity}')->name('apps.records.')->group(function () {
                 Route::get('/', [RecordController::class, 'index'])->name('index');
@@ -55,6 +63,10 @@ Route::middleware(['auth', 'workspace'])->group(function () {
                 Route::post('/{record}/status', [RecordController::class, 'status'])->whereNumber('record')->name('status');
                 Route::post('/{record}/comments', [RecordController::class, 'comment'])->whereNumber('record')->name('comments.store');
                 Route::delete('/{record}', [RecordController::class, 'destroy'])->whereNumber('record')->name('destroy');
+                Route::post('/{record}/bill', [RecordWorkflowController::class, 'bill'])->whereNumber('record')->name('bill');
+                Route::post('/{record}/payments', [RecordWorkflowController::class, 'pay'])->whereNumber('record')->name('payments.store');
+                Route::post('/{record}/actions/{action}', [RecordWorkflowController::class, 'action'])->whereNumber('record')->name('action');
+                Route::get('/{record}/print/{document}', [RecordWorkflowController::class, 'document'])->whereNumber('record')->name('document');
             });
         });
 
