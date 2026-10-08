@@ -6,6 +6,14 @@
         @foreach($documents as $documentKey => $documentLabel)
             <a href="{{ route('apps.records.document', [$app->key, $def->key, $record->id, $documentKey]) }}" target="_blank" class="btn btn-white"><x-icon name="printer" /> {{ $documentLabel }}</a>
         @endforeach
+        @can('use-assistant')
+            <form method="POST" action="{{ route('assistant.store') }}">
+                @csrf
+                <input type="hidden" name="record_id" value="{{ $record->id }}">
+                <input type="hidden" name="question" value="Summarise {{ $record->number }}: what it is, where it stands and anything that needs attention.">
+                <button class="btn btn-white"><x-icon name="sparkles" /> Summarise with AI</button>
+            </form>
+        @endcan
         @can('update', $record)
             <a href="{{ route('apps.records.edit', [$app->key, $def->key, $record->id]) }}" class="btn btn-white"><x-icon name="pencil" /> Edit</a>
         @endcan

@@ -5,6 +5,7 @@ use App\Http\Controllers\Apps\AppController;
 use App\Http\Controllers\Apps\PosController;
 use App\Http\Controllers\Apps\RecordController;
 use App\Http\Controllers\Apps\RecordWorkflowController;
+use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentCaptureController;
 use App\Http\Controllers\HomeController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\PublicSigningController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\Settings\ApiKeyController;
 use App\Http\Controllers\Settings\ApprovalRuleController;
+use App\Http\Controllers\Settings\AssistantSettingsController;
 use App\Http\Controllers\Settings\AuditLogController;
 use App\Http\Controllers\Settings\AutomationController;
 use App\Http\Controllers\Settings\BillingController;
@@ -93,6 +95,14 @@ Route::middleware(['auth', 'workspace'])->group(function () {
         Route::get('/captures/{capture}/file', [DocumentCaptureController::class, 'file'])->name('captures.file');
         Route::post('/captures/{capture}/retry', [DocumentCaptureController::class, 'retry'])->middleware('throttle:10,1')->name('captures.retry');
         Route::delete('/captures/{capture}', [DocumentCaptureController::class, 'destroy'])->name('captures.destroy');
+
+        Route::get('/assistant', [AssistantController::class, 'index'])->name('assistant.index');
+        Route::post('/assistant', [AssistantController::class, 'store'])->middleware('throttle:20,1')->name('assistant.store');
+        Route::get('/assistant/{conversation}', [AssistantController::class, 'show'])->name('assistant.show');
+        Route::post('/assistant/{conversation}/messages', [AssistantController::class, 'ask'])->middleware('throttle:20,1')->name('assistant.ask');
+        Route::get('/assistant/{conversation}/status', [AssistantController::class, 'status'])->name('assistant.status');
+        Route::post('/assistant/{conversation}/retry', [AssistantController::class, 'retry'])->middleware('throttle:10,1')->name('assistant.retry');
+        Route::delete('/assistant/{conversation}', [AssistantController::class, 'destroy'])->name('assistant.destroy');
 
         // Blueprint apps: every data-driven catalogue module runs on these generic screens.
         Route::get('/apps', [AppController::class, 'index'])->name('apps.index');
@@ -174,6 +184,9 @@ Route::middleware(['auth', 'workspace'])->group(function () {
 
             Route::get('/document-capture', [OcrSettingsController::class, 'edit'])->name('ocr.edit');
             Route::put('/document-capture', [OcrSettingsController::class, 'update'])->name('ocr.update');
+
+            Route::get('/assistant', [AssistantSettingsController::class, 'edit'])->name('assistant.edit');
+            Route::put('/assistant', [AssistantSettingsController::class, 'update'])->name('assistant.update');
         });
 
         Route::middleware('can:manage-workspace')->group(function () {

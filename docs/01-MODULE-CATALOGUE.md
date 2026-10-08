@@ -32,7 +32,7 @@ Every module below is designed as an installable **module** inside one codebase.
 | 0.15 | Document templates & PDF designer (invoice, receipt, letter, certificate) | ➕ |
 | 0.16 | E-signature | ✔ |
 | 0.17 | Document OCR & AI data capture (receipts, IDs, invoices) | ✔ |
-| 0.18 | AI assistant (ask questions about your data, draft emails, summarise) | ➕ |
+| 0.18 | AI assistant (ask questions about your data, draft emails, summarise) | ✔ |
 | 0.19 | Mobile app (PWA + native wrapper), offline mode | ✔ |
 | 0.20 | USSD / feature-phone access for field users | ➕ |
 | 0.21 | Two-factor auth, SSO (Google, Microsoft), passkeys | ➕ |

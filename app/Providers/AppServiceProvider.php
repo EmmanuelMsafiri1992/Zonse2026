@@ -72,6 +72,12 @@ class AppServiceProvider extends ServiceProvider
             return $workspace !== null && ! in_array($user->roleIn($workspace), [null, 'viewer'], true);
         });
 
+        Gate::define('use-assistant', function (User $user) {
+            $workspace = app(WorkspaceContext::class)->get();
+
+            return $workspace !== null && $user->roleIn($workspace) !== null;
+        });
+
         Event::subscribe(RecordSecurityEvents::class);
         Event::subscribe(SendWorkspaceNotifications::class);
         Event::subscribe(DispatchBusinessEvents::class);
@@ -123,7 +129,8 @@ class AppServiceProvider extends ServiceProvider
             ->add(MenuItem::make('Dashboard', 'dashboard', 'layout-dashboard')->order(0)->active('dashboard'))
             ->add(MenuItem::make('Approvals', 'approvals.index', 'circle-check')->order(1)->active('approvals.*'))
             ->add(MenuItem::make('E-signatures', 'signatures.index', 'file-signature')->order(2)->active('signatures.*'))
-            ->add(MenuItem::make('Scan documents', 'captures.index', 'scan-text')->can('capture-documents')->order(3)->active(['captures.*', 'settings.ocr.*']));
+            ->add(MenuItem::make('Scan documents', 'captures.index', 'scan-text')->can('capture-documents')->order(3)->active(['captures.*', 'settings.ocr.*']))
+            ->add(MenuItem::make('Assistant', 'assistant.index', 'sparkles')->can('use-assistant')->order(4)->active(['assistant.*', 'settings.assistant.*']));
 
         $menu->section('settings', 'Workspace', 900)
             ->add(MenuItem::make('Settings', 'settings.workspace.edit', 'settings')->order(10)
