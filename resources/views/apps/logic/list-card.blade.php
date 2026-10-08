@@ -1,5 +1,5 @@
 {{-- A titled list for app logic cards. $rows: list<array{label: string, sub?: string, value?: string, href?: string, tone?: string}> --}}
-<div class="card mb-3 h-100">
+<div class="card mb-3 flex-grow-1">
     <div class="card-header">
         <h5 class="card-title"><x-icon :name="$icon ?? 'list'" class="zi me-1" /> {{ $title }}</h5>
         @isset($link)<a href="{{ $link['href'] }}" class="btn btn-sm btn-soft-primary">{{ $link['label'] }}</a>@endisset

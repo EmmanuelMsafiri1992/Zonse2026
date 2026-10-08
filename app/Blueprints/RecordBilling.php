@@ -43,6 +43,14 @@ class RecordBilling
             throw ValidationException::withMessages(['billing' => 'This '.strtolower($record->definition()->label).' has already been billed for '.$period.'.']);
         }
 
+        if ($period === null && ! empty($record->definition()->billing['periodic'])) {
+            throw ValidationException::withMessages(['billing' => 'A '.strtolower($record->definition()->label).' is billed one period at a time. Use the billing action for the period instead.']);
+        }
+
+        if ($period === null && ! empty($record->definition()->billing['once']) && $record->invoices()->where('status', '!=', 'cancelled')->exists()) {
+            throw ValidationException::withMessages(['billing' => 'This '.strtolower($record->definition()->label).' has already been invoiced.']);
+        }
+
         if ($period === null && ($open = $record->openInvoice())) {
             throw ValidationException::withMessages(['billing' => 'Invoice '.$open->number.' is still open. Take payment against it, or cancel it, before invoicing again.']);
         }

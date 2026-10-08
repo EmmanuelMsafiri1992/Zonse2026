@@ -44,9 +44,9 @@
                         <div class="row g-2">
                             <template x-for="item in matches()" :key="item.id">
                                 <div class="col-6 col-md-4">
-                                    <button type="button" class="btn btn-white w-100 h-100 text-start p-2" @click="add(item)" :disabled="item.stock !== null && item.stock <= qtyInCart(item.id)">
+                                    <button type="button" class="btn btn-white w-100 h-100 text-start p-2 d-flex flex-column align-items-stretch" @click="add(item)" :disabled="item.stock !== null && item.stock <= qtyInCart(item.id)">
                                         <div class="fw-semibold text-truncate" x-text="item.name"></div>
-                                        <div class="d-flex justify-content-between fs-8 text-muted">
+                                        <div class="d-flex justify-content-between gap-2 fs-8 text-muted">
                                             <span x-text="money(item.price)"></span>
                                             <span x-show="item.stock !== null" x-text="fmt(item.stock) + ' left'"></span>
                                         </div>

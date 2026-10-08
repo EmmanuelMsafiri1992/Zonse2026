@@ -132,7 +132,7 @@ class RentalsLogic extends AppLogic
         $old = (float) $lease->amount;
         $new = Money::round($old * (1 + $percent / 100));
         $lease->update(['amount' => $new, 'data' => array_merge((array) $lease->data, ['_escalated_year' => today()->year])]);
-        $lease->addComment('Rent escalated by '.rtrim(rtrim(number_format($percent, 2), '0'), '.').'% from '.$this->money($old).' to '.$this->money($new).'.', null, true);
+        $lease->addComment('Rent escalated by '.rtrim(rtrim(number_format($percent, 2), '0'), '.').'% from '.$this->money($old).' to '.$this->money($new).'.', null, true, 'Zonseo (automatic)');
 
         return true;
     }
@@ -143,10 +143,11 @@ class RentalsLogic extends AppLogic
             $owing = $this->owingFor([$record->id]);
             $nextEscalation = null;
             if ($record->occurs_on && (float) $record->value('escalation_percent') > 0) {
-                $nextEscalation = $record->occurs_on->copy()->year(today()->year);
-                if ($nextEscalation->lte(today())) {
+                $nextEscalation = $record->occurs_on->copy()->startOfMonth()->year(today()->year);
+                if ($nextEscalation->lt(today()->startOfMonth()) || (int) $record->value('_escalated_year') === today()->year) {
                     $nextEscalation->addYear();
                 }
+                $nextEscalation = $nextEscalation->max($record->occurs_on->copy()->addYear()->startOfMonth());
             }
 
             return [['view' => 'apps.logic.stats-card', 'data' => ['title' => 'Rent account', 'icon' => 'wallet', 'stats' => [
@@ -202,8 +203,8 @@ class RentalsLogic extends AppLogic
         })->all();
 
         $unitNames = $units->pluck('title', 'id');
-        $rentRoll = $this->records('leases')->whereIn('status', self::LIVE)->orderBy('title')->get()
-            ->map(fn (Record $lease) => [$lease->title, $unitNames[$lease->value('unit')] ?? '—', $lease->due_on?->format('d M Y') ?? 'Open-ended', $this->money($lease->amount)])->all();
+        $rentRoll = $this->records('leases')->whereIn('status', self::LIVE)->with('contact')->orderBy('title')->get()
+            ->map(fn (Record $lease) => [$lease->contact?->name ?? $lease->title, $unitNames[$lease->value('unit')] ?? '—', $lease->due_on?->format('d M Y') ?? 'Open-ended', $this->money($lease->amount)])->all();
 
         $collected = Invoice::query()->whereIn('record_id', $this->records('leases')->select('id'))->whereNotNull('period')
             ->whereBetween('issue_date', [$from->copy()->startOfDay(), $to->copy()->endOfDay()])->get()
@@ -216,7 +217,7 @@ class RentalsLogic extends AppLogic
             ['title' => 'Rent roll', 'columns' => ['Tenant', 'Unit', 'Lease ends', 'Monthly rent'], 'rows' => $rentRoll,
                 'note' => 'Total monthly rent: '.$this->money($this->records('leases')->whereIn('status', self::LIVE)->sum('amount'))],
             ['title' => 'Rent billed and collected', 'columns' => ['Month', 'Billed', 'Collected', 'Outstanding'], 'rows' => $this->billing()->available() ? $collected : []],
-            ['title' => 'Arrears', 'columns' => ['Tenant', 'Lease', 'Owing'], 'rows' => $this->arrears()->map(fn (array $row) => [$row['lease']->title, $row['lease']->number, $this->money($row['owing'])])->values()->all()],
+            ['title' => 'Arrears', 'columns' => ['Tenant', 'Lease', 'Owing'], 'rows' => $this->arrears()->map(fn (array $row) => [$row['lease']->contact?->name ?? $row['lease']->title, $row['lease']->number, $this->money($row['owing'])])->values()->all()],
         ];
     }
 
@@ -229,7 +230,7 @@ class RentalsLogic extends AppLogic
 
         $owing = Invoice::query()->whereIn('record_id', $this->records('leases')->select('id'))->whereIn('status', Invoice::OPEN_STATUSES)
             ->whereDate('due_date', '<', today())->selectRaw('record_id, sum(balance) as owing')->groupBy('record_id')->pluck('owing', 'record_id');
-        $leases = $this->records('leases')->whereKey($owing->keys()->all())->get()->keyBy('id');
+        $leases = $this->records('leases')->with('contact')->whereKey($owing->keys()->all())->get()->keyBy('id');
 
         return $owing->map(fn ($amount, $id) => ['lease' => $leases->get($id), 'owing' => (float) $amount])
             ->filter(fn (array $row) => $row['lease'] && $row['owing'] > 0)->sortByDesc('owing')->values();

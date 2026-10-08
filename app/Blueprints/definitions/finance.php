@@ -107,7 +107,7 @@ return [
             'tendered:money|Amount tendered',
             'change:money|Change given',
             'discount:money',
-        ], ['icon' => 'shopping-cart', 'prefix' => 'POS-', 'bill' => true, 'contact' => 'Customer', 'amount' => 'Total', 'date' => 'Sale date', 'assignee' => true, 'list' => ['till', 'payment_method']]],
+        ], ['icon' => 'shopping-cart', 'prefix' => 'POS-', 'bill' => ['once' => true], 'contact' => 'Customer', 'amount' => 'Total', 'date' => 'Sale date', 'assignee' => true, 'list' => ['till', 'payment_method']]],
         'tills' => ['Till', 'Till name', 'active,inactive', [
             'mode:select=retail,restaurant,pharmacy*',
             'location',

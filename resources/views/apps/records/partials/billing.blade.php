@@ -1,9 +1,13 @@
-@php $open = $invoices->first(fn ($invoice) => $invoice->isOpen()); @endphp
+@php
+    $open = $invoices->first(fn ($invoice) => $invoice->isOpen());
+    $manualBillingClosed = ! empty($def->billing['periodic'])
+        || (! empty($def->billing['once']) && $invoices->contains(fn ($invoice) => $invoice->status !== 'cancelled'));
+@endphp
 <div class="card mb-3">
     <div class="card-header">
         <h5 class="card-title">Billing</h5>
         @can('update', $record)
-            @if($invoices->isEmpty() || ! $open)
+            @if(($invoices->isEmpty() || ! $open) && ! $manualBillingClosed)
                 <form method="POST" action="{{ route('apps.records.bill', [$app->key, $def->key, $record->id]) }}">
                     @csrf
                     <button class="btn btn-sm btn-soft-primary"><x-icon name="receipt" class="zi zi-sm" /> {{ $invoices->isEmpty() ? 'Create invoice' : 'Invoice again' }}</button>

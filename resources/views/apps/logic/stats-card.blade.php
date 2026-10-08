@@ -1,5 +1,5 @@
 {{-- Figures for app logic cards. $stats: list<array{label: string, value: string, tone?: string}> --}}
-<div class="card mb-3 h-100">
+<div class="card mb-3 flex-grow-1">
     <div class="card-header"><h5 class="card-title"><x-icon :name="$icon ?? 'chart-column'" class="zi me-1" /> {{ $title }}</h5></div>
     <div class="card-body">
         <div class="row g-3">

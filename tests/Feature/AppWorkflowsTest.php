@@ -135,6 +135,11 @@ class AppWorkflowsTest extends TestCase
         $this->assertSame(today()->format('Y-m'), $leaseRecord->invoices()->firstOrFail()->period);
         $this->actingAs($owner)->post(route('apps.records.action', ['tenants', 'leases', $leaseRecord->id, 'bill_rent']))->assertSessionHasErrors('billing');
 
+        // Rent is billed one month at a time, never through a period-less invoice.
+        $this->actingAs($owner)->get($leaseRecord->url())->assertOk()->assertDontSee('Create invoice')->assertDontSee('Invoice again');
+        $this->actingAs($owner)->post(route('apps.records.bill', ['tenants', 'leases', $leaseRecord->id]))->assertSessionHasErrors('billing');
+        $this->assertSame(1, $leaseRecord->invoices()->count());
+
         // The daily run does not bill the month again.
         Artisan::call('zonseo:run-app-schedules');
         $this->assertSame(1, $leaseRecord->invoices()->count());
@@ -148,12 +153,13 @@ class AppWorkflowsTest extends TestCase
 
     public function test_the_daily_run_bills_rent_and_applies_the_anniversary_escalation(): void
     {
-        [, $workspace] = $this->appWorkspace('tenants');
+        [$owner, $workspace] = $this->appWorkspace('tenants');
         $tenant = Contact::factory()->create(['workspace_id' => $workspace->id]);
         $unit = $this->record($workspace, 'tenants', 'units', '3A', 'occupied');
         $lease = $this->record($workspace, 'tenants', 'leases', 'Long-standing tenant', 'active', ['unit' => $unit->id, 'escalation_percent' => 10], [
             'contact_id' => $tenant->id, 'amount' => 500, 'occurs_on' => today()->subYear()->startOfMonth(),
         ]);
+        $this->actingAs($owner)->get($lease->url())->assertOk()->assertSeeInOrder(['Next increase', today()->format('M Y')]);
         $future = $this->record($workspace, 'tenants', 'leases', 'Starts next month', 'active', ['unit' => $unit->id], [
             'contact_id' => $tenant->id, 'amount' => 300, 'occurs_on' => today()->addMonth(),
         ]);
@@ -167,6 +173,7 @@ class AppWorkflowsTest extends TestCase
         Artisan::call('zonseo:run-app-schedules');
         $this->assertSame(550.0, (float) $lease->fresh()->amount, 'escalation happens once a year');
         $this->assertSame(1, $lease->invoices()->count());
+        $this->actingAs($owner)->get($lease->url())->assertOk()->assertSeeInOrder(['Next increase', today()->addYear()->format('M Y')]);
     }
 
     public function test_salon_prices_visits_from_the_menu_and_works_out_commission(): void
@@ -231,6 +238,11 @@ class AppWorkflowsTest extends TestCase
         $invoice = $sale->invoices()->firstOrFail();
         $this->assertSame('paid', $invoice->status);
         $this->assertSame('Walk-in customer', $invoice->contact->name);
+
+        // A sale is invoiced once, at the till, even after it is paid.
+        $this->actingAs($owner)->get($sale->url())->assertOk()->assertDontSee('Invoice again');
+        $this->actingAs($owner)->post(route('apps.records.bill', ['pos', 'sales', $sale->id]))->assertSessionHasErrors('billing');
+        $this->assertSame(1, $sale->invoices()->count());
 
         $this->actingAs($owner)->get(route('apps.records.document', ['pos', 'sales', $sale->id, 'receipt']))->assertOk()->assertSee('Bread')->assertSee('Come again!');
         $this->actingAs($owner)->get(route('apps.show', 'pos'))->assertOk()->assertSee('Low on stock')->assertSee('Bread');

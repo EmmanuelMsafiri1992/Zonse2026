@@ -24,7 +24,7 @@
     @if($cards)
         <div class="row g-3 mb-4">
             @foreach($cards as $card)
-                <div class="col-lg-6">@include($card['view'], $card['data'])</div>
+                <div class="col-lg-6 d-flex flex-column">@include($card['view'], $card['data'])</div>
             @endforeach
         </div>
     @endif
