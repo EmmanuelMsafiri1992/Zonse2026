@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api;
 
+use App\Support\CustomFields;
 use Modules\Tasks\Http\Requests\TaskRequest;
 use Modules\Tasks\Models\Task;
 
@@ -22,6 +23,6 @@ class TaskApiRequest extends TaskRequest
     protected function prepareForValidation(): void
     {
         $model = $this->route($this->routeKey);
-        $this->replace(array_merge($model instanceof Task ? $this->currentValues($model) : ['priority' => 'normal'], $this->all()));
+        $this->replace(CustomFields::fromApi(array_merge($model instanceof Task ? $this->currentValues($model) : ['priority' => 'normal'], $this->all()), $model instanceof Task ? $model : null));
     }
 }

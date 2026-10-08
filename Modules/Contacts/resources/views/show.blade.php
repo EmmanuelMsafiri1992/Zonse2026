@@ -45,6 +45,7 @@
                     <div class="card-body fs-7" style="white-space:pre-line">{{ $contact->notes }}</div>
                 </div>
             @endif
+            <x-custom-fields.details :record="$contact" />
         </div>
 
         <div class="col-lg-8">

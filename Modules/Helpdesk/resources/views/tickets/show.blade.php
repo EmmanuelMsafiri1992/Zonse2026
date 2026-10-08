@@ -87,6 +87,7 @@
                     </div>
                 </div>
             @endif
+            <x-custom-fields.details :record="$ticket" />
         </div>
 
         <div class="col-lg-8">

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api;
 
+use App\Support\CustomFields;
 use Illuminate\Validation\Rule;
 use Modules\Helpdesk\Http\Requests\TicketRequest;
 use Modules\Helpdesk\Models\Ticket;
@@ -32,6 +33,6 @@ class TicketApiRequest extends TicketRequest
     protected function prepareForValidation(): void
     {
         $model = $this->route($this->routeKey);
-        $this->replace(array_merge($model instanceof Ticket ? $this->currentValues($model) : ['channel' => 'web', 'priority' => 'normal'], $this->all()));
+        $this->replace(CustomFields::fromApi(array_merge($model instanceof Ticket ? $this->currentValues($model) : ['channel' => 'web', 'priority' => 'normal'], $this->all()), $model instanceof Ticket ? $model : null));
     }
 }

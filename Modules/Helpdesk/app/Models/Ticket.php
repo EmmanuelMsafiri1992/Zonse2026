@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Support\Sequence;
 use App\Tenancy\BelongsToWorkspace;
 use App\Tenancy\HasComments;
+use App\Tenancy\HasCustomFields;
 use App\Tenancy\RecordsActivity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -26,7 +27,7 @@ use Modules\Helpdesk\Database\Factories\TicketFactory;
 class Ticket extends Model
 {
     /** @use HasFactory<TicketFactory> */
-    use BelongsToWorkspace, HasComments, HasFactory, RecordsActivity, SoftDeletes;
+    use BelongsToWorkspace, HasComments, HasCustomFields, HasFactory, RecordsActivity, SoftDeletes;
 
     public const STATUSES = ['open' => 'Open', 'pending' => 'Waiting on customer', 'resolved' => 'Resolved', 'closed' => 'Closed'];
 

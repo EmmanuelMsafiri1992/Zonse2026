@@ -63,6 +63,7 @@
                     <div class="card-body fs-7" style="white-space:pre-line">{{ $appointment->notes }}</div>
                 </div>
             @endif
+            <x-custom-fields.details :record="$appointment" />
         </div>
 
         <div class="col-lg-8">

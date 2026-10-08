@@ -18,6 +18,7 @@
                         <x-form.textarea name="description" label="Details (optional)" :value="$task->description" rows="5" placeholder="Anything the person doing it needs to know." />
                     </div>
                 </div>
+                <x-custom-fields.inputs entity="task" :record="$task" />
             </div>
             <div class="col-lg-4">
                 <div class="card mb-3">

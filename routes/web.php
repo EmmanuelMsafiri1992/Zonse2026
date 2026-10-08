@@ -16,6 +16,7 @@ use App\Http\Controllers\Settings\AuditLogController;
 use App\Http\Controllers\Settings\AutomationController;
 use App\Http\Controllers\Settings\BillingController;
 use App\Http\Controllers\Settings\BranchController;
+use App\Http\Controllers\Settings\CustomFieldController;
 use App\Http\Controllers\Settings\DataExportController;
 use App\Http\Controllers\Settings\MemberController;
 use App\Http\Controllers\Settings\ModuleController;
@@ -125,6 +126,8 @@ Route::middleware(['auth', 'workspace'])->group(function () {
 
             Route::resource('automations', AutomationController::class)->except('show');
             Route::post('/automations/{automation}/toggle', [AutomationController::class, 'toggle'])->name('automations.toggle');
+            Route::resource('custom-fields', CustomFieldController::class)->except('show');
+            Route::post('/custom-fields/{custom_field}/move', [CustomFieldController::class, 'move'])->name('custom-fields.move');
 
             Route::get('/sms', [SmsSettingsController::class, 'edit'])->name('sms.edit');
             Route::put('/sms', [SmsSettingsController::class, 'update'])->name('sms.update');

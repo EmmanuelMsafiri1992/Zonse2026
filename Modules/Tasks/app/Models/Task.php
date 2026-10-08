@@ -6,6 +6,7 @@ use App\Models\Branch;
 use App\Models\User;
 use App\Tenancy\BelongsToWorkspace;
 use App\Tenancy\HasComments;
+use App\Tenancy\HasCustomFields;
 use App\Tenancy\RecordsActivity;
 use App\Tenancy\WorkspaceContext;
 use Carbon\CarbonImmutable;
@@ -22,7 +23,7 @@ use Modules\Tasks\Database\Factories\TaskFactory;
 class Task extends Model
 {
     /** @use HasFactory<TaskFactory> */
-    use BelongsToWorkspace, HasComments, HasFactory, RecordsActivity, SoftDeletes;
+    use BelongsToWorkspace, HasComments, HasCustomFields, HasFactory, RecordsActivity, SoftDeletes;
 
     public const STATUSES = ['todo' => 'To do', 'in_progress' => 'In progress', 'done' => 'Done'];
 

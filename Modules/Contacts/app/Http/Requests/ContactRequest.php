@@ -2,6 +2,7 @@
 
 namespace Modules\Contacts\Http\Requests;
 
+use App\Support\CustomFields;
 use App\Support\Lists;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -34,16 +35,22 @@ class ContactRequest extends FormRequest
             'tags' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string', 'max:5000'],
             'is_active' => ['nullable', 'boolean'],
-        ];
+        ] + CustomFields::rules('contact', $this, $this->route('contact'));
+    }
+
+    /** @return array<string, string> */
+    public function attributes(): array
+    {
+        return CustomFields::attributes('contact');
     }
 
     /** @return array<string, mixed> */
     public function payload(): array
     {
-        $data = $this->validated();
+        $data = collect($this->validated())->except('custom')->all();
         $data['tags'] = collect(explode(',', (string) ($data['tags'] ?? '')))->map(fn ($t) => trim($t))->filter()->unique()->values()->all();
         $data['is_active'] = $this->boolean('is_active', true);
 
-        return $data;
+        return $data + CustomFields::payload('contact', $this, $this->route('contact'));
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\V1;
 
+use App\Support\CustomFields;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Modules\Contacts\Models\Contact;
@@ -30,6 +31,7 @@ class ContactResource extends JsonResource
             'notes' => $this->notes,
             'is_active' => $this->is_active,
             'branch_id' => $this->branch_id,
+            'custom_fields' => (object) CustomFields::forApi($this->resource),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];

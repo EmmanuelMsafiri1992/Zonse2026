@@ -45,6 +45,7 @@
                         </div>
                     </div>
                 </div>
+                <x-custom-fields.inputs entity="contact" :record="$contact" />
             </div>
 
             <div class="col-lg-4">

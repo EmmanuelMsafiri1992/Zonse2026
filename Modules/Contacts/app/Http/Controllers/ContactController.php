@@ -4,6 +4,8 @@ namespace Modules\Contacts\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
+use App\Models\CustomField;
+use App\Support\CustomFields;
 use App\Support\Lists;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -97,15 +99,17 @@ class ContactController extends Controller
         $this->authorize('viewAny', Contact::class);
 
         $query = $this->filtered($this->filters($request))->orderBy('name');
+        $extra = CustomFields::for('contact');
 
-        return response()->streamDownload(function () use ($query) {
+        return response()->streamDownload(function () use ($query, $extra) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['Name', 'Company', 'Type', 'Email', 'Phone', 'Mobile', 'Tax number', 'Address', 'City', 'Country', 'Currency', 'Tags', 'Active']);
-            $query->chunk(500, function ($rows) use ($out) {
+            fputcsv($out, ['Name', 'Company', 'Type', 'Email', 'Phone', 'Mobile', 'Tax number', 'Address', 'City', 'Country', 'Currency', 'Tags', 'Active', ...$extra->pluck('label')]);
+            $query->chunk(500, function ($rows) use ($out, $extra) {
                 foreach ($rows as $c) {
                     fputcsv($out, [
                         $c->name, $c->company_name, $c->typeLabel(), $c->email, $c->phone, $c->mobile, $c->tax_number,
                         $c->address, $c->city, $c->country_code, $c->currency_code, implode(', ', $c->tags ?? []), $c->is_active ? 'yes' : 'no',
+                        ...$extra->map(fn (CustomField $field) => $field->display($c->customField($field->key))),
                     ]);
                 }
             });

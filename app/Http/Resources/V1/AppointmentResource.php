@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\V1;
 
+use App\Support\CustomFields;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Modules\Appointments\Models\Appointment;
@@ -24,6 +25,7 @@ class AppointmentResource extends JsonResource
             'branch_id' => $this->branch_id,
             'price' => $this->price === null ? null : (float) $this->price,
             'notes' => $this->notes,
+            'custom_fields' => (object) CustomFields::forApi($this->resource),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];

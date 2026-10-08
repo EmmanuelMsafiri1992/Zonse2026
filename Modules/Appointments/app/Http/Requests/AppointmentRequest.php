@@ -2,6 +2,7 @@
 
 namespace Modules\Appointments\Http\Requests;
 
+use App\Support\CustomFields;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -34,13 +35,13 @@ class AppointmentRequest extends FormRequest
             'price' => ['nullable', 'numeric', 'min:0', 'max:99999999'],
             'notes' => ['nullable', 'string', 'max:5000'],
             'allow_overlap' => ['nullable', 'boolean'],
-        ];
+        ] + CustomFields::rules('appointment', $this, $this->route('appointment'));
     }
 
     /** @return array<string, string> */
     public function attributes(): array
     {
-        return ['contact_id' => 'customer', 'service_id' => 'service', 'staff_id' => 'staff member', 'duration_minutes' => 'duration'];
+        return ['contact_id' => 'customer', 'service_id' => 'service', 'staff_id' => 'staff member', 'duration_minutes' => 'duration'] + CustomFields::attributes('appointment');
     }
 
     /** Reject double-booking a staff member unless the user explicitly allows the overlap. */
@@ -97,6 +98,6 @@ class AppointmentRequest extends FormRequest
             'ends_at' => $endsAt->format('Y-m-d H:i:s'),
             'price' => $price,
             'notes' => $data['notes'] ?? null,
-        ] + (isset($data['status']) ? ['status' => $data['status']] : []);
+        ] + (isset($data['status']) ? ['status' => $data['status']] : []) + CustomFields::payload('appointment', $this, $this->route('appointment'));
     }
 }

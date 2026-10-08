@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api;
 
+use App\Support\CustomFields;
 use Modules\Contacts\Http\Requests\ContactRequest;
 use Modules\Contacts\Models\Contact;
 
@@ -27,6 +28,6 @@ class ContactApiRequest extends ContactRequest
             $merged['tags'] = implode(', ', $merged['tags']);
         }
 
-        $this->replace($merged);
+        $this->replace(CustomFields::fromApi($merged, $model instanceof Contact ? $model : null));
     }
 }

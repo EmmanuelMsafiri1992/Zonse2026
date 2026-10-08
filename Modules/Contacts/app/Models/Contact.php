@@ -6,6 +6,7 @@ use App\Models\Branch;
 use App\Models\User;
 use App\Tenancy\BelongsToWorkspace;
 use App\Tenancy\HasComments;
+use App\Tenancy\HasCustomFields;
 use App\Tenancy\RecordsActivity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,7 +18,7 @@ use Modules\Contacts\Database\Factories\ContactFactory;
 class Contact extends Model
 {
     /** @use HasFactory<ContactFactory> */
-    use BelongsToWorkspace, HasComments, HasFactory, RecordsActivity, SoftDeletes;
+    use BelongsToWorkspace, HasComments, HasCustomFields, HasFactory, RecordsActivity, SoftDeletes;
 
     public const TYPES = ['customer' => 'Customer', 'supplier' => 'Supplier', 'lead' => 'Lead', 'other' => 'Other'];
 

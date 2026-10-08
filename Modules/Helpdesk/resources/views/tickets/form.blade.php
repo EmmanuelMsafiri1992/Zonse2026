@@ -28,6 +28,7 @@
                         </div>
                     </div>
                 </div>
+                <x-custom-fields.inputs entity="ticket" :record="$ticket" />
             </div>
             <div class="col-lg-4">
                 <div class="card mb-3">

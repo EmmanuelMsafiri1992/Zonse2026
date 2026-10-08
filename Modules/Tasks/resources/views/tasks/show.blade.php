@@ -50,6 +50,7 @@
                     </ul>
                 </div>
             </div>
+            <x-custom-fields.details :record="$task" />
         </div>
 
         <div class="col-lg-8">

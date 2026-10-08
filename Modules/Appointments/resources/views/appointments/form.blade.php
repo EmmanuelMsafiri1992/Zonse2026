@@ -64,6 +64,7 @@
                         <x-form.check name="allow_overlap" label="Allow overlap with another booking for the same staff member" :checked="(bool) old('allow_overlap', false)" help="Leave this off and we will stop you double-booking someone." />
                     </div>
                 </div>
+                <x-custom-fields.inputs entity="appointment" :record="$appointment" />
             </div>
 
             <div class="col-lg-4">
