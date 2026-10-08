@@ -6,6 +6,7 @@ use App\Http\Controllers\Apps\PosController;
 use App\Http\Controllers\Apps\RecordController;
 use App\Http\Controllers\Apps\RecordWorkflowController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DocumentCaptureController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\NotificationController;
@@ -23,6 +24,7 @@ use App\Http\Controllers\Settings\CustomFieldController;
 use App\Http\Controllers\Settings\DataExportController;
 use App\Http\Controllers\Settings\MemberController;
 use App\Http\Controllers\Settings\ModuleController;
+use App\Http\Controllers\Settings\OcrSettingsController;
 use App\Http\Controllers\Settings\SmsSettingsController;
 use App\Http\Controllers\Settings\WebhookController;
 use App\Http\Controllers\Settings\WorkspaceSettingsController;
@@ -83,6 +85,14 @@ Route::middleware(['auth', 'workspace'])->group(function () {
         Route::get('/signatures/{signatureRequest}/certificate', [SignatureRequestController::class, 'certificate'])->name('signatures.certificate');
         Route::post('/signatures/{signatureRequest}/remind', [SignatureRequestController::class, 'remind'])->middleware('throttle:5,1')->name('signatures.remind');
         Route::post('/signatures/{signatureRequest}/cancel', [SignatureRequestController::class, 'cancel'])->name('signatures.cancel');
+
+        Route::get('/captures', [DocumentCaptureController::class, 'index'])->name('captures.index');
+        Route::post('/captures', [DocumentCaptureController::class, 'store'])->middleware('throttle:20,1')->name('captures.store');
+        Route::get('/captures/{capture}', [DocumentCaptureController::class, 'show'])->name('captures.show');
+        Route::put('/captures/{capture}', [DocumentCaptureController::class, 'update'])->name('captures.update');
+        Route::get('/captures/{capture}/file', [DocumentCaptureController::class, 'file'])->name('captures.file');
+        Route::post('/captures/{capture}/retry', [DocumentCaptureController::class, 'retry'])->middleware('throttle:10,1')->name('captures.retry');
+        Route::delete('/captures/{capture}', [DocumentCaptureController::class, 'destroy'])->name('captures.destroy');
 
         // Blueprint apps: every data-driven catalogue module runs on these generic screens.
         Route::get('/apps', [AppController::class, 'index'])->name('apps.index');
@@ -161,6 +171,9 @@ Route::middleware(['auth', 'workspace'])->group(function () {
             Route::get('/sms', [SmsSettingsController::class, 'edit'])->name('sms.edit');
             Route::put('/sms', [SmsSettingsController::class, 'update'])->name('sms.update');
             Route::post('/sms/test', [SmsSettingsController::class, 'test'])->middleware('throttle:5,1')->name('sms.test');
+
+            Route::get('/document-capture', [OcrSettingsController::class, 'edit'])->name('ocr.edit');
+            Route::put('/document-capture', [OcrSettingsController::class, 'update'])->name('ocr.update');
         });
 
         Route::middleware('can:manage-workspace')->group(function () {
