@@ -8,6 +8,7 @@ use App\Models\Record;
 use App\Models\User;
 use App\Models\Workspace;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Modules\Contacts\Models\Contact;
 use Tests\Concerns\InteractsWithWorkspaces;
 use Tests\TestCase;
@@ -197,5 +198,22 @@ class BlueprintAppsTest extends TestCase
 
         $this->actingAs($owner)->get(route('apps.index'))->assertOk()->assertSee('Clinic &amp; patients', false)->assertDontSee('Driving school');
         $this->actingAs($owner)->get(route('dashboard'))->assertOk()->assertSee('Widget Patient');
+    }
+
+    public function test_pages_stay_light_when_every_app_is_enabled(): void
+    {
+        [$owner, $workspace] = $this->ownerWithWorkspace();
+        $workspace->enableModules([...app(BlueprintRegistry::class)->keys(), 'contacts'], $owner);
+        Record::factory()->ofEntity('farm', 'fields')->create(['workspace_id' => $workspace->id, 'title' => 'Top paddock']);
+        $this->actingAs($owner);
+
+        DB::enableQueryLog();
+        $dashboard = $this->get(route('dashboard'))->assertOk()->assertSee('Top paddock');
+        $this->assertLessThan(60, count(DB::getQueryLog()), 'Dashboard queries should not grow with the number of apps.');
+        $this->assertSame(6, substr_count($dashboard->getContent(), 'Nothing recorded yet') + 1, 'Only the six most relevant app widgets are shown.');
+
+        DB::flushQueryLog();
+        $this->get(route('apps.records.create', ['clinic', 'patients']))->assertOk();
+        $this->assertLessThan(30, count(DB::getQueryLog()), 'Module checks should be answered from one query.');
     }
 }

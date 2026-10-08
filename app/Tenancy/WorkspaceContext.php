@@ -16,14 +16,10 @@ class WorkspaceContext
 
     protected ?Branch $branch = null;
 
-    /** @var array<string, bool> cache of module-enabled checks */
-    protected array $moduleCache = [];
-
     public function set(?Workspace $workspace, ?Branch $branch = null): static
     {
         $this->workspace = $workspace;
         $this->branch = $branch;
-        $this->moduleCache = [];
 
         return $this;
     }
@@ -73,7 +69,7 @@ class WorkspaceContext
             return false;
         }
 
-        return $this->moduleCache[$key] ??= $this->workspace->hasModule($key);
+        return $this->workspace->hasModule($key);
     }
 
     /**

@@ -30,6 +30,7 @@ class WidgetRegistry
             'width' => 4,      // bootstrap columns (1-12)
             'order' => 100,
             'data' => null,    // optional closure returning view data
+            'when' => null,    // optional closure deciding visibility (after the module/permission checks)
         ], $options);
 
         return $this;
@@ -54,6 +55,9 @@ class WidgetRegistry
                     return false;
                 }
                 if ($w['permission'] && $user && ! $user->is_super_admin && ! $user->can($w['permission'])) {
+                    return false;
+                }
+                if (is_callable($w['when']) && ! call_user_func($w['when'])) {
                     return false;
                 }
 

@@ -19,6 +19,9 @@ class Workspace extends Model
 
     use SoftDeletes;
 
+    /** @var array<string, int>|null enabled module keys, memoised by hasModule() */
+    protected ?array $enabledModuleSet = null;
+
     protected $fillable = [
         'name', 'slug', 'type', 'profession_id', 'owner_id', 'email', 'phone', 'website',
         'address', 'city', 'country_code', 'currency_code', 'locale', 'timezone', 'logo_path',
@@ -125,6 +128,10 @@ class Workspace extends Model
         return $this->modules()->pluck('modules.key')->all();
     }
 
+    /**
+     * Whether the workspace can use a module: core modules always, others when enabled.
+     * The enabled keys are loaded once per instance so menus, widgets and gates share one query.
+     */
     public function hasModule(string $key): bool
     {
         $module = Module::findByKey($key);
@@ -135,7 +142,9 @@ class Workspace extends Model
             return true;
         }
 
-        return $this->modules()->where('modules.id', $module->id)->exists();
+        $this->enabledModuleSet ??= array_flip($this->enabledModuleKeys());
+
+        return isset($this->enabledModuleSet[$key]);
     }
 
     /** Enable a list of module keys (dependencies are enabled too). */
@@ -148,6 +157,7 @@ class Workspace extends Model
             $attach[$id] = ['enabled_by' => $by?->id, 'enabled_at' => now()];
         }
         $this->modules()->syncWithoutDetaching($attach);
+        $this->enabledModuleSet = null;
     }
 
     public function disableModule(string $key): void
@@ -155,6 +165,7 @@ class Workspace extends Model
         $module = Module::findByKey($key);
         if ($module && ! $module->is_core) {
             $this->modules()->detach($module->id);
+            $this->enabledModuleSet = null;
         }
     }
 

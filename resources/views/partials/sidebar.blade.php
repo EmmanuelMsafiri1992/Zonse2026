@@ -12,14 +12,14 @@
                 @if($item->hasChildren())
                     <div class="z-nav-group {{ $item->isActive() ? 'open' : '' }}" x-data="{ open: {{ $item->isActive() ? 'true' : 'false' }} }" :class="{ open }">
                         <a href="#" class="z-nav-link {{ $item->isActive() ? 'active' : '' }}" @click.prevent="open = !open">
-                            <x-icon :name="$item->icon" />
+                            {!! \App\Support\Icon::svg($item->icon) !!}
                             <span>{{ $item->label }}</span>
-                            <x-icon name="chevron-right" class="zi zi-sm z-caret" />
+                            {!! \App\Support\Icon::svg('chevron-right', 'zi zi-sm z-caret') !!}
                         </a>
                         <div class="z-nav-sub">
                             @foreach($item->children as $child)
                                 <a href="{{ $child->href() }}" class="z-nav-link {{ $child->isActive() ? 'active' : '' }}">
-                                    <x-icon :name="$child->icon" class="zi zi-sm" />
+                                    {!! \App\Support\Icon::svg($child->icon, 'zi zi-sm') !!}
                                     <span>{{ $child->label }}</span>
                                 </a>
                             @endforeach
@@ -27,7 +27,7 @@
                     </div>
                 @else
                     <a href="{{ $item->href() }}" class="z-nav-link {{ $item->isActive() ? 'active' : '' }}">
-                        <x-icon :name="$item->icon" />
+                        {!! \App\Support\Icon::svg($item->icon) !!}
                         <span>{{ $item->label }}</span>
                         @if($item->badge)<span class="z-nav-badge {{ $item->badgeClass }}">{{ $item->badge }}</span>@endif
                     </a>
