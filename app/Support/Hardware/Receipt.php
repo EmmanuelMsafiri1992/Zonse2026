@@ -2,6 +2,7 @@
 
 namespace App\Support\Hardware;
 
+use App\Models\FiscalDocument;
 use App\Models\Record;
 use App\Models\Workspace;
 use App\Support\Money;
@@ -14,7 +15,7 @@ use Illuminate\Support\Str;
 class Receipt
 {
     /**
-     * @return array{business: string, header: list<string>, number: string, date: string, cashier: ?string, till: ?string, lines: list<array{description: string, quantity: string, unit_price: float, total: float}>, tax: float, total: float, tendered: float, change: float, method: string, approval_code: ?string, footer: string, qr: ?string, currency: string, cash: bool}
+     * @return array{business: string, header: list<string>, number: string, date: string, cashier: ?string, till: ?string, lines: list<array{description: string, quantity: string, unit_price: float, total: float}>, tax: float, total: float, tendered: float, change: float, method: string, approval_code: ?string, footer: string, qr: ?string, qr_label: string, fiscal: ?array{authority: string, number: string, code: string, test: bool}, currency: string, cash: bool}
      */
     public static function forSale(Record $sale, Workspace $workspace): array
     {
@@ -26,7 +27,9 @@ class Receipt
             'total' => (float) $line['total'],
         ], array_values((array) $sale->value('_lines')));
         $net = array_sum(array_map(fn (array $line) => Money::round((float) $line['quantity'] * (float) $line['unit_price']), (array) $sale->value('_lines')));
-        $invoice = $settings['receipt_qr'] ? $sale->invoices()->latest('id')->first() : null;
+        $invoice = $sale->invoices()->latest('id')->first();
+        $fiscal = $invoice ? FiscalDocument::query()->forWorkspace($workspace)->where('invoice_id', $invoice->id)->where('type', 'invoice')->first() : null;
+        $qr = $fiscal ? $fiscal->qrData() : ($settings['receipt_qr'] ? $invoice?->publicUrl() : null);
 
         return [
             'business' => $workspace->name,
@@ -43,7 +46,14 @@ class Receipt
             'method' => ucfirst(str_replace('_', ' ', (string) $sale->value('payment_method'))),
             'approval_code' => $sale->value('_card_approval'),
             'footer' => (string) ($sale->related('till')?->value('receipt_footer') ?: 'Thank you for shopping with us.'),
-            'qr' => $invoice?->publicUrl(),
+            'qr' => $qr,
+            'qr_label' => $fiscal ? 'Scan to verify with '.$fiscal->authorityName() : 'Scan for your invoice',
+            'fiscal' => $fiscal ? [
+                'authority' => $fiscal->authorityName(),
+                'number' => $fiscal->fiscal_number,
+                'code' => $fiscal->verification_code,
+                'test' => ($fiscal->payload['mode'] ?? 'test') === 'test',
+            ] : null,
             'currency' => (string) ($sale->currency ?: $workspace->currency_code),
             'cash' => $sale->value('payment_method') === 'cash',
         ];
@@ -97,9 +107,16 @@ class Receipt
         if ($receipt['approval_code']) {
             $out .= $row('Card approval', $receipt['approval_code']);
         }
+        if ($receipt['fiscal']) {
+            $out .= str_repeat('-', $columns)."\n";
+            $out .= $row('Fiscal no.', $receipt['fiscal']['number']).$row('Verify code', $receipt['fiscal']['code']);
+            if ($receipt['fiscal']['test']) {
+                $out .= $text($receipt['fiscal']['authority'].' test mode')."\n";
+            }
+        }
         $out .= "\n".$center.wordwrap($text($receipt['footer']), $columns, "\n", true)."\n";
         if ($receipt['qr']) {
-            $out .= "\n".self::qr($receipt['qr']).'Scan for your invoice'."\n";
+            $out .= "\n".self::qr($receipt['qr']).$text($receipt['qr_label'])."\n";
         }
         $out .= $esc.'d'."\x04".$gs.'V'."\x42\x00";
         if ($openDrawer && $receipt['cash']) {

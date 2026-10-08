@@ -81,7 +81,7 @@ class InvoiceController extends Controller
     {
         $this->authorize('view', $invoice);
 
-        $invoice->load(['contact', 'branch', 'creator', 'lines.item', 'payments.receiver', 'quote', 'comments.user']);
+        $invoice->load(['contact', 'branch', 'creator', 'lines.item', 'payments.receiver', 'quote', 'comments.user', 'fiscalDocuments']);
 
         return view('invoicing::invoices.show', ['invoice' => $invoice, 'methods' => Payment::METHODS]);
     }
@@ -91,7 +91,7 @@ class InvoiceController extends Controller
         $this->authorize('update', $invoice);
 
         if (! $invoice->isEditable()) {
-            return redirect()->route('invoices.show', $invoice)->with('flash', ['type' => 'warning', 'message' => 'This invoice has payments or is closed and can no longer be edited.']);
+            return redirect()->route('invoices.show', $invoice)->with('flash', ['type' => 'warning', 'message' => $invoice->isFiscalised() ? 'This invoice has been reported to the tax authority and can no longer be edited. Cancel it and issue a new one instead.' : 'This invoice has payments or is closed and can no longer be edited.']);
         }
         $invoice->load('lines');
 
@@ -120,6 +120,9 @@ class InvoiceController extends Controller
 
         if ($invoice->payments()->exists()) {
             return back()->with('flash', ['type' => 'danger', 'message' => 'Remove the payments on this invoice before deleting it.']);
+        }
+        if ($invoice->isFiscalised()) {
+            return back()->with('flash', ['type' => 'danger', 'message' => $invoice->number.' has been reported to the tax authority and cannot be deleted. Cancel it instead, which issues a credit note.']);
         }
         $number = $invoice->number;
         $invoice->delete();
@@ -196,7 +199,7 @@ class InvoiceController extends Controller
     {
         $this->authorize('view', $invoice);
 
-        $invoice->load(['contact', 'branch', 'lines', 'payments']);
+        $invoice->load(['contact', 'branch', 'lines', 'payments', 'fiscalDocuments']);
 
         return view('invoicing::invoices.print', ['invoice' => $invoice, 'document' => $invoice, 'kind' => 'invoice']);
     }
@@ -204,7 +207,7 @@ class InvoiceController extends Controller
     public function pdf(Invoice $invoice): Response
     {
         $this->authorize('view', $invoice);
-        $invoice->load(['workspace', 'contact', 'branch', 'lines', 'payments']);
+        $invoice->load(['workspace', 'contact', 'branch', 'lines', 'payments', 'fiscalDocuments']);
 
         return DocumentPdf::response($invoice, 'invoice');
     }

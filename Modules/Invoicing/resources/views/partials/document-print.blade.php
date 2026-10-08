@@ -110,6 +110,23 @@
         <table class="signature"><tr><td>For {{ $ws?->name }}</td><td class="gap"></td><td>{{ $isInvoice ? 'Received by' : 'Accepted by' }} (name, signature, date)</td></tr></table>
     @endif
 
+    @php $fiscal = $isInvoice ? $document->fiscalDocuments->firstWhere('type', 'invoice') : null; @endphp
+    @if($fiscal)
+        <table class="fiscal">
+            <tr>
+                <td class="fiscal-qr"><img src="data:image/svg+xml;base64,{{ base64_encode(\App\Support\Hardware\QrCode::svg($fiscal->qrData(), 110)) }}" alt="Fiscal QR code" width="88" height="88"></td>
+                <td>
+                    <h4>{{ $fiscal->authorityName() }} fiscal invoice</h4>
+                    Fiscal no. <b>{{ $fiscal->fiscal_number }}</b><br>
+                    Verification code <b>{{ $fiscal->verification_code }}</b><br>
+                    {{ $fiscal->payload['seller']['tax_id'] ? (\App\Support\Fiscal\Authorities::get($fiscal->authority)['tax_id'] ?? 'Tax no.').' '.$fiscal->payload['seller']['tax_id'] : '' }}
+                    @if(($fiscal->payload['mode'] ?? 'test') === 'test')<br><span class="muted">Test mode: not sent to the tax authority.</span>@endif
+                    @if($credit = $document->fiscalDocuments->firstWhere('type', 'credit_note'))<br>Cancelled by credit note <b>{{ $credit->fiscal_number }}</b>@endif
+                </td>
+            </tr>
+        </table>
+    @endif
+
     <div class="foot">
         {{ $design->footer ?: 'Thank you for your business.' }}
         @if($isInvoice && $document->payments->isNotEmpty())

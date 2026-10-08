@@ -145,7 +145,7 @@ class AppServiceProvider extends ServiceProvider
 
         $menu->section('settings', 'Workspace', 900)
             ->add(MenuItem::make('Settings', 'settings.workspace.edit', 'settings')->order(10)
-                ->active(['settings.workspace.*', 'settings.members.*', 'settings.branches.*', 'settings.audit.*', 'settings.data-export.*', 'settings.api.*', 'settings.webhooks.*', 'settings.automations.*', 'settings.custom-fields.*', 'settings.approval-rules.*', 'settings.branding.*', 'settings.partners.*', 'settings.portal.*', 'settings.public-page.*', 'settings.hardware.*'])
+                ->active(['settings.workspace.*', 'settings.members.*', 'settings.branches.*', 'settings.audit.*', 'settings.data-export.*', 'settings.api.*', 'settings.webhooks.*', 'settings.automations.*', 'settings.custom-fields.*', 'settings.approval-rules.*', 'settings.branding.*', 'settings.partners.*', 'settings.portal.*', 'settings.public-page.*', 'settings.hardware.*', 'settings.fiscal.*'])
                 ->children([
                     MenuItem::make('General', 'settings.workspace.edit', 'building-2')->order(1)->active('settings.workspace.*'),
                     MenuItem::make('Team members', 'settings.members.index', 'users')->order(2)->active('settings.members.*'),
@@ -160,6 +160,7 @@ class AppServiceProvider extends ServiceProvider
                     MenuItem::make('Client portal', 'settings.portal.index', 'door-open')->order(11)->active('settings.portal.*'),
                     MenuItem::make('Public page', 'settings.public-page.edit', 'link')->order(12)->active('settings.public-page.*'),
                     MenuItem::make('Hardware', 'settings.hardware.edit', 'printer')->order(13)->active('settings.hardware.*'),
+                    MenuItem::make('Fiscalisation', 'settings.fiscal.edit', 'landmark')->order(14)->active('settings.fiscal.*'),
                 ]))
             ->add(MenuItem::make('Apps & modules', 'settings.modules.index', 'layout-grid')->order(20)->active('settings.modules.*'))
             ->add(MenuItem::make('Plan & billing', 'settings.billing.index', 'credit-card')->order(30)->active('settings.billing.*'))

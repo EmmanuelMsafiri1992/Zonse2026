@@ -3,6 +3,7 @@
 namespace App\Blueprints\Logic;
 
 use App\Blueprints\AppLogic;
+use App\Models\FiscalDocument;
 use App\Models\Record;
 use App\Models\User;
 use App\Support\Hardware\CardTerminal;
@@ -134,6 +135,7 @@ class PosLogic extends AppLogic
 
         $lines = (array) $record->value('_lines');
         $till = $record->related('till');
+        $fiscal = FiscalDocument::query()->where('type', 'invoice')->whereIn('invoice_id', $record->invoices()->select('invoices.id'))->first();
 
         return ['view' => 'apps.logic.document', 'data' => [
             'heading' => 'Receipt',
@@ -142,6 +144,7 @@ class PosLogic extends AppLogic
                 'Cashier' => $record->assignee?->name,
                 'Paid by' => ucfirst(str_replace('_', ' ', (string) $record->value('payment_method'))),
                 'Card approval' => $record->value('_card_approval'),
+                'Fiscal no.' => $fiscal ? $fiscal->fiscal_number.' · '.$fiscal->verification_code : null,
             ]),
             'columns' => ['Item', 'Qty', 'Price', 'Amount'],
             'rows' => array_map(fn (array $line) => [$line['description'], $this->quantity($line['quantity']), number_format($line['unit_price'], 2), number_format($line['total'], 2)], $lines),

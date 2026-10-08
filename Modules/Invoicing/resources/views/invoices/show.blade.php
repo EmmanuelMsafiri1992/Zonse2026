@@ -109,14 +109,40 @@
                 @can('update', $invoice)
                     @if($invoice->status !== 'cancelled' && $invoice->amount_paid <= 0)
                         <div class="card-footer d-flex gap-2">
-                            <form method="POST" action="{{ route('invoices.cancel', $invoice) }}" onsubmit="return confirm('Cancel {{ $invoice->number }}?')">@csrf<button class="btn btn-sm btn-white"><x-icon name="ban" class="zi zi-sm" /> Cancel invoice</button></form>
+                            <form method="POST" action="{{ route('invoices.cancel', $invoice) }}" onsubmit="return confirm('Cancel {{ $invoice->number }}?{{ $invoice->isFiscalised() ? ' A credit note will be reported to the tax authority.' : '' }}')">@csrf<button class="btn btn-sm btn-white"><x-icon name="ban" class="zi zi-sm" /> Cancel invoice</button></form>
+                            @if(! $invoice->isFiscalised())
                             @can('delete', $invoice)
                                 <form method="POST" action="{{ route('invoices.destroy', $invoice) }}" onsubmit="return confirm('Delete {{ $invoice->number }}? This cannot be undone.')">@csrf @method('DELETE')<button class="btn btn-sm btn-soft-danger"><x-icon name="trash-2" class="zi zi-sm" /> Delete</button></form>
                             @endcan
+                            @endif
                         </div>
                     @endif
                 @endcan
             </div>
+
+            @if($invoice->fiscalDocuments->isNotEmpty())
+                <div class="card mb-3">
+                    <div class="card-header"><h5 class="card-title mb-0"><x-icon name="landmark" /> Tax authority</h5></div>
+                    <ul class="list-group list-group-flush fs-7">
+                        @foreach($invoice->fiscalDocuments as $fiscal)
+                            <li class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fw-600">{{ $fiscal->typeLabel() }} · {{ $fiscal->authorityName() }}</span>
+                                    <x-pill :status="['signed' => 'paid', 'pending' => 'sent', 'rejected' => 'overdue'][$fiscal->status] ?? $fiscal->status">{{ $fiscal->statusLabel() }}</x-pill>
+                                </div>
+                                <div><a href="{{ $fiscal->verifyUrl() }}" target="_blank">{{ $fiscal->fiscal_number }}</a></div>
+                                <div class="text-muted font-monospace fs-8">{{ $fiscal->verification_code }}</div>
+                                @if($fiscal->last_error)<div class="text-danger fs-8">{{ $fiscal->last_error }}</div>@endif
+                            </li>
+                        @endforeach
+                    </ul>
+                    @can('manage-workspace')
+                        @if($invoice->fiscalDocuments->contains('status', 'pending'))
+                            <div class="card-footer"><form method="POST" action="{{ route('settings.fiscal.retry') }}">@csrf<button class="btn btn-sm btn-white"><x-icon name="refresh-cw" class="zi zi-sm" /> Send now</button></form></div>
+                        @endif
+                    @endcan
+                </div>
+            @endif
 
             <div class="card">
                 <div class="card-header"><h5 class="card-title">Notes & activity</h5></div>

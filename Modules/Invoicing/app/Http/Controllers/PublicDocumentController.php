@@ -24,7 +24,7 @@ class PublicDocumentController extends Controller
         $invoice = Invoice::allWorkspaces()->where('uuid', $uuid)->with('workspace')->firstOrFail();
         $context->set($invoice->workspace);
         abort_if(Approvals::blocking($invoice, 'invoice.send') !== null, 404);
-        $invoice->load(['contact', 'branch', 'lines', 'payments']);
+        $invoice->load(['contact', 'branch', 'lines', 'payments', 'fiscalDocuments']);
         $payable = $invoice->isOpen() && $invoice->balance > 0 && $context->hasModule('invoicing');
 
         return view('invoicing::invoices.print', [
@@ -48,7 +48,7 @@ class PublicDocumentController extends Controller
         $invoice = Invoice::allWorkspaces()->where('uuid', $uuid)->with('workspace')->firstOrFail();
         $context->set($invoice->workspace);
         abort_if(Approvals::blocking($invoice, 'invoice.send') !== null, 404);
-        $invoice->load(['contact', 'branch', 'lines', 'payments']);
+        $invoice->load(['contact', 'branch', 'lines', 'payments', 'fiscalDocuments']);
 
         return DocumentPdf::response($invoice, 'invoice');
     }

@@ -8,6 +8,7 @@ use App\Http\Controllers\Apps\RecordWorkflowController;
 use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentCaptureController;
+use App\Http\Controllers\FiscalVerificationController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\NotificationController;
@@ -28,6 +29,7 @@ use App\Http\Controllers\Settings\BranchController;
 use App\Http\Controllers\Settings\BrandingController;
 use App\Http\Controllers\Settings\CustomFieldController;
 use App\Http\Controllers\Settings\DataExportController;
+use App\Http\Controllers\Settings\FiscalSettingsController;
 use App\Http\Controllers\Settings\HardwareSettingsController;
 use App\Http\Controllers\Settings\MemberController;
 use App\Http\Controllers\Settings\ModuleController;
@@ -100,6 +102,8 @@ Route::prefix('p/{workspace:slug}')->name('public.')->middleware('throttle:60,1'
 });
 
 // Called by the USSD gateway for every screen a feature phone shows; the token picks the workspace.
+Route::get('/verify/{code}', [FiscalVerificationController::class, 'show'])->where('code', '[A-Za-z0-9-]{19}')->middleware('throttle:60,1')->name('fiscal.verify');
+
 Route::post('/webhooks/ussd/{token}', UssdCallbackController::class)->middleware('throttle:120,1')->name('ussd.callback');
 
 // Sign in with Google or Microsoft (guests), or link one to the signed-in user's profile.
@@ -270,6 +274,12 @@ Route::middleware(['auth', 'workspace'])->group(function () {
 
             Route::get('/hardware', [HardwareSettingsController::class, 'edit'])->name('hardware.edit');
             Route::put('/hardware', [HardwareSettingsController::class, 'update'])->name('hardware.update');
+
+            Route::get('/fiscal', [FiscalSettingsController::class, 'edit'])->name('fiscal.edit');
+            Route::put('/fiscal', [FiscalSettingsController::class, 'update'])->name('fiscal.update');
+            Route::get('/fiscal/log', [FiscalSettingsController::class, 'log'])->name('fiscal.log');
+            Route::post('/fiscal/retry', [FiscalSettingsController::class, 'retry'])->middleware('throttle:10,1')->name('fiscal.retry');
+            Route::post('/fiscal/verify-chain', [FiscalSettingsController::class, 'verifyChain'])->middleware('throttle:10,1')->name('fiscal.verify-chain');
 
             Route::get('/sms', [SmsSettingsController::class, 'edit'])->name('sms.edit');
             Route::put('/sms', [SmsSettingsController::class, 'update'])->name('sms.update');

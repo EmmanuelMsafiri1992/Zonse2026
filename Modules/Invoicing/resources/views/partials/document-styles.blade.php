@@ -35,6 +35,11 @@
 .doc .signature { margin-top: 40px; }
 .doc .signature td { width: 45%; border-top: 1px solid #323338; padding-top: 6px; font-size: .85em; color: #676879; }
 .doc .signature .gap { width: 10%; border: 0; }
+.doc .fiscal { width: 100%; margin-top: 20px; border: 1px solid #d0d4e4; border-radius: 6px; font-size: .85em; }
+.doc .fiscal td { padding: 8px 10px; vertical-align: top; }
+.doc .fiscal .fiscal-qr { width: 96px; }
+.doc .fiscal h4 { margin: 0 0 4px; }
+.doc .fiscal .muted { color: #676879; }
 .doc .foot { margin-top: 28px; border-top: 1px solid #d0d4e4; padding-top: 10px; font-size: .85em; color: #676879; text-align: center; }
 .doc-banner .head { background: {{ $accent }}; }
 .doc-banner .head td { padding: 18px 20px; }

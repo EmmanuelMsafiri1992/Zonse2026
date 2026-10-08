@@ -2,7 +2,9 @@
 
 namespace Modules\Invoicing\Models;
 
+use App\Models\FiscalDocument;
 use App\Models\Record;
+use App\Support\Fiscal\Fiscaliser;
 use App\Support\Money;
 use App\Support\Sequence;
 use App\Tenancy\BelongsToWorkspace;
@@ -62,6 +64,9 @@ class Invoice extends Model
                 $record = $invoice->record()->first();
                 $record?->appLogic()?->invoiceChanged($record, $invoice);
             }
+
+            // Issuing or cancelling reports the invoice to the tax authority when fiscalisation is on.
+            app(Fiscaliser::class)->invoiceSaved($invoice);
         });
     }
 
@@ -78,6 +83,18 @@ class Invoice extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class)->latest('paid_on')->latest('id');
+    }
+
+    /** What has been reported to the tax authority: the invoice itself and, once cancelled, its credit note. */
+    public function fiscalDocuments(): HasMany
+    {
+        return $this->hasMany(FiscalDocument::class)->orderBy('counter');
+    }
+
+    /** A fiscalised invoice is final: it can be cancelled (which issues a credit note) but not edited or deleted. */
+    public function isFiscalised(): bool
+    {
+        return $this->relationLoaded('fiscalDocuments') ? $this->fiscalDocuments->isNotEmpty() : $this->fiscalDocuments()->exists();
     }
 
     public function quote(): BelongsTo
@@ -109,7 +126,7 @@ class Invoice extends Model
 
     public function isEditable(): bool
     {
-        return in_array($this->status, ['draft', 'sent', 'overdue'], true) && $this->amount_paid <= 0;
+        return in_array($this->status, ['draft', 'sent', 'overdue'], true) && $this->amount_paid <= 0 && ! $this->isFiscalised();
     }
 
     public function isOpen(): bool

@@ -44,9 +44,15 @@
             <div class="row"><span>Change</span><span>{{ number_format($receipt['change'], 2) }}</span></div>
         @endif
         @if($receipt['approval_code'])<div class="row"><span>Card approval</span><span>{{ $receipt['approval_code'] }}</span></div>@endif
+        @if($receipt['fiscal'])
+            <div class="rule"></div>
+            <div class="row"><span>Fiscal no.</span><span>{{ $receipt['fiscal']['number'] }}</span></div>
+            <div class="row"><span>Verify code</span><span>{{ $receipt['fiscal']['code'] }}</span></div>
+            @if($receipt['fiscal']['test'])<div>{{ $receipt['fiscal']['authority'] }} test mode</div>@endif
+        @endif
         <div class="center" style="margin-top:8px">{{ $receipt['footer'] }}</div>
         @if($qr)
-            <div class="center qr" style="margin-top:6px">{!! $qr !!}<div>Scan for your invoice</div></div>
+            <div class="center qr" style="margin-top:6px">{!! $qr !!}<div>{{ $receipt['qr_label'] }}</div></div>
         @endif
     </div>
     <div class="actions"><button type="button" onclick="window.print()">Print</button></div>
