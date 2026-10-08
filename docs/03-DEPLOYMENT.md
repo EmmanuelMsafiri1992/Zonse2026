@@ -160,7 +160,7 @@ a few minutes after cron and Supervisor start.
 - **Uptime:** point UptimeRobot, Better Stack or similar at `https://your-domain/up`. It returns 200 when the
   database and cache work and the scheduler and queue heartbeats are fresh, and 500 otherwise.
 - **Alerts:** `zonseo:monitor` also checks the queue backlog, jobs failed in the last hour, backup age (> 26 h)
-  and free disk (< 10 %). It logs at `critical` level and emails `ALERT_EMAIL` once per new problem, then again
+  and free disk (under 10 % *and* under 5 GB). It logs at `critical` level and emails `ALERT_EMAIL` once per new problem, then again
   every 6 hours while it persists. Run it by hand to see the current state.
 - Thresholds live in `config/zonseo.php` under `monitor`.
 

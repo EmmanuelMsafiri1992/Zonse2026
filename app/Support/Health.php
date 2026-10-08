@@ -149,9 +149,24 @@ class Health
         if (! $total || $free === false) {
             return ['ok' => true, 'message' => 'Disk space could not be read.'];
         }
-        $percent = round($free / $total * 100, 1);
 
-        return ['ok' => $percent >= (float) config('zonseo.monitor.min_free_disk_percent'), 'message' => $percent.'% free ('.round($free / 1073741824, 1).' GB).'];
+        return $this->evaluateDisk($free, $total);
+    }
+
+    /**
+     * Low only when both the share and the absolute amount are short, so a large
+     * drive with plenty of gigabytes left does not alarm at a small percentage.
+     *
+     * @return array{ok: bool, message: string}
+     */
+    public function evaluateDisk(float $freeBytes, float $totalBytes): array
+    {
+        $percent = round($freeBytes / $totalBytes * 100, 1);
+        $gigabytes = round($freeBytes / 1073741824, 1);
+        $low = $percent < (float) config('zonseo.monitor.min_free_disk_percent')
+            && $gigabytes < (float) config('zonseo.monitor.min_free_disk_gb');
+
+        return ['ok' => ! $low, 'message' => $percent.'% free ('.$gigabytes.' GB).'];
     }
 
     public static function latestBackup(): ?string

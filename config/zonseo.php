@@ -53,6 +53,7 @@ return [
         'queue_backlog' => 500,
         'backup_stale_hours' => 26,
         'min_free_disk_percent' => 10,
+        'min_free_disk_gb' => 5,
         'repeat_alert_hours' => 6,
     ],
 

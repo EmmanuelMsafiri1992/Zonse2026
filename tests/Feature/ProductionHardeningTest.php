@@ -136,6 +136,17 @@ class ProductionHardeningTest extends TestCase
         $this->assertSame('ops@example.com', $sent->first()->getEnvelope()->getRecipients()[0]->getAddress());
     }
 
+    public function test_disk_is_low_only_when_both_the_percentage_and_gigabytes_are_short(): void
+    {
+        $gb = 1073741824;
+        $health = app(Health::class);
+
+        $this->assertTrue($health->evaluateDisk(17 * $gb, 400 * $gb)['ok'], 'Under 10% but 17 GB free is fine');
+        $this->assertTrue($health->evaluateDisk(4 * $gb, 20 * $gb)['ok'], 'Under 5 GB but 20% free is fine');
+        $this->assertFalse($health->evaluateDisk(4 * $gb, 400 * $gb)['ok'], 'Under 10% and under 5 GB is low');
+        $this->assertSame('4.3% free (17 GB).', $health->evaluateDisk(17 * $gb, 400 * $gb)['message']);
+    }
+
     public function test_production_check_flags_debug_mode_and_demo_logins(): void
     {
         config(['app.debug' => true]);
