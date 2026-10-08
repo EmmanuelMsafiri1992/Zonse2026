@@ -23,6 +23,9 @@ class PosLogic extends AppLogic
     /** Sale payment method => Invoicing payment method. "account" sales stay owing on the invoice. */
     public const PAYMENT_METHODS = ['cash' => 'cash', 'card' => 'card', 'mobile_money' => 'mobile_money', 'account' => null, 'split' => 'other'];
 
+    /** Name of the shared contact that sales without a chosen customer are billed to. */
+    public const WALK_IN_CUSTOMER = 'Walk-in customer';
+
     /**
      * Ring up a sale. Prices and tax always come from the item list, never from the browser.
      *
@@ -93,7 +96,7 @@ class PosLogic extends AppLogic
             return null;
         }
 
-        return Contact::query()->firstOrCreate(['name' => 'Walk-in customer', 'type' => 'customer'], ['kind' => 'person']);
+        return Contact::query()->firstOrCreate(['name' => self::WALK_IN_CUSTOMER, 'type' => 'customer'], ['kind' => 'person']);
     }
 
     public function invoiceLines(Record $record): array

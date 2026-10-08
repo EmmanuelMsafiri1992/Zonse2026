@@ -33,7 +33,7 @@ class PosController extends Controller
                 ...$item->toPickerRow(), 'sku' => $item->sku, 'stock' => $item->tracksStock() ? (float) $item->stock_qty : null,
             ])->values(),
             'tills' => Record::query()->ofEntity('pos', 'tills')->where('status', 'active')->orderBy('title')->pluck('title', 'id'),
-            'contacts' => Contact::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id'),
+            'contacts' => Contact::query()->where('is_active', true)->where('name', '!=', PosLogic::WALK_IN_CUSTOMER)->orderBy('name')->pluck('name', 'id'),
         ]);
     }
 

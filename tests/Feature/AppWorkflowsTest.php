@@ -239,6 +239,10 @@ class AppWorkflowsTest extends TestCase
         $this->assertSame('paid', $invoice->status);
         $this->assertSame('Walk-in customer', $invoice->contact->name);
 
+        // The till's empty choice already means walk-in, so the contact is not listed twice.
+        $this->actingAs($owner)->get(route('apps.pos.till'))->assertOk()->assertSeeTextInOrder(['Walk-in customer'])
+            ->assertViewHas('contacts', fn ($contacts) => ! $contacts->contains('Walk-in customer'));
+
         // A sale is invoiced once, at the till, even after it is paid.
         $this->actingAs($owner)->get($sale->url())->assertOk()->assertDontSee('Invoice again');
         $this->actingAs($owner)->post(route('apps.records.bill', ['pos', 'sales', $sale->id]))->assertSessionHasErrors('billing');
