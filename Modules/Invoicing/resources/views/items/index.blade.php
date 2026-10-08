@@ -5,6 +5,9 @@
         @if($items->isNotEmpty())
             <button type="submit" form="labelsForm" class="btn btn-white"><x-icon name="tag" /> Print labels</button>
         @endif
+        @can('manage-workspace')
+            <a href="{{ route('settings.imports.index', ['target' => 'items']) }}" class="btn btn-white"><x-icon name="file-up" /> Import</a>
+        @endcan
         @can('create', \Modules\Invoicing\Models\Item::class)
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#itemModal_new"><x-icon name="plus" /> New item</button>
         @endcan

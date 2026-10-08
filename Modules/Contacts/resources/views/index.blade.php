@@ -3,6 +3,9 @@
 @section('content')
     <x-page-header title="Contacts" sub="Customers, suppliers, leads and everyone else you do business with." :crumbs="['Contacts']">
         <a href="{{ route('contacts.export', request()->query()) }}" class="btn btn-white"><x-icon name="download" /> Export CSV</a>
+        @can('manage-workspace')
+            <a href="{{ route('settings.imports.index', ['target' => 'contacts']) }}" class="btn btn-white"><x-icon name="file-up" /> Import</a>
+        @endcan
         @can('create', \Modules\Contacts\Models\Contact::class)
             <a href="{{ route('contacts.create') }}" class="btn btn-primary"><x-icon name="plus" /> New contact</a>
         @endcan

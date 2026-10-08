@@ -5,6 +5,9 @@
     <x-page-header :title="$def->plural" :sub="$def->description ?? $app->name"
                    :crumbs="['Apps' => route('apps.index'), $app->name => route('apps.show', $app->key), $def->plural]">
         <a href="{{ route('apps.records.export', [$app->key, $def->key, 'q' => $filters['q'], 'status' => $filters['status']]) }}" class="btn btn-white"><x-icon name="download" /> Export CSV</a>
+        @can('manage-workspace')
+            <a href="{{ route('settings.imports.index', ['target' => 'records.'.$app->key.'.'.$def->key]) }}" class="btn btn-white"><x-icon name="file-up" /> Import</a>
+        @endcan
         @can('create', \App\Models\Record::class)
             <a href="{{ route('apps.records.create', [$app->key, $def->key, 'contact' => $filters['contact']]) }}" class="btn btn-primary"><x-icon name="plus" /> New {{ strtolower($def->label) }}</a>
         @endcan

@@ -31,6 +31,7 @@ use App\Http\Controllers\Settings\CustomFieldController;
 use App\Http\Controllers\Settings\DataExportController;
 use App\Http\Controllers\Settings\FiscalSettingsController;
 use App\Http\Controllers\Settings\HardwareSettingsController;
+use App\Http\Controllers\Settings\ImportController;
 use App\Http\Controllers\Settings\MemberController;
 use App\Http\Controllers\Settings\ModuleController;
 use App\Http\Controllers\Settings\OcrSettingsController;
@@ -280,6 +281,14 @@ Route::middleware(['auth', 'workspace'])->group(function () {
             Route::get('/fiscal/log', [FiscalSettingsController::class, 'log'])->name('fiscal.log');
             Route::post('/fiscal/retry', [FiscalSettingsController::class, 'retry'])->middleware('throttle:10,1')->name('fiscal.retry');
             Route::post('/fiscal/verify-chain', [FiscalSettingsController::class, 'verifyChain'])->middleware('throttle:10,1')->name('fiscal.verify-chain');
+            Route::get('/imports', [ImportController::class, 'index'])->name('imports.index');
+            Route::get('/imports/template/{target}.{format}', [ImportController::class, 'template'])->where(['target' => '[a-z0-9_.-]+', 'format' => 'xlsx|csv'])->name('imports.template');
+            Route::post('/imports', [ImportController::class, 'store'])->middleware('throttle:20,1')->name('imports.store');
+            Route::get('/imports/{import}', [ImportController::class, 'show'])->name('imports.show');
+            Route::put('/imports/{import}', [ImportController::class, 'update'])->name('imports.update');
+            Route::post('/imports/{import}/run', [ImportController::class, 'run'])->middleware('throttle:10,1')->name('imports.run');
+            Route::post('/imports/{import}/undo', [ImportController::class, 'undo'])->middleware('throttle:10,1')->name('imports.undo');
+            Route::delete('/imports/{import}', [ImportController::class, 'destroy'])->name('imports.destroy');
 
             Route::get('/sms', [SmsSettingsController::class, 'edit'])->name('sms.edit');
             Route::put('/sms', [SmsSettingsController::class, 'update'])->name('sms.update');
