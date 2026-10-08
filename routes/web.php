@@ -15,6 +15,7 @@ use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\Portal\PortalAuthController;
 use App\Http\Controllers\Portal\PortalController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicPageController;
 use App\Http\Controllers\PublicSigningController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\Settings\ApiKeyController;
@@ -32,6 +33,7 @@ use App\Http\Controllers\Settings\ModuleController;
 use App\Http\Controllers\Settings\OcrSettingsController;
 use App\Http\Controllers\Settings\PartnerController;
 use App\Http\Controllers\Settings\PortalSettingsController;
+use App\Http\Controllers\Settings\PublicPageSettingsController;
 use App\Http\Controllers\Settings\SmsSettingsController;
 use App\Http\Controllers\Settings\WebhookController;
 use App\Http\Controllers\Settings\WorkspaceSettingsController;
@@ -80,6 +82,20 @@ Route::prefix('portal/{workspace:slug}')->name('portal.')->middleware('throttle:
         Route::get('/profile', [PortalController::class, 'profile'])->name('profile');
         Route::put('/profile', [PortalController::class, 'updateProfile'])->name('profile.update');
     });
+});
+
+// Public page (link in bio): visitors book, order or pay without an account.
+Route::prefix('p/{workspace:slug}')->name('public.')->middleware('throttle:60,1')->group(function () {
+    Route::get('/', [PublicPageController::class, 'show'])->name('show');
+    Route::get('/book', [PublicPageController::class, 'booking'])->name('booking');
+    Route::post('/book', [PublicPageController::class, 'storeBooking'])->middleware('throttle:public-form')->name('booking.store');
+    Route::get('/booking/{uuid}', [PublicPageController::class, 'showBooking'])->whereUuid('uuid')->name('booking.show');
+    Route::post('/booking/{uuid}/cancel', [PublicPageController::class, 'cancelBooking'])->whereUuid('uuid')->middleware('throttle:public-form')->name('booking.cancel');
+    Route::get('/order', [PublicPageController::class, 'order'])->name('order');
+    Route::post('/order', [PublicPageController::class, 'storeOrder'])->middleware('throttle:public-form')->name('order.store');
+    Route::get('/pay', [PublicPageController::class, 'payment'])->name('payment');
+    Route::post('/pay', [PublicPageController::class, 'storePayment'])->middleware('throttle:public-form')->name('payment.store');
+    Route::get('/received/{uuid}', [PublicPageController::class, 'received'])->whereUuid('uuid')->name('received');
 });
 
 // Called by the USSD gateway for every screen a feature phone shows; the token picks the workspace.
@@ -245,6 +261,9 @@ Route::middleware(['auth', 'workspace'])->group(function () {
             Route::post('/portal/access/{access}/link', [PortalSettingsController::class, 'resend'])->middleware('throttle:10,1')->name('portal.resend');
             Route::post('/portal/access/{access}/toggle', [PortalSettingsController::class, 'toggle'])->name('portal.toggle');
             Route::delete('/portal/access/{access}', [PortalSettingsController::class, 'destroy'])->name('portal.destroy');
+
+            Route::get('/public-page', [PublicPageSettingsController::class, 'edit'])->name('public-page.edit');
+            Route::put('/public-page', [PublicPageSettingsController::class, 'update'])->name('public-page.update');
 
             Route::get('/sms', [SmsSettingsController::class, 'edit'])->name('sms.edit');
             Route::put('/sms', [SmsSettingsController::class, 'update'])->name('sms.update');
