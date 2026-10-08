@@ -2,6 +2,7 @@
 
 namespace Modules\Invoicing\Models;
 
+use App\Support\Hardware\Barcodes;
 use App\Tenancy\BelongsToWorkspace;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,7 +18,7 @@ class Item extends Model
 
     public const TYPES = ['service' => 'Service', 'product' => 'Product'];
 
-    protected $fillable = ['workspace_id', 'type', 'name', 'sku', 'description', 'unit', 'price', 'cost', 'stock_qty', 'reorder_level', 'tax_rate_id', 'is_active'];
+    protected $fillable = ['workspace_id', 'type', 'name', 'sku', 'barcode', 'description', 'unit', 'price', 'cost', 'stock_qty', 'reorder_level', 'tax_rate_id', 'is_active'];
 
     protected function casts(): array
     {
@@ -43,7 +44,7 @@ class Item extends Model
     {
         $term = trim((string) $term);
 
-        return $term === '' ? $query : $query->where(fn (Builder $q) => $q->where('name', 'like', "%{$term}%")->orWhere('sku', 'like', "%{$term}%"));
+        return $term === '' ? $query : $query->where(fn (Builder $q) => $q->where('name', 'like', "%{$term}%")->orWhere('sku', 'like', "%{$term}%")->orWhere('barcode', $term));
     }
 
     /** Products with a stock quantity are counted down when sold; null means stock is not tracked. */
@@ -79,5 +80,11 @@ class Item extends Model
             'id' => $this->id, 'name' => $this->name, 'description' => $this->description, 'unit' => $this->unit,
             'price' => (float) $this->price, 'tax_rate' => (float) ($this->taxRate?->rate ?? 0),
         ];
+    }
+
+    /** The barcode as bars (EAN-13 or UPC-A), else null so labels fall back to a QR code. */
+    public function barcodeSvg(int $moduleWidth = 2, int $height = 50): ?string
+    {
+        return $this->barcode ? Barcodes::ean13Svg($this->barcode, $moduleWidth, $height) : null;
     }
 }

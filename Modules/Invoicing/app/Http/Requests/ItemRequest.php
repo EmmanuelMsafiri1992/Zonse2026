@@ -2,6 +2,7 @@
 
 namespace Modules\Invoicing\Http\Requests;
 
+use App\Support\Hardware\Barcodes;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Modules\Invoicing\Models\Item;
@@ -20,6 +21,15 @@ class ItemRequest extends FormRequest
             'type' => ['required', Rule::in(array_keys(Item::TYPES))],
             'name' => ['required', 'string', 'max:160'],
             'sku' => ['nullable', 'string', 'max:60'],
+            'barcode' => [
+                'nullable', 'string', 'max:64', 'regex:/^[\x21-\x7E]+$/',
+                Rule::unique('items', 'barcode')->where('workspace_id', $this->user()->current_workspace_id)->whereNull('deleted_at')->ignore($this->route('item')),
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (ctype_digit((string) $value) && in_array(strlen((string) $value), [8, 12, 13, 14], true) && ! Barcodes::isValidGtin((string) $value)) {
+                        $fail('The last digit of this barcode does not match. Scan it again or check for a typo.');
+                    }
+                },
+            ],
             'description' => ['nullable', 'string', 'max:2000'],
             'unit' => ['nullable', 'string', 'max:20'],
             'price' => ['required', 'numeric', 'min:0', 'max:99999999'],
@@ -29,6 +39,12 @@ class ItemRequest extends FormRequest
             'tax_rate_id' => ['nullable', Rule::exists('tax_rates', 'id')->where('workspace_id', $this->user()->current_workspace_id)],
             'is_active' => ['nullable', 'boolean'],
         ];
+    }
+
+    /** @return array<string, string> */
+    public function messages(): array
+    {
+        return ['barcode.regex' => 'Barcodes use letters, digits and symbols, with no spaces.', 'barcode.unique' => 'Another item already has this barcode.'];
     }
 
     /** @return array<string, mixed> */

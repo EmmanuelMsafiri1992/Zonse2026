@@ -6,6 +6,7 @@
             'items' => $items,
             'symbol' => \App\Support\Money::symbol($workspace->currency_code),
             'lines' => array_values(old('lines', [])),
+            'scanUrl' => route('items.scan'),
         ];
     @endphp
 
@@ -19,7 +20,12 @@
         <div class="alert alert-success d-flex flex-wrap align-items-center gap-3">
             <span class="fs-5 fw-semibold">Change: {{ \App\Support\Money::format(session('lastSale')['change'], $workspace->currency_code) }}</span>
             <span class="text-muted">Sale {{ session('lastSale')['number'] }}</span>
-            <a href="{{ session('lastSale')['receipt'] }}" target="_blank" class="btn btn-sm btn-white ms-auto"><x-icon name="printer" /> Print receipt</a>
+            <div class="ms-auto d-flex flex-wrap gap-1" x-data="receiptPrinter({{ \Illuminate\Support\Js::from(session('lastSale')['escpos']) }})">
+                <a href="{{ session('lastSale')['receipt'] }}?print=1" target="_blank" class="btn btn-sm btn-white"><x-icon name="printer" /> Print receipt</a>
+                <button type="button" class="btn btn-sm btn-white" x-show="supported" x-cloak @click="send()" :disabled="busy" title="Send straight to a USB or serial receipt printer"><x-icon name="usb" /> Send to receipt printer</button>
+                <a href="{{ session('lastSale')['escpos'] }}" class="btn btn-sm btn-white" title="ESC/POS file for printer apps"><x-icon name="download" /> ESC/POS</a>
+                <span class="fs-8 text-danger align-self-center" x-show="error" x-text="error"></span>
+            </div>
         </div>
     @endif
 
@@ -33,8 +39,9 @@
             <div class="col-lg-7">
                 <div class="card h-100">
                     <div class="card-header">
-                        <input type="search" class="form-control" placeholder="Search items or scan a SKU…" x-model="search"
-                               @keydown.enter.prevent="addFirstMatch()" autofocus aria-label="Search items">
+                        <input type="search" class="form-control" placeholder="Search items or scan a barcode…" x-model="search"
+                               @keydown.enter.prevent="addFirstMatch()" @input="scanError = ''" autofocus aria-label="Search items">
+                        <div class="fs-8 text-danger mt-1" x-show="scanError" x-text="scanError"></div>
                     </div>
                     <div class="card-body">
                         @if($items->isEmpty())
@@ -62,8 +69,12 @@
                 <div class="card">
                     <div class="card-header d-flex align-items-center justify-content-between">
                         <h5 class="card-title mb-0">Cart</h5>
-                        <button type="button" class="btn btn-sm btn-soft-danger" x-show="lines.length" @click="lines = []">Clear</button>
+                        <div class="d-flex gap-1">
+                            <button type="button" class="btn btn-sm btn-white" x-show="serial && lines.length" x-cloak @click="readScale()" title="Set the last item's quantity from a scale on a USB or serial cable"><x-icon name="scale" /> Read scale</button>
+                            <button type="button" class="btn btn-sm btn-soft-danger" x-show="lines.length" @click="lines = []">Clear</button>
+                        </div>
                     </div>
+                    <div class="fs-8 text-danger px-3 pt-2" x-show="scaleError" x-text="scaleError"></div>
                     <div class="table-responsive">
                         <table class="table table-sm mb-0 fs-7 align-middle">
                             <tbody>
@@ -105,6 +116,10 @@
                             @endforeach
                         </div>
 
+                        @if($cardTerminal)
+                            <div x-show="method === 'card'" class="alert alert-info fs-7 py-2">The card terminal is charged when you press Charge.</div>
+                        @endif
+
                         <div x-show="method === 'cash'" class="mb-3">
                             <label class="form-label" for="tendered">Cash tendered</label>
                             <input type="number" step="0.01" min="0" id="tendered" name="tendered" class="form-control" x-model.number="tendered" :disabled="method !== 'cash'">
@@ -129,6 +144,9 @@
                 items: config.items,
                 lines: config.lines.map((line) => ({ item_id: Number(line.item_id), quantity: Number(line.quantity) })),
                 search: '',
+                scanError: '',
+                scaleError: '',
+                serial: 'serial' in navigator,
                 method: 'cash',
                 tendered: null,
                 submitting: false,
@@ -138,13 +156,58 @@
                     return term === '' ? this.items : this.items.filter((item) => item.name.toLowerCase().includes(term) || (item.sku || '').toLowerCase() === term);
                 },
                 qtyInCart(id) { return this.lines.filter((line) => line.item_id === id).reduce((sum, line) => sum + Number(line.quantity || 0), 0); },
-                add(item) {
+                add(item, quantity = 1) {
                     const line = this.lines.find((line) => line.item_id === item.id);
-                    line ? line.quantity = Number(line.quantity || 0) + 1 : this.lines.push({ item_id: item.id, quantity: 1 });
+                    const next = (current) => Math.round((Number(current || 0) + Number(quantity)) * 1000) / 1000;
+                    line ? line.quantity = next(line.quantity) : this.lines.push({ item_id: item.id, quantity: next(0) });
                 },
-                addFirstMatch() {
+                // A keyboard-style barcode scanner types the code and presses Enter.
+                async addFirstMatch() {
+                    const term = this.search.trim();
+                    if (term === '') { return; }
+                    const exact = this.items.find((item) => item.barcode === term || (item.sku || '').toLowerCase() === term.toLowerCase());
+                    if (exact) { this.add(exact); this.search = ''; return; }
+                    try {
+                        const response = await fetch(config.scanUrl + '?code=' + encodeURIComponent(term), { headers: { Accept: 'application/json' } });
+                        if (response.ok) {
+                            const found = await response.json();
+                            const item = this.item(found.item.id);
+                            if (item) { this.add(item, found.quantity); this.search = ''; return; }
+                        }
+                    } catch (error) { /* offline: fall back to the name search below */ }
                     const first = this.matches()[0];
-                    if (first) { this.add(first); this.search = ''; }
+                    if (first) { this.add(first); this.search = ''; } else { this.scanError = 'Nothing matches "' + term + '".'; }
+                },
+                // Scales on a serial or USB-serial cable send lines such as "ST,GS,  0.535kg".
+                async readScale() {
+                    this.scaleError = '';
+                    const line = this.lines[this.lines.length - 1];
+                    let port;
+                    try {
+                        port = await navigator.serial.requestPort();
+                        await port.open({ baudRate: 9600 });
+                        const reader = port.readable.pipeThrough(new TextDecoderStream()).getReader();
+                        const timer = setTimeout(() => reader.cancel(), 4000);
+                        let buffer = '';
+                        while (true) {
+                            const { value, done } = await reader.read();
+                            if (done) { break; }
+                            buffer += value;
+                            const match = /[\r\n]/.test(buffer) && buffer.match(/(\d+(?:\.\d+)?)\s*(kg|g)?/i);
+                            if (match) {
+                                const weight = Number(match[1]) / ((match[2] || '').toLowerCase() === 'g' ? 1000 : 1);
+                                if (weight > 0) { line.quantity = Math.round(weight * 1000) / 1000; } else { this.scaleError = 'The scale shows no weight.'; }
+                                break;
+                            }
+                        }
+                        clearTimeout(timer);
+                        await reader.cancel().catch(() => {});
+                        if (!buffer) { this.scaleError = 'The scale did not answer. Check it sends readings continuously.'; }
+                    } catch (error) {
+                        this.scaleError = 'Could not read the scale.';
+                    } finally {
+                        await port?.close().catch(() => {});
+                    }
                 },
                 round(value) { return Math.round((value + Number.EPSILON) * 100) / 100; },
                 lineNet(line) { return this.round(Number(line.quantity || 0) * (this.item(line.item_id)?.price || 0)); },
@@ -153,6 +216,30 @@
                 total() { return this.round(this.lines.reduce((sum, line) => sum + this.lineTotal(line), 0)); },
                 fmt(value) { return Number(value).toLocaleString(undefined, { maximumFractionDigits: 3 }); },
                 money(value) { return config.symbol + Number(value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); },
+            }));
+
+            Alpine.data('receiptPrinter', (url) => ({
+                supported: 'serial' in navigator,
+                busy: false,
+                error: '',
+                async send() {
+                    this.busy = true;
+                    this.error = '';
+                    let port;
+                    try {
+                        const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer());
+                        port = await navigator.serial.requestPort();
+                        await port.open({ baudRate: 9600 });
+                        const writer = port.writable.getWriter();
+                        await writer.write(bytes);
+                        writer.releaseLock();
+                    } catch (error) {
+                        this.error = 'The printer did not take the receipt.';
+                    } finally {
+                        await port?.close().catch(() => {});
+                        this.busy = false;
+                    }
+                },
             }));
         });
     </script>

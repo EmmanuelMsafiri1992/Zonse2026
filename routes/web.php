@@ -28,6 +28,7 @@ use App\Http\Controllers\Settings\BranchController;
 use App\Http\Controllers\Settings\BrandingController;
 use App\Http\Controllers\Settings\CustomFieldController;
 use App\Http\Controllers\Settings\DataExportController;
+use App\Http\Controllers\Settings\HardwareSettingsController;
 use App\Http\Controllers\Settings\MemberController;
 use App\Http\Controllers\Settings\ModuleController;
 use App\Http\Controllers\Settings\OcrSettingsController;
@@ -175,6 +176,8 @@ Route::middleware(['auth', 'workspace'])->group(function () {
         Route::prefix('apps/pos/till')->middleware('module:pos')->name('apps.pos.')->group(function () {
             Route::get('/', [PosController::class, 'till'])->name('till');
             Route::post('/', [PosController::class, 'sell'])->name('sell');
+            Route::get('/receipts/{sale}', [PosController::class, 'receipt'])->whereNumber('sale')->name('receipt');
+            Route::get('/receipts/{sale}/escpos', [PosController::class, 'escPos'])->whereNumber('sale')->name('receipt.escpos');
         });
         Route::prefix('apps/{blueprint}')->middleware('blueprint')->group(function () {
             Route::get('/', [AppController::class, 'show'])->name('apps.show');
@@ -264,6 +267,9 @@ Route::middleware(['auth', 'workspace'])->group(function () {
 
             Route::get('/public-page', [PublicPageSettingsController::class, 'edit'])->name('public-page.edit');
             Route::put('/public-page', [PublicPageSettingsController::class, 'update'])->name('public-page.update');
+
+            Route::get('/hardware', [HardwareSettingsController::class, 'edit'])->name('hardware.edit');
+            Route::put('/hardware', [HardwareSettingsController::class, 'update'])->name('hardware.update');
 
             Route::get('/sms', [SmsSettingsController::class, 'edit'])->name('sms.edit');
             Route::put('/sms', [SmsSettingsController::class, 'update'])->name('sms.update');

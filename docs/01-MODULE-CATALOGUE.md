@@ -39,7 +39,7 @@ Every module below is designed as an installable **module** inside one codebase.
 | 0.22 | White-label & reseller program (custom domain, logo, colours) | ✔ |
 | 0.23 | Portals: customer, vendor, employee, patient, student/parent, tenant, member, donor | ✔ |
 | 0.24 | Public booking / ordering / payment pages (link-in-bio style) | ✔ |
-| 0.25 | Hardware: receipt printers, barcode scanners, weighing scales, card readers, QR | ➕ |
+| 0.25 | Hardware: receipt printers, barcode scanners, weighing scales, card readers, QR | ✔ |
 | 0.26 | Tax-authority e-invoicing / fiscalisation (ZIMRA FDMS, KRA eTIMS, ZRA, SARS, ZATCA, FIRS…) | ➕ |
 | 0.27 | Data import / migration wizard (CSV, Excel, QuickBooks, Sage, Excel templates) | ➕ |
 | 0.28 | Calendar & scheduling engine shared by all booking modules | ✔ |

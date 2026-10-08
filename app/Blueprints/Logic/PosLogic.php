@@ -5,7 +5,9 @@ namespace App\Blueprints\Logic;
 use App\Blueprints\AppLogic;
 use App\Models\Record;
 use App\Models\User;
+use App\Support\Hardware\CardTerminal;
 use App\Support\Money;
+use App\Tenancy\WorkspaceContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -60,7 +62,18 @@ class PosLogic extends AppLogic
             throw ValidationException::withMessages(['contact_id' => 'Choose the customer to put this sale on account.']);
         }
 
-        return DB::transaction(function () use ($lines, $items, $total, $method, $tendered, $tillId, $contactId, $cashier) {
+        $approvalCode = null;
+        $terminal = app(CardTerminal::class);
+        $workspace = app(WorkspaceContext::class)->getOrFail();
+        if ($method === 'card' && $terminal->linked($workspace)) {
+            $charge = $terminal->charge($workspace, $total, 'a till sale of '.$this->money($total));
+            if (! $charge['approved']) {
+                throw ValidationException::withMessages(['payment_method' => $charge['message']]);
+            }
+            $approvalCode = $charge['approval_code'];
+        }
+
+        return DB::transaction(function () use ($lines, $items, $total, $method, $tendered, $tillId, $contactId, $cashier, $approvalCode) {
             $tendered = $method === 'cash' ? ($tendered ?? $total) : $total;
             $sale = Record::create([
                 'blueprint' => $this->app->key, 'entity' => 'sales', 'status' => 'completed',
@@ -71,7 +84,7 @@ class PosLogic extends AppLogic
                     'till' => $tillId, 'payment_method' => $method,
                     'items' => collect($lines)->map(fn ($line) => $this->quantity($line['quantity']).' × '.$line['description'].' @ '.number_format($line['unit_price'], 2))->implode("\n"),
                     'tendered' => $tendered, 'change' => Money::round(max(0, $tendered - $total)), 'discount' => 0.0,
-                    '_lines' => $lines,
+                    '_card_approval' => $approvalCode, '_lines' => $lines,
                 ],
             ]);
 
@@ -82,7 +95,7 @@ class PosLogic extends AppLogic
             if ($this->billing()->available()) {
                 $invoice = $this->billing()->invoice($sale);
                 if (self::PAYMENT_METHODS[$method] ?? null) {
-                    $this->billing()->pay($invoice, $invoice->balance, self::PAYMENT_METHODS[$method], today()->toDateString(), $sale->number);
+                    $this->billing()->pay($invoice, $invoice->balance, self::PAYMENT_METHODS[$method], today()->toDateString(), $sale->number.($approvalCode ? ' · '.$approvalCode : ''));
                 }
             }
 
@@ -128,6 +141,7 @@ class PosLogic extends AppLogic
                 'Date' => ($record->occurs_on ?? $record->created_at)->format('d M Y').' '.$record->created_at?->format('H:i'),
                 'Cashier' => $record->assignee?->name,
                 'Paid by' => ucfirst(str_replace('_', ' ', (string) $record->value('payment_method'))),
+                'Card approval' => $record->value('_card_approval'),
             ]),
             'columns' => ['Item', 'Qty', 'Price', 'Amount'],
             'rows' => array_map(fn (array $line) => [$line['description'], $this->quantity($line['quantity']), number_format($line['unit_price'], 2), number_format($line['total'], 2)], $lines),

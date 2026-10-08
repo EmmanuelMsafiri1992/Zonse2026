@@ -18,8 +18,9 @@
                     <div class="col-md-4"><x-form.select name="tax_rate_id" label="Tax rate" :options="$taxRates" :value="$isOld ? old('tax_rate_id') : $item?->tax_rate_id" placeholder="None" id="i_tax_{{ $sfx }}" /></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-6"><x-form.input name="sku" label="SKU / code" :value="$isOld ? old('sku') : $item?->sku" id="i_sku_{{ $sfx }}" /></div>
-                    <div class="col-md-6"><x-form.input name="unit" label="Unit" placeholder="hour, each, kg…" :value="$isOld ? old('unit') : $item?->unit" id="i_unit_{{ $sfx }}" /></div>
+                    <div class="col-md-4"><x-form.input name="sku" label="SKU / code" :value="$isOld ? old('sku') : $item?->sku" id="i_sku_{{ $sfx }}" help="For items sold by weight, the scale's item number." /></div>
+                    <div class="col-md-5"><x-form.input name="barcode" label="Barcode" :value="$isOld ? old('barcode') : $item?->barcode" id="i_barcode_{{ $sfx }}" maxlength="64" placeholder="Scan it here" help="Leave blank, then use Make a barcode to get one." /></div>
+                    <div class="col-md-3"><x-form.input name="unit" label="Unit" placeholder="each, kg…" :value="$isOld ? old('unit') : $item?->unit" id="i_unit_{{ $sfx }}" /></div>
                 </div>
                 <div class="row">
                     <div class="col-md-6"><x-form.input name="stock_qty" type="number" step="0.001" label="In stock (products, optional)" :value="$isOld ? old('stock_qty') : $item?->stock_qty" id="i_stock_{{ $sfx }}" help="Leave blank to skip stock counting." /></div>

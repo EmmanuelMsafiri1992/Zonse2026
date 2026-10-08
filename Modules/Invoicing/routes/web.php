@@ -22,6 +22,9 @@ Route::middleware(['auth', 'workspace', 'onboarded', 'module:invoicing'])->group
     Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
     Route::delete('/payments/{payment}', [PaymentController::class, 'destroy'])->name('payments.destroy');
 
+    Route::get('/items/scan', [ItemController::class, 'scan'])->middleware('throttle:240,1')->name('items.scan');
+    Route::get('/items/labels', [ItemController::class, 'labels'])->name('items.labels');
+    Route::post('/items/{item}/barcode', [ItemController::class, 'barcode'])->name('items.barcode');
     Route::resource('items', ItemController::class)->only(['index', 'store', 'update', 'destroy']);
 
     Route::prefix('settings/invoicing')->name('settings.invoicing.')->middleware('can:manage-workspace')->group(function () {
