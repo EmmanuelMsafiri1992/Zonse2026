@@ -1,0 +1,21 @@
+{
+    "name": "Appointments",
+    "alias": "appointments",
+    "description": "Bookings for services with your staff: a week calendar, confirmations, no-shows and a service list with durations and prices.",
+    "keywords": [
+        "appointments",
+        "bookings",
+        "calendar",
+        "scheduling"
+    ],
+    "priority": 30,
+    "providers": [
+        "Modules\\Appointments\\Providers\\AppointmentsServiceProvider"
+    ],
+    "files": [],
+    "zonseo": {
+        "provides": [
+            "appointments"
+        ]
+    }
+}

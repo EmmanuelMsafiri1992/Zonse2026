@@ -1,0 +1,21 @@
+{
+    "name": "Helpdesk",
+    "alias": "helpdesk",
+    "description": "Support tickets from customers: replies, internal notes, priorities, assignment and a queue that shows what is waiting on you.",
+    "keywords": [
+        "helpdesk",
+        "support",
+        "tickets",
+        "customer service"
+    ],
+    "priority": 50,
+    "providers": [
+        "Modules\\Helpdesk\\Providers\\HelpdeskServiceProvider"
+    ],
+    "files": [],
+    "zonseo": {
+        "provides": [
+            "helpdesk"
+        ]
+    }
+}

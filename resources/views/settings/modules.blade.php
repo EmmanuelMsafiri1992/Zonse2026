@@ -1,0 +1,78 @@
+@extends('layouts.app')
+@section('title', 'Apps & modules')
+@section('content')
+    <x-page-header title="Apps & modules" sub="Switch on what your business needs. Everything shares the same contacts, team and billing." :crumbs="['Settings' => route('settings.workspace.edit'), 'Apps']">
+        <span class="z-chip"><x-icon name="layout-grid" class="zi zi-sm" /> {{ $counts['enabled'] }} of {{ $counts['total'] }} apps enabled</span>
+        <span class="z-chip"><x-icon name="rocket" class="zi zi-sm" /> {{ $counts['available'] }} ready today</span>
+    </x-page-header>
+
+    <form method="GET" class="card card-flat mb-4">
+        <div class="card-body d-flex flex-wrap gap-2 align-items-center">
+            <div class="z-search position-relative flex-grow-1" style="max-width:420px">
+                <input type="search" name="q" value="{{ $q }}" class="form-control" placeholder="Search apps, e.g. invoices, patients, stock…">
+            </div>
+            <div class="btn-group">
+                @foreach(['all' => 'All', 'enabled' => 'Enabled', 'available' => 'Ready now', 'coming_soon' => 'Coming soon'] as $k => $label)
+                    <button type="submit" name="filter" value="{{ $k }}" class="btn btn-sm {{ $filter === $k ? 'btn-primary' : 'btn-white' }}">{{ $label }}</button>
+                @endforeach
+            </div>
+            @if($plan && ! $plan->includes_all_modules)
+                <span class="text-muted fs-7 ms-auto">Your <strong>{{ $plan->name }}</strong> plan includes a limited set of apps. <a href="{{ route('settings.billing.index') }}">Upgrade</a> to unlock all.</span>
+            @endif
+        </div>
+    </form>
+
+    @forelse($suites as $suite)
+        <div class="mb-4">
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="z-avatar z-avatar-sm z-avatar-soft rounded-2"><x-icon :name="$suite->icon ?: 'box'" class="zi zi-sm" /></span>
+                <h5 class="mb-0">{{ $suite->name }}</h5>
+                <span class="text-muted fs-8">{{ $suite->modules->count() }}</span>
+            </div>
+            <div class="row g-3">
+                @foreach($suite->modules as $m)
+                    @php
+                        $on = $m->is_core || in_array($m->key, $enabled, true);
+                        $locked = ! $m->is_core && $planKeys !== null && ! in_array($m->key, $planKeys, true);
+                    @endphp
+                    <div class="col-md-6 col-xl-4">
+                        <div class="z-module-card {{ $on ? 'selected' : '' }}" style="cursor:default">
+                            <div class="z-module-icon"><x-icon :name="$m->icon ?: ($suite->icon ?? 'box')" /></div>
+                            <div class="mw-0 flex-grow-1">
+                                <div class="z-module-title">{{ $m->name }} <span class="text-muted fs-8 fw-normal">{{ $m->ref }}</span></div>
+                                <div class="z-module-desc">{{ $m->description }}</div>
+                                <div class="mt-2 d-flex flex-wrap gap-1 align-items-center">
+                                    @if($m->is_core)<span class="z-pill z-pill-success">Core</span>
+                                    @elseif(! $m->isAvailable())<span class="z-pill z-pill-muted">Coming soon</span>
+                                    @elseif($m->status === 'beta')<span class="z-pill z-pill-info">Beta</span>
+                                    @else<span class="z-pill z-pill-success">Ready</span>@endif
+                                    @if($locked)<span class="z-pill z-pill-warning">Upgrade</span>@endif
+                                    @if($m->depends)<span class="fs-8 text-muted">needs {{ implode(', ', $m->depends) }}</span>@endif
+                                </div>
+                            </div>
+                            @unless($m->is_core)
+                                <div class="position-absolute" style="top:.75rem;right:.75rem">
+                                    @if($on)
+                                        <form method="POST" action="{{ route('settings.modules.disable', $m->key) }}">
+                                            @csrf @method('DELETE')
+                                            <button class="btn btn-sm btn-soft-secondary" title="Disable">On</button>
+                                        </form>
+                                    @elseif($locked)
+                                        <a href="{{ route('settings.billing.index') }}" class="btn btn-sm btn-white">Upgrade</a>
+                                    @else
+                                        <form method="POST" action="{{ route('settings.modules.enable', $m->key) }}">
+                                            @csrf
+                                            <button class="btn btn-sm btn-primary">Enable</button>
+                                        </form>
+                                    @endif
+                                </div>
+                            @endunless
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @empty
+        <x-empty icon="search" title="No apps match" text="Try a different search or filter." />
+    @endforelse
+@endsection

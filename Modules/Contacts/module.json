@@ -1,0 +1,14 @@
+{
+    "name": "Contacts",
+    "alias": "contacts",
+    "description": "Customers, suppliers, patients, students, tenants and members in one shared address book.",
+    "keywords": ["contacts", "customers", "crm"],
+    "priority": 10,
+    "providers": [
+        "Modules\\Contacts\\Providers\\ContactsServiceProvider"
+    ],
+    "files": [],
+    "zonseo": {
+        "provides": ["contacts"]
+    }
+}

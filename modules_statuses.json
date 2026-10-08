@@ -1,0 +1,7 @@
+{
+    "Contacts": true,
+    "Invoicing": true,
+    "Appointments": true,
+    "Tasks": true,
+    "Helpdesk": true
+}

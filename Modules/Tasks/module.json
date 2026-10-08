@@ -1,0 +1,21 @@
+{
+    "name": "Tasks",
+    "alias": "tasks",
+    "description": "To-dos for you and your team: a list and a kanban board with priorities, due dates, assignees and links to customers.",
+    "keywords": [
+        "tasks",
+        "todo",
+        "kanban",
+        "team"
+    ],
+    "priority": 40,
+    "providers": [
+        "Modules\\Tasks\\Providers\\TasksServiceProvider"
+    ],
+    "files": [],
+    "zonseo": {
+        "provides": [
+            "tasks"
+        ]
+    }
+}

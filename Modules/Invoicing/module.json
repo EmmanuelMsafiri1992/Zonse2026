@@ -1,0 +1,14 @@
+{
+    "name": "Invoicing",
+    "alias": "invoicing",
+    "description": "Invoices, quotations, payments received, and a catalogue of the products and services you sell.",
+    "keywords": ["invoicing", "quotes", "billing", "sales"],
+    "priority": 20,
+    "providers": [
+        "Modules\\Invoicing\\Providers\\InvoicingServiceProvider"
+    ],
+    "files": [],
+    "zonseo": {
+        "provides": ["invoicing", "quotes"]
+    }
+}
