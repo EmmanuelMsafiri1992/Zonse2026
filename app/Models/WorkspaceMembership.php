@@ -15,6 +15,9 @@ class WorkspaceMembership extends Pivot
 
     protected $fillable = ['workspace_id', 'user_id', 'branch_id', 'role', 'job_title', 'invited_by', 'joined_at'];
 
+    /** @var list<string> */
+    protected $hidden = ['ussd_pin'];
+
     protected function casts(): array
     {
         return ['joined_at' => 'datetime'];

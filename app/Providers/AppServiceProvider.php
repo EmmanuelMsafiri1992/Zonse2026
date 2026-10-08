@@ -130,7 +130,8 @@ class AppServiceProvider extends ServiceProvider
             ->add(MenuItem::make('Approvals', 'approvals.index', 'circle-check')->order(1)->active('approvals.*'))
             ->add(MenuItem::make('E-signatures', 'signatures.index', 'file-signature')->order(2)->active('signatures.*'))
             ->add(MenuItem::make('Scan documents', 'captures.index', 'scan-text')->can('capture-documents')->order(3)->active(['captures.*', 'settings.ocr.*']))
-            ->add(MenuItem::make('Assistant', 'assistant.index', 'sparkles')->can('use-assistant')->order(4)->active(['assistant.*', 'settings.assistant.*']));
+            ->add(MenuItem::make('Assistant', 'assistant.index', 'sparkles')->can('use-assistant')->order(4)->active(['assistant.*', 'settings.assistant.*']))
+            ->add(MenuItem::make('Phone access', 'ussd.index', 'smartphone')->can('access-workspace')->order(5)->active(['ussd.*', 'settings.ussd.*']));
 
         $menu->section('settings', 'Workspace', 900)
             ->add(MenuItem::make('Settings', 'settings.workspace.edit', 'settings')->order(10)

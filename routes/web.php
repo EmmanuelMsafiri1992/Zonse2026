@@ -32,6 +32,8 @@ use App\Http\Controllers\Settings\WebhookController;
 use App\Http\Controllers\Settings\WorkspaceSettingsController;
 use App\Http\Controllers\SignatureRequestController;
 use App\Http\Controllers\SmsController;
+use App\Http\Controllers\UssdCallbackController;
+use App\Http\Controllers\UssdController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
 
@@ -50,6 +52,9 @@ Route::prefix('sign/{token}')->name('signing.')->middleware('throttle:30,1')->gr
     Route::post('/', [PublicSigningController::class, 'sign'])->middleware('throttle:10,1')->name('sign');
     Route::post('/decline', [PublicSigningController::class, 'decline'])->middleware('throttle:10,1')->name('decline');
 });
+
+// Called by the USSD gateway for every screen a feature phone shows; the token picks the workspace.
+Route::post('/webhooks/ussd/{token}', UssdCallbackController::class)->middleware('throttle:120,1')->name('ussd.callback');
 
 Route::middleware(['auth', 'workspace'])->group(function () {
     // Setup wizard
@@ -103,6 +108,12 @@ Route::middleware(['auth', 'workspace'])->group(function () {
         Route::get('/assistant/{conversation}/status', [AssistantController::class, 'status'])->name('assistant.status');
         Route::post('/assistant/{conversation}/retry', [AssistantController::class, 'retry'])->middleware('throttle:10,1')->name('assistant.retry');
         Route::delete('/assistant/{conversation}', [AssistantController::class, 'destroy'])->name('assistant.destroy');
+
+        Route::middleware('can:access-workspace')->group(function () {
+            Route::get('/phone-access', [UssdController::class, 'index'])->name('ussd.index');
+            Route::put('/phone-access/pin', [UssdController::class, 'updatePin'])->middleware('throttle:10,1')->name('ussd.pin.update');
+            Route::delete('/phone-access/pin', [UssdController::class, 'destroyPin'])->name('ussd.pin.destroy');
+        });
 
         // Blueprint apps: every data-driven catalogue module runs on these generic screens.
         Route::get('/apps', [AppController::class, 'index'])->name('apps.index');
@@ -187,6 +198,10 @@ Route::middleware(['auth', 'workspace'])->group(function () {
 
             Route::get('/assistant', [AssistantSettingsController::class, 'edit'])->name('assistant.edit');
             Route::put('/assistant', [AssistantSettingsController::class, 'update'])->name('assistant.update');
+
+            Route::put('/phone-access', [UssdController::class, 'updateSettings'])->name('ussd.update');
+            Route::post('/phone-access/token', [UssdController::class, 'rotateToken'])->name('ussd.token');
+            Route::post('/phone-access/simulate', [UssdController::class, 'simulate'])->middleware('throttle:60,1')->name('ussd.simulate');
         });
 
         Route::middleware('can:manage-workspace')->group(function () {

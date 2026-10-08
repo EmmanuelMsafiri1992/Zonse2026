@@ -34,6 +34,9 @@ class Record extends Model
     /** @use HasFactory<RecordFactory> */
     use BelongsToWorkspace, HasComments, HasFactory, RecordsActivity, SoftDeletes;
 
+    /** Statuses that mean nothing more needs doing, whatever the app. */
+    public const DONE_STATUSES = ['done', 'completed', 'closed', 'cancelled', 'archived', 'resolved', 'paid', 'delivered', 'rejected', 'expired'];
+
     protected $fillable = [
         'workspace_id', 'branch_id', 'blueprint', 'entity', 'number', 'title', 'status', 'data',
         'contact_id', 'assignee_id', 'amount', 'currency', 'occurs_on', 'due_on', 'created_by',
@@ -112,7 +115,7 @@ class Record extends Model
 
     public function isDone(): bool
     {
-        return in_array($this->status, ['done', 'completed', 'closed', 'cancelled', 'archived', 'resolved', 'paid', 'delivered', 'rejected', 'expired'], true);
+        return in_array($this->status, self::DONE_STATUSES, true);
     }
 
     // ----- Relations --------------------------------------------------------
