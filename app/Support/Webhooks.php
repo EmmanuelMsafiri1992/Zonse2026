@@ -6,9 +6,11 @@ use App\Http\Resources\V1\AppointmentResource;
 use App\Http\Resources\V1\ContactResource;
 use App\Http\Resources\V1\InvoiceResource;
 use App\Http\Resources\V1\PaymentResource;
+use App\Http\Resources\V1\SignatureRequestResource;
 use App\Http\Resources\V1\TaskResource;
 use App\Http\Resources\V1\TicketResource;
 use App\Jobs\DeliverWebhook;
+use App\Models\SignatureRequest;
 use App\Models\WebhookDelivery;
 use App\Models\WebhookEndpoint;
 use App\Models\Workspace;
@@ -38,6 +40,8 @@ class Webhooks
         'payment.received' => 'A payment is recorded',
         'appointment.created' => 'An appointment is booked',
         'appointment.updated' => 'An appointment is changed',
+        'signature.completed' => 'A document is signed by everyone',
+        'signature.declined' => 'A signer declines a document',
     ];
 
     /** @var array<class-string<Model>, class-string> */
@@ -48,6 +52,7 @@ class Webhooks
         Invoice::class => InvoiceResource::class,
         Payment::class => PaymentResource::class,
         Appointment::class => AppointmentResource::class,
+        SignatureRequest::class => SignatureRequestResource::class,
     ];
 
     /** Header carrying "t=<unix time>,v1=<hex HMAC-SHA256 of "<t>.<body>">". */

@@ -9,6 +9,9 @@
             <button type="button" class="btn btn-white" onclick="navigator.clipboard.writeText('{{ $quote->publicUrl() }}').then(() => zonseo.toast('Public link copied'))"><x-icon name="link" /> Copy link</button>
         @endunless
         @can('update', $quote)
+            @if(in_array($quote->status, ['draft', 'sent', 'expired']) && ! \App\Support\Approvals::blocking($quote, 'quote.send'))
+                <a href="{{ route('signatures.create', ['quote' => $quote->id]) }}" class="btn btn-white"><x-icon name="file-signature" /> Ask to sign</a>
+            @endif
             @if($quote->status === 'draft' && ! \App\Support\Approvals::blocking($quote, 'quote.send', auth()->user()))
                 <form method="POST" action="{{ route('quotes.send', $quote) }}">@csrf<button class="btn btn-soft-primary"><x-icon name="send" /> Mark as sent</button></form>
             @endif

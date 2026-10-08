@@ -116,7 +116,8 @@ class AppServiceProvider extends ServiceProvider
 
         $menu->section('main', 'Main', 0)
             ->add(MenuItem::make('Dashboard', 'dashboard', 'layout-dashboard')->order(0)->active('dashboard'))
-            ->add(MenuItem::make('Approvals', 'approvals.index', 'circle-check')->order(1)->active('approvals.*'));
+            ->add(MenuItem::make('Approvals', 'approvals.index', 'circle-check')->order(1)->active('approvals.*'))
+            ->add(MenuItem::make('E-signatures', 'signatures.index', 'file-signature')->order(2)->active('signatures.*'));
 
         $menu->section('settings', 'Workspace', 900)
             ->add(MenuItem::make('Settings', 'settings.workspace.edit', 'settings')->order(10)

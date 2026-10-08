@@ -11,6 +11,7 @@ use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicSigningController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\Settings\ApiKeyController;
 use App\Http\Controllers\Settings\ApprovalRuleController;
@@ -25,6 +26,7 @@ use App\Http\Controllers\Settings\ModuleController;
 use App\Http\Controllers\Settings\SmsSettingsController;
 use App\Http\Controllers\Settings\WebhookController;
 use App\Http\Controllers\Settings\WorkspaceSettingsController;
+use App\Http\Controllers\SignatureRequestController;
 use App\Http\Controllers\SmsController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
@@ -35,6 +37,15 @@ Route::get('/pricing', [HomeController::class, 'pricing'])->name('pricing');
 // Invitations can be opened by guests (they are asked to sign in / register first).
 Route::get('/invitations/{token}', [InvitationController::class, 'show'])->name('invitations.accept');
 Route::post('/invitations/{token}', [InvitationController::class, 'accept'])->middleware('auth')->name('invitations.accept.store');
+
+// Signing links emailed to people outside the workspace; the token is the key.
+Route::prefix('sign/{token}')->name('signing.')->middleware('throttle:30,1')->group(function () {
+    Route::get('/', [PublicSigningController::class, 'show'])->name('show');
+    Route::get('/document', [PublicSigningController::class, 'document'])->name('document');
+    Route::get('/certificate', [PublicSigningController::class, 'certificate'])->name('certificate');
+    Route::post('/', [PublicSigningController::class, 'sign'])->middleware('throttle:10,1')->name('sign');
+    Route::post('/decline', [PublicSigningController::class, 'decline'])->middleware('throttle:10,1')->name('decline');
+});
 
 Route::middleware(['auth', 'workspace'])->group(function () {
     // Setup wizard
@@ -63,6 +74,15 @@ Route::middleware(['auth', 'workspace'])->group(function () {
         Route::post('/approvals/{approvalRequest}/approve', [ApprovalController::class, 'approve'])->name('approvals.approve');
         Route::post('/approvals/{approvalRequest}/reject', [ApprovalController::class, 'reject'])->name('approvals.reject');
         Route::post('/approvals/{approvalRequest}/withdraw', [ApprovalController::class, 'withdraw'])->name('approvals.withdraw');
+
+        Route::get('/signatures', [SignatureRequestController::class, 'index'])->name('signatures.index');
+        Route::get('/signatures/create', [SignatureRequestController::class, 'create'])->name('signatures.create');
+        Route::post('/signatures', [SignatureRequestController::class, 'store'])->middleware('throttle:20,1')->name('signatures.store');
+        Route::get('/signatures/{signatureRequest}', [SignatureRequestController::class, 'show'])->name('signatures.show');
+        Route::get('/signatures/{signatureRequest}/document', [SignatureRequestController::class, 'document'])->name('signatures.document');
+        Route::get('/signatures/{signatureRequest}/certificate', [SignatureRequestController::class, 'certificate'])->name('signatures.certificate');
+        Route::post('/signatures/{signatureRequest}/remind', [SignatureRequestController::class, 'remind'])->middleware('throttle:5,1')->name('signatures.remind');
+        Route::post('/signatures/{signatureRequest}/cancel', [SignatureRequestController::class, 'cancel'])->name('signatures.cancel');
 
         // Blueprint apps: every data-driven catalogue module runs on these generic screens.
         Route::get('/apps', [AppController::class, 'index'])->name('apps.index');
