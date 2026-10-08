@@ -24,6 +24,7 @@ class Notifier
         'comments' => ['label' => 'Notes on my work', 'hint' => 'Someone adds a note to something assigned to you or that you created.', 'app' => true, 'email' => false],
         'payments' => ['label' => 'Payments received', 'hint' => 'Money recorded against an invoice (admins only).', 'app' => true, 'email' => false],
         'team' => ['label' => 'Team changes', 'hint' => 'Someone accepts an invitation and joins the workspace (admins only).', 'app' => true, 'email' => false],
+        'automations' => ['label' => 'Automation alerts', 'hint' => 'An automation set up under Settings › Automations names you.', 'app' => true, 'email' => false],
         'billing' => ['label' => 'Plan and trial reminders', 'hint' => 'Your free trial or subscription is about to end (owner only).', 'app' => true, 'email' => true],
     ];
 

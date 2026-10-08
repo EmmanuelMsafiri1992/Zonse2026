@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\Support\Automations;
 use App\Support\Webhooks;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Appointments\Models\Appointment;
@@ -12,10 +13,11 @@ use Modules\Invoicing\Models\Payment;
 use Modules\Tasks\Models\Task;
 
 /**
- * Turns model changes into webhook events ("task.created", "invoice.paid" ...).
+ * Turns model changes into business events ("task.created", "invoice.paid" ...) and hands each one to
+ * webhooks and automations.
  * Method names avoid the "handle" prefix so event discovery does not register them twice.
  */
-class DispatchWebhooks
+class DispatchBusinessEvents
 {
     /** @var array<class-string<Model>, string> */
     public const NAMES = [
@@ -40,7 +42,7 @@ class DispatchWebhooks
 
     public function onCreated(Model $model): void
     {
-        Webhooks::dispatch(self::NAMES[$model::class].'.created', $model);
+        $this->fire(self::NAMES[$model::class].'.created', $model);
     }
 
     public function onUpdated(Model $model): void
@@ -53,21 +55,28 @@ class DispatchWebhooks
         $name = self::NAMES[$model::class];
         if ($model instanceof Invoice) {
             if ($model->wasChanged('status') && $model->status === 'paid') {
-                Webhooks::dispatch('invoice.paid', $model);
+                $this->fire('invoice.paid', $model, $changed);
             }
 
             return;
         }
 
-        Webhooks::dispatch($name.'.updated', $model);
+        $this->fire($name.'.updated', $model, $changed);
 
         if ($model instanceof Task && $model->wasChanged('status') && $model->status === 'done') {
-            Webhooks::dispatch('task.completed', $model);
+            $this->fire('task.completed', $model, $changed);
         }
     }
 
     public function onPaymentCreated(Payment $payment): void
     {
-        Webhooks::dispatch('payment.received', $payment);
+        $this->fire('payment.received', $payment);
+    }
+
+    /** @param list<string> $changed */
+    protected function fire(string $event, Model $model, array $changed = []): void
+    {
+        Webhooks::dispatch($event, $model);
+        Automations::trigger($event, $model, array_values($changed));
     }
 }

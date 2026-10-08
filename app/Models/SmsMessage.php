@@ -20,6 +20,7 @@ class SmsMessage extends Model
     public const PURPOSES = [
         'manual' => 'Message', 'bulk' => 'Bulk message', 'test' => 'Test', 'invoice' => 'Invoice',
         'receipt' => 'Payment receipt', 'overdue' => 'Overdue reminder', 'appointment' => 'Appointment reminder',
+        'automation' => 'Automation',
     ];
 
     /** @var array<string, mixed> */

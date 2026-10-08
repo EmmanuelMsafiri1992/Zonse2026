@@ -13,6 +13,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\Settings\ApiKeyController;
 use App\Http\Controllers\Settings\AuditLogController;
+use App\Http\Controllers\Settings\AutomationController;
 use App\Http\Controllers\Settings\BillingController;
 use App\Http\Controllers\Settings\BranchController;
 use App\Http\Controllers\Settings\DataExportController;
@@ -121,6 +122,9 @@ Route::middleware(['auth', 'workspace'])->group(function () {
             Route::post('/webhooks/{webhook}/test', [WebhookController::class, 'test'])->middleware('throttle:10,1')->name('webhooks.test');
             Route::post('/webhooks/{webhook}/secret', [WebhookController::class, 'rotateSecret'])->name('webhooks.secret');
             Route::post('/webhooks/{webhook}/deliveries/{delivery}/resend', [WebhookController::class, 'redeliver'])->middleware('throttle:10,1')->name('webhooks.redeliver');
+
+            Route::resource('automations', AutomationController::class)->except('show');
+            Route::post('/automations/{automation}/toggle', [AutomationController::class, 'toggle'])->name('automations.toggle');
 
             Route::get('/sms', [SmsSettingsController::class, 'edit'])->name('sms.edit');
             Route::put('/sms', [SmsSettingsController::class, 'update'])->name('sms.update');
