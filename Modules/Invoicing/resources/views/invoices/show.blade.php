@@ -9,6 +9,9 @@
             @if($invoice->status === 'draft')
                 <form method="POST" action="{{ route('invoices.send', $invoice) }}">@csrf<button class="btn btn-soft-primary"><x-icon name="send" /> Mark as sent</button></form>
             @endif
+            @if($invoice->status !== 'cancelled' && $invoice->contact && (filled($invoice->contact->mobile) || filled($invoice->contact->phone)) && app(\App\Sms\SmsService::class)->enabled($workspace))
+                <form method="POST" action="{{ route('invoices.sms', $invoice) }}">@csrf<button class="btn btn-white"><x-icon name="message-square" /> Send by SMS</button></form>
+            @endif
             @if($invoice->isEditable())
                 <a href="{{ route('invoices.edit', $invoice) }}" class="btn btn-white"><x-icon name="pencil" /> Edit</a>
             @endif

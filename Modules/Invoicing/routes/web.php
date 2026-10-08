@@ -12,6 +12,7 @@ use Modules\Invoicing\Http\Controllers\QuoteController;
 Route::middleware(['auth', 'workspace', 'onboarded', 'module:invoicing'])->group(function () {
     Route::get('/invoices/{invoice}/print', [InvoiceController::class, 'print'])->name('invoices.print');
     Route::post('/invoices/{invoice}/send', [InvoiceController::class, 'send'])->name('invoices.send');
+    Route::post('/invoices/{invoice}/sms', [InvoiceController::class, 'sms'])->middleware('throttle:10,1')->name('invoices.sms');
     Route::post('/invoices/{invoice}/cancel', [InvoiceController::class, 'cancel'])->name('invoices.cancel');
     Route::post('/invoices/{invoice}/comments', [InvoiceController::class, 'comment'])->name('invoices.comments.store');
     Route::post('/invoices/{invoice}/payments', [PaymentController::class, 'store'])->name('invoices.payments.store');

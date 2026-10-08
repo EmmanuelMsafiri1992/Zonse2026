@@ -16,6 +16,7 @@ use Modules\Invoicing\Policies\InvoicePolicy;
 use Modules\Invoicing\Policies\ItemPolicy;
 use Modules\Invoicing\Policies\PaymentPolicy;
 use Modules\Invoicing\Policies\QuotePolicy;
+use Modules\Invoicing\Sms\InvoiceTexts;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class InvoicingServiceProvider extends ModuleServiceProvider
@@ -35,6 +36,8 @@ class InvoicingServiceProvider extends ModuleServiceProvider
         Gate::policy(Quote::class, QuotePolicy::class);
         Gate::policy(Payment::class, PaymentPolicy::class);
         Gate::policy(Item::class, ItemPolicy::class);
+
+        Payment::created(fn (Payment $payment) => $this->app->make(InvoiceTexts::class)->paymentRecorded($payment));
 
         $this->app->make(ModuleRegistry::class)
             ->entry('invoicing', 'invoices.index')

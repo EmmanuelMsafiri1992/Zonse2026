@@ -4,6 +4,7 @@ namespace Modules\Invoicing\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
+use App\Sms\SmsService;
 use App\Support\Lists;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Contracts\View\View;
@@ -18,6 +19,7 @@ use Modules\Invoicing\Models\Invoice;
 use Modules\Invoicing\Models\Item;
 use Modules\Invoicing\Models\Payment;
 use Modules\Invoicing\Models\TaxRate;
+use Modules\Invoicing\Sms\InvoiceTexts;
 
 class InvoiceController extends Controller
 {
@@ -129,6 +131,27 @@ class InvoiceController extends Controller
         $invoice->markSent();
 
         return back()->with('flash', ['type' => 'success', 'message' => $invoice->number.' is now marked as sent. Share the public link with your customer.']);
+    }
+
+    /** Text the invoice, with its view-and-pay link, to the customer's mobile. */
+    public function sms(Invoice $invoice, SmsService $sms, InvoiceTexts $texts, WorkspaceContext $context): RedirectResponse
+    {
+        $this->authorize('update', $invoice);
+
+        if (! $sms->enabled($context->getOrFail())) {
+            return back()->with('flash', ['type' => 'danger', 'message' => 'Set up SMS in Text messages → SMS settings first.']);
+        }
+        if ($invoice->status === 'cancelled') {
+            return back()->with('flash', ['type' => 'danger', 'message' => 'A cancelled invoice cannot be sent.']);
+        }
+
+        $message = $texts->sendFor($invoice, 'invoice', $texts->invoice($invoice));
+        if (! $message) {
+            return back()->with('flash', ['type' => 'warning', 'message' => 'This customer has no usable mobile number. Add one to the contact and try again.']);
+        }
+        $invoice->markSent();
+
+        return back()->with('flash', ['type' => 'success', 'message' => $invoice->number.' was texted to '.$message->to.'.']);
     }
 
     public function cancel(Invoice $invoice): RedirectResponse

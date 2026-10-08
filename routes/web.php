@@ -14,7 +14,9 @@ use App\Http\Controllers\Settings\BillingController;
 use App\Http\Controllers\Settings\BranchController;
 use App\Http\Controllers\Settings\MemberController;
 use App\Http\Controllers\Settings\ModuleController;
+use App\Http\Controllers\Settings\SmsSettingsController;
 use App\Http\Controllers\Settings\WorkspaceSettingsController;
+use App\Http\Controllers\SmsController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
 
@@ -92,6 +94,15 @@ Route::middleware(['auth', 'workspace'])->group(function () {
             Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
             Route::post('/billing/subscribe/{plan:key}', [BillingController::class, 'subscribe'])->name('billing.subscribe');
             Route::post('/billing/cancel', [BillingController::class, 'cancel'])->name('billing.cancel');
+
+            Route::get('/sms', [SmsSettingsController::class, 'edit'])->name('sms.edit');
+            Route::put('/sms', [SmsSettingsController::class, 'update'])->name('sms.update');
+            Route::post('/sms/test', [SmsSettingsController::class, 'test'])->middleware('throttle:5,1')->name('sms.test');
+        });
+
+        Route::middleware('can:manage-workspace')->group(function () {
+            Route::get('/sms', [SmsController::class, 'index'])->name('sms.index');
+            Route::post('/sms', [SmsController::class, 'store'])->middleware('throttle:10,1')->name('sms.store');
         });
     });
 });
