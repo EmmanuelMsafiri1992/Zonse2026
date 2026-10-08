@@ -12,6 +12,8 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\Portal\PortalAuthController;
+use App\Http\Controllers\Portal\PortalController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PublicSigningController;
 use App\Http\Controllers\SearchController;
@@ -29,6 +31,7 @@ use App\Http\Controllers\Settings\MemberController;
 use App\Http\Controllers\Settings\ModuleController;
 use App\Http\Controllers\Settings\OcrSettingsController;
 use App\Http\Controllers\Settings\PartnerController;
+use App\Http\Controllers\Settings\PortalSettingsController;
 use App\Http\Controllers\Settings\SmsSettingsController;
 use App\Http\Controllers\Settings\WebhookController;
 use App\Http\Controllers\Settings\WorkspaceSettingsController;
@@ -54,6 +57,29 @@ Route::prefix('sign/{token}')->name('signing.')->middleware('throttle:30,1')->gr
     Route::get('/certificate', [PublicSigningController::class, 'certificate'])->name('certificate');
     Route::post('/', [PublicSigningController::class, 'sign'])->middleware('throttle:10,1')->name('sign');
     Route::post('/decline', [PublicSigningController::class, 'decline'])->middleware('throttle:10,1')->name('decline');
+});
+
+// Client portal: contacts sign in with a one-time emailed link (no password) and see only their own records.
+Route::prefix('portal/{workspace:slug}')->name('portal.')->middleware('throttle:60,1')->group(function () {
+    Route::get('/login', [PortalAuthController::class, 'show'])->name('login');
+    Route::post('/login', [PortalAuthController::class, 'send'])->middleware('throttle:portal-link')->name('login.send');
+    Route::get('/enter/{token}', [PortalAuthController::class, 'enter'])->middleware('throttle:20,1')->name('enter');
+    Route::post('/logout', [PortalAuthController::class, 'logout'])->name('logout');
+
+    Route::middleware('portal')->group(function () {
+        Route::get('/', [PortalController::class, 'home'])->name('home');
+        Route::get('/invoices', [PortalController::class, 'invoices'])->name('invoices');
+        Route::get('/appointments', [PortalController::class, 'appointments'])->name('appointments');
+        Route::post('/appointments/{appointment}/cancel', [PortalController::class, 'cancelAppointment'])->whereNumber('appointment')->name('appointments.cancel');
+        Route::get('/requests', [PortalController::class, 'requests'])->name('requests');
+        Route::post('/requests', [PortalController::class, 'storeRequest'])->middleware('throttle:10,1')->name('requests.store');
+        Route::get('/requests/{ticket}', [PortalController::class, 'showRequest'])->whereNumber('ticket')->name('requests.show');
+        Route::post('/requests/{ticket}/reply', [PortalController::class, 'replyToRequest'])->whereNumber('ticket')->middleware('throttle:20,1')->name('requests.reply');
+        Route::get('/documents', [PortalController::class, 'documents'])->name('documents');
+        Route::get('/records', [PortalController::class, 'records'])->name('records');
+        Route::get('/profile', [PortalController::class, 'profile'])->name('profile');
+        Route::put('/profile', [PortalController::class, 'updateProfile'])->name('profile.update');
+    });
 });
 
 // Called by the USSD gateway for every screen a feature phone shows; the token picks the workspace.
@@ -212,6 +238,13 @@ Route::middleware(['auth', 'workspace'])->group(function () {
             Route::put('/partners', [PartnerController::class, 'update'])->name('partners.update');
             Route::delete('/partners', [PartnerController::class, 'disable'])->name('partners.disable');
             Route::post('/partners/clients', [PartnerController::class, 'storeClient'])->name('partners.clients.store');
+
+            Route::get('/portal', [PortalSettingsController::class, 'index'])->name('portal.index');
+            Route::put('/portal', [PortalSettingsController::class, 'update'])->name('portal.update');
+            Route::post('/portal/access', [PortalSettingsController::class, 'invite'])->middleware('throttle:30,1')->name('portal.invite');
+            Route::post('/portal/access/{access}/link', [PortalSettingsController::class, 'resend'])->middleware('throttle:10,1')->name('portal.resend');
+            Route::post('/portal/access/{access}/toggle', [PortalSettingsController::class, 'toggle'])->name('portal.toggle');
+            Route::delete('/portal/access/{access}', [PortalSettingsController::class, 'destroy'])->name('portal.destroy');
 
             Route::get('/sms', [SmsSettingsController::class, 'edit'])->name('sms.edit');
             Route::put('/sms', [SmsSettingsController::class, 'update'])->name('sms.update');

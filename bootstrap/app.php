@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AuthenticatePortal;
 use App\Http\Middleware\CapturePartnerReferral;
 use App\Http\Middleware\EnsureBlueprintEnabled;
 use App\Http\Middleware\EnsureModuleEnabled;
@@ -40,6 +41,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => PermissionMiddleware::class,
             'api.workspace' => SetApiWorkspace::class,
             'abilities' => CheckAbilities::class,
+            'portal' => AuthenticatePortal::class,
         ]);
 
         $middleware->web(append: [SecurityHeaders::class, CapturePartnerReferral::class]);
@@ -57,6 +59,7 @@ return Application::configure(basePath: dirname(__DIR__))
             Authenticate::class,
             SetWorkspaceContext::class,
             SetApiWorkspace::class,
+            AuthenticatePortal::class,
             SubstituteBindings::class,
             Authorize::class,
         ]);

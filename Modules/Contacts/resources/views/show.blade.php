@@ -9,6 +9,9 @@
         @if(Route::has('appointments.create') && $workspace->hasModule('appointments'))
             <a href="{{ route('appointments.create', ['contact' => $contact->id]) }}" class="btn btn-white"><x-icon name="calendar-plus" /> Book</a>
         @endif
+        @can('manage-workspace')
+            <a href="{{ route('settings.portal.index', ['contact' => $contact->id]) }}" class="btn btn-white"><x-icon name="door-open" /> Portal access</a>
+        @endcan
         @can('update', $contact)
             <a href="{{ route('contacts.edit', $contact) }}" class="btn btn-primary"><x-icon name="pencil" /> Edit</a>
         @endcan
