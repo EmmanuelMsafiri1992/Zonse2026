@@ -1,13 +1,20 @@
 <?php
 
+use App\Blueprints\Logic\AgroDealerLogic;
+use App\Blueprints\Logic\ContractFarmingLogic;
 use App\Blueprints\Logic\CooperativeLogic;
 use App\Blueprints\Logic\DairyLogic;
+use App\Blueprints\Logic\ExtensionServicesLogic;
 use App\Blueprints\Logic\FarmLogic;
 use App\Blueprints\Logic\FishFarmingLogic;
+use App\Blueprints\Logic\GrainStorageLogic;
 use App\Blueprints\Logic\GreenhouseLogic;
+use App\Blueprints\Logic\LandLeasingLogic;
 use App\Blueprints\Logic\LivestockLogic;
 use App\Blueprints\Logic\PoultryLogic;
 use App\Blueprints\Logic\ProduceSalesLogic;
+use App\Blueprints\Logic\TractorHireLogic;
+use App\Blueprints\Logic\VeterinaryVisitsLogic;
 
 /*
  * Agriculture apps. Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
@@ -172,7 +179,7 @@ return [
             'phone:phone',
             'voucher|Subsidy voucher number',
         ], ['icon' => 'receipt', 'prefix' => 'AGS-', 'contact' => 'Farmer', 'amount' => 'Total', 'date' => 'Date', 'due' => 'Pay by (harvest)', 'assignee' => true, 'list' => ['phone', 'voucher']]],
-    ]],
+    ], ['logic' => AgroDealerLogic::class]],
 
     'contract-farming-out-grower-schemes' => ['Contract farming / out-grower schemes', 'handshake', 'Out-growers, input loans and deliveries against contracts.', [
         'growers' => ['Out-grower', 'Grower name', 'contracted,active,suspended,exited', [
@@ -189,7 +196,7 @@ return [
             'grade',
             'loan_deduction:money|Loan deduction',
         ], ['icon' => 'truck', 'prefix' => 'OGD-', 'amount' => 'Gross value', 'date' => 'Delivered on', 'assignee' => true, 'list' => ['grower', 'weight', 'loan_deduction']]],
-    ]],
+    ], ['logic' => ContractFarmingLogic::class]],
 
     'tractor-machinery-hire' => ['Tractor & machinery hire', 'tractor', 'Tractor services for farmers: ploughing, planting and harvesting by hectare.', [
         'machines' => ['Machine', 'Machine', 'available,booked,in_field,repair', [
@@ -205,7 +212,7 @@ return [
             'rate_per_ha:money|Rate per hectare',
             'fuel:number|Fuel used (L)',
         ], ['icon' => 'tractor', 'prefix' => 'TH-', 'contact' => 'Farmer', 'amount' => 'Total', 'date' => 'Date', 'assignee' => true, 'list' => ['machine', 'service', 'hectares']]],
-    ]],
+    ], ['logic' => TractorHireLogic::class]],
 
     'grain-storage' => ['Grain storage & warehouse receipts', 'wheat', 'Silos and bags, grain receipts, moisture and warehouse receipts.', [
         'stores' => ['Silo / store', 'Name', 'active,empty,fumigating', [
@@ -221,7 +228,7 @@ return [
             'grade',
             'pledged_to|Pledged to (bank)',
         ], ['icon' => 'file-badge', 'prefix' => 'WR-', 'contact' => 'Depositor', 'amount' => 'Storage fees', 'date' => 'Deposited on', 'list' => ['store', 'weight', 'grade']]],
-    ]],
+    ], ['logic' => GrainStorageLogic::class]],
 
     'extension-services-farmer-training' => ['Extension services & farmer training', 'presentation', 'Farmer register, field visits and training days.', [
         'farmers' => ['Farmer', 'Farmer name', 'active,inactive', [
@@ -243,7 +250,7 @@ return [
             'women_attendees:number|Women attending',
             'notes:textarea',
         ], ['icon' => 'presentation', 'prefix' => 'FT-', 'date' => 'Date', 'assignee' => true, 'list' => ['venue', 'attendees']]],
-    ]],
+    ], ['logic' => ExtensionServicesLogic::class]],
 
     'veterinary-animal-health-visits' => ['Veterinary & animal-health visits', 'stethoscope', 'Farm calls, treatments, vaccinations and withdrawal periods.', [
         'visits' => ['Farm call', 'Farm / owner', 'booked,on_route,done,invoiced', [
@@ -257,7 +264,7 @@ return [
             'area',
             'animals_vaccinated:number|Animals vaccinated',
         ], ['icon' => 'syringe', 'prefix' => 'VAC-', 'date' => 'Starts on', 'due' => 'Ends on', 'assignee' => true, 'list' => ['area', 'animals_vaccinated']]],
-    ]],
+    ], ['logic' => VeterinaryVisitsLogic::class]],
 
     'land-leasing-land-registry' => ['Farm land leasing & land registry', 'map', 'Farm parcels, owners and lease agreements.', [
         'parcels' => ['Parcel', 'Parcel / farm name', 'owned,leased_out,leased_in,vacant', [
@@ -273,5 +280,5 @@ return [
             'rent_basis:select=per_hectare,fixed,crop_share',
             'payment_frequency:select=monthly,seasonal,annual',
         ], ['icon' => 'file-signature', 'prefix' => 'LL-', 'contact' => 'Lessee', 'amount' => 'Annual rent', 'date' => 'Start date', 'due' => 'End date', 'list' => ['parcel', 'rent_basis']]],
-    ]],
+    ], ['logic' => LandLeasingLogic::class]],
 ];
