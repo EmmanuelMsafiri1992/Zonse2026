@@ -1,6 +1,12 @@
 <?php
 
 use App\Blueprints\Logic\ChurchLogic;
+use App\Blueprints\Logic\EventRegistrationLogic;
+use App\Blueprints\Logic\MembershipsLogic;
+use App\Blueprints\Logic\NgoLogic;
+use App\Blueprints\Logic\TicketingLogic;
+use App\Blueprints\Logic\VenueBookingLogic;
+use App\Blueprints\Logic\VolunteersLogic;
 
 /*
  * Events & community apps. Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
@@ -43,7 +49,7 @@ return [
             'sex:select=female,male',
             'age:number',
         ], ['icon' => 'users', 'prefix' => 'BEN-', 'date' => 'Enrolled on', 'list' => ['programme', 'location']]],
-    ]],
+    ], ['logic' => NgoLogic::class]],
 
     'volunteers' => ['Volunteers', 'hand-helping', 'Volunteer register and shifts.', [
         'volunteers' => ['Volunteer', 'Full name', 'active,inactive', [
@@ -56,7 +62,7 @@ return [
             'hours:number',
             'location',
         ], ['icon' => 'clock', 'prefix' => 'VS-', 'date' => 'Date', 'list' => ['volunteer', 'hours']]],
-    ]],
+    ], ['logic' => VolunteersLogic::class]],
 
     'memberships' => ['Memberships & clubs', 'badge-check', 'Member register, membership tiers and renewals.', [
         'members' => ['Member', 'Full name', 'active,lapsed,cancelled', [
@@ -64,7 +70,7 @@ return [
             'tier:select=standard,silver,gold,honorary',
             'phone:phone',
         ], ['icon' => 'badge-check', 'prefix' => 'MEM-', 'contact' => 'Contact', 'amount' => 'Annual fee', 'date' => 'Joined on', 'due' => 'Renews on', 'list' => ['membership_number', 'tier']]],
-    ]],
+    ], ['logic' => MembershipsLogic::class]],
 
     'ticketing' => ['Ticketing', 'tickets', 'Events, ticket types, sales and door check-in.', [
         'events' => ['Event', 'Event name', 'draft,on_sale,sold_out,completed,cancelled', [
@@ -79,7 +85,7 @@ return [
             'ticket_code|Ticket / QR code',
             'email:email',
         ], ['icon' => 'ticket', 'prefix' => 'TIX-', 'contact' => 'Buyer', 'amount' => 'Price', 'date' => 'Sold on', 'list' => ['event', 'tier', 'ticket_code']]],
-    ]],
+    ], ['logic' => TicketingLogic::class]],
 
     'event-registration' => ['Event registration', 'clipboard-pen', 'Conferences and workshops with attendee registration and badges.', [
         'events' => ['Event', 'Event name', 'open,closed,completed,cancelled', [
@@ -96,7 +102,7 @@ return [
             'dietary|Dietary needs',
             'badge_printed:checkbox|Badge printed',
         ], ['icon' => 'id-card', 'prefix' => 'REG-', 'contact' => 'Attendee', 'amount' => 'Fee paid', 'date' => 'Registered on', 'list' => ['event', 'organisation', 'badge_printed']]],
-    ]],
+    ], ['logic' => EventRegistrationLogic::class]],
 
     'venue-booking' => ['Venue & facility booking', 'calendar-range', 'Book halls, courts, rooms and fields by the hour.', [
         'facilities' => ['Facility', 'Facility name', 'available,closed', [
@@ -110,7 +116,7 @@ return [
             'end_time:time|End*',
             'purpose',
         ], ['icon' => 'calendar-range', 'prefix' => 'FB-', 'contact' => 'Customer', 'amount' => 'Charge', 'date' => 'Date', 'list' => ['facility', 'start_time', 'end_time']]],
-    ]],
+    ], ['logic' => VenueBookingLogic::class]],
 
     'mosque' => ['Mosque & madrasa', 'moon-star', 'Congregants, zakat and sadaqah, and madrasa students.', [
         'members' => ['Congregant', 'Name', 'active,moved,deceased', [
