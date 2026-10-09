@@ -4,13 +4,18 @@ use App\Blueprints\Logic\AmbulanceLogic;
 use App\Blueprints\Logic\BloodBankLogic;
 use App\Blueprints\Logic\ClinicLogic;
 use App\Blueprints\Logic\EmrLogic;
+use App\Blueprints\Logic\HomeCareLogic;
 use App\Blueprints\Logic\HospitalLogic;
 use App\Blueprints\Logic\LaboratoryLogic;
+use App\Blueprints\Logic\MaternityLogic;
 use App\Blueprints\Logic\MedicalClaimsLogic;
+use App\Blueprints\Logic\MentalHealthLogic;
+use App\Blueprints\Logic\NutritionLogic;
 use App\Blueprints\Logic\PatientAppointmentsLogic;
 use App\Blueprints\Logic\PatientQueueLogic;
 use App\Blueprints\Logic\PharmacyLogic;
 use App\Blueprints\Logic\RadiologyLogic;
+use App\Blueprints\Logic\RehabilitationLogic;
 use App\Blueprints\Logic\SpecialistPracticeLogic;
 use App\Blueprints\Logic\TelemedicineLogic;
 use App\Blueprints\Logic\VeterinaryLogic;
@@ -270,7 +275,7 @@ return [
             'notes:textarea|Session notes (confidential)',
             'homework:textarea',
         ], ['icon' => 'brain', 'prefix' => 'SES-', 'amount' => 'Fee', 'date' => 'Date', 'assignee' => true, 'list' => ['client', 'modality']]],
-    ]],
+    ], ['logic' => MentalHealthLogic::class]],
 
     'nutrition-dietitian-plans' => ['Nutrition & dietitian plans', 'salad', 'Client assessments, meal plans and follow-ups.', [
         'clients' => ['Client', 'Client name', 'active,completed', [
@@ -289,7 +294,7 @@ return [
             'weight:number|Weight (kg)',
             'notes:textarea',
         ], ['icon' => 'scale', 'prefix' => 'CI-', 'date' => 'Date', 'list' => ['client', 'weight']]],
-    ]],
+    ], ['logic' => NutritionLogic::class]],
 
     'rehabilitation-occupational-therapy' => ['Rehabilitation & occupational therapy', 'accessibility', 'Rehab goals, therapy sessions and progress measures.', [
         'cases' => ['Rehab case', 'Patient name', 'assessment,active,discharged', [
@@ -302,7 +307,7 @@ return [
             'progress_score:number|Progress score',
             'notes:textarea',
         ], ['icon' => 'activity', 'prefix' => 'RS-', 'amount' => 'Fee', 'date' => 'Date', 'assignee' => true, 'list' => ['case', 'progress_score']]],
-    ]],
+    ], ['logic' => RehabilitationLogic::class]],
 
     'home-care-elderly-care' => ['Home care / elderly care / hospice visits & carers', 'hand-heart', 'Care clients, care plans and carer visits.', [
         'clients' => ['Care client', 'Client name', 'active,hospital,paused,ended', [
@@ -319,7 +324,7 @@ return [
             'tasks_done:textarea|Tasks done',
             'concerns:textarea',
         ], ['icon' => 'hand-heart', 'prefix' => 'CV-', 'date' => 'Date', 'list' => ['client', 'carer', 'start_time']]],
-    ]],
+    ], ['logic' => HomeCareLogic::class]],
 
     'maternity-antenatal-care' => ['Maternity & antenatal care', 'baby', 'Pregnancies, antenatal visits and deliveries.', [
         'pregnancies' => ['Pregnancy', 'Mother\'s name', 'antenatal,delivered,closed', [
@@ -343,7 +348,7 @@ return [
             'apgar|Apgar score',
             'sex:select=female,male',
         ], ['icon' => 'baby', 'prefix' => 'DEL-', 'plural' => 'Deliveries', 'date' => 'Delivered on', 'assignee' => true, 'list' => ['pregnancy', 'mode', 'birth_weight']]],
-    ]],
+    ], ['logic' => MaternityLogic::class]],
 
     'immunisation-registers-community-health' => ['Immunisation registers & community health workers', 'syringe', 'Child immunisation registers and community health worker visits.', [
         'children' => ['Child', 'Child name', 'up_to_date,due,defaulter', [
