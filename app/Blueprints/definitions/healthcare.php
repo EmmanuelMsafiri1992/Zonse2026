@@ -1,6 +1,12 @@
 <?php
 
 use App\Blueprints\Logic\ClinicLogic;
+use App\Blueprints\Logic\EmrLogic;
+use App\Blueprints\Logic\LaboratoryLogic;
+use App\Blueprints\Logic\MedicalClaimsLogic;
+use App\Blueprints\Logic\PatientAppointmentsLogic;
+use App\Blueprints\Logic\PatientQueueLogic;
+use App\Blueprints\Logic\VeterinaryLogic;
 
 /*
  * Healthcare apps. Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
@@ -48,7 +54,7 @@ return [
             'room|Room / counter',
             'notes:textarea',
         ], ['icon' => 'ticket', 'prefix' => 'Q-', 'date' => 'Date', 'assignee' => true, 'list' => ['service', 'priority', 'room']]],
-    ]],
+    ], ['logic' => PatientQueueLogic::class]],
 
     'medical-claims' => ['Medical aid & insurance claims', 'file-check', 'Track claims submitted to medical aids until they are paid or rejected.', [
         'claims' => ['Claim', 'Patient name', 'draft,submitted,queried,paid,rejected', [
@@ -60,7 +66,7 @@ return [
             'reference|Medical aid reference',
             'query_reason:textarea|Query / rejection reason',
         ], ['icon' => 'file-check', 'prefix' => 'CLM-', 'contact' => 'Patient contact', 'amount' => 'Claimed amount', 'date' => 'Service date', 'due' => 'Follow up by', 'list' => ['medical_aid', 'reference']]],
-    ]],
+    ], ['logic' => MedicalClaimsLogic::class]],
 
     'laboratory' => ['Laboratory', 'flask-conical', 'Test requests, samples and results.', [
         'requests' => ['Lab request', 'Patient name', 'requested,sample_collected,processing,resulted,cancelled', [
@@ -71,7 +77,7 @@ return [
             'results:textarea',
             'abnormal:checkbox|Abnormal result',
         ], ['icon' => 'test-tube', 'prefix' => 'LAB-', 'contact' => 'Patient contact', 'amount' => 'Fee', 'date' => 'Requested on', 'due' => 'Results due', 'assignee' => true, 'list' => ['sample_type', 'urgency']]],
-    ]],
+    ], ['logic' => LaboratoryLogic::class]],
 
     'veterinary' => ['Veterinary clinic', 'paw-print', 'Animals, owners, consultations and vaccinations.', [
         'animals' => ['Animal', 'Name', 'active,deceased,transferred', [
@@ -93,7 +99,7 @@ return [
             'animal:record=animals|Animal*',
             'batch_number|Batch number',
         ], ['icon' => 'syringe', 'prefix' => 'VAX-', 'date' => 'Given on', 'due' => 'Next due', 'list' => ['animal', 'batch_number']]],
-    ]],
+    ], ['logic' => VeterinaryLogic::class]],
 
     'patient-appointments' => ['Patient appointments & reminders', 'calendar-clock', 'Patient bookings, reminders and a waitlist for cancellations.', [
         'appointments' => ['Appointment', 'Patient name', 'booked,confirmed,arrived,seen,no_show,cancelled', [
@@ -109,7 +115,7 @@ return [
             'preferred_times|Preferred days / times',
             'urgency:select=routine,soon,urgent',
         ], ['icon' => 'list-ordered', 'prefix' => 'WL-', 'plural' => 'Waitlist', 'date' => 'Added on', 'list' => ['phone', 'urgency']]],
-    ]],
+    ], ['logic' => PatientAppointmentsLogic::class]],
 
     'emr' => ['Medical records (EMR)', 'clipboard-plus', 'Encounters, diagnoses with ICD-10 codes, allergies and history.', [
         'records' => ['Patient chart', 'Patient name', 'active,inactive,deceased', [
@@ -128,7 +134,7 @@ return [
             'diagnosis:textarea*',
             'plan:textarea|Plan / treatment',
         ], ['icon' => 'clipboard-plus', 'prefix' => 'ENC-', 'date' => 'Date', 'assignee' => true, 'list' => ['chart', 'icd10']]],
-    ]],
+    ], ['logic' => EmrLogic::class]],
 
     'pharmacy' => ['Pharmacy', 'pill', 'Dispensing, drug stock and a controlled-drugs register.', [
         'drugs' => ['Drug', 'Drug name', 'in_stock,low_stock,out_of_stock,discontinued', [
