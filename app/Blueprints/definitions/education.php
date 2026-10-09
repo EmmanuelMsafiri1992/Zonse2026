@@ -1,12 +1,18 @@
 <?php
 
+use App\Blueprints\Logic\CertificatesLogic;
 use App\Blueprints\Logic\DaycareLogic;
 use App\Blueprints\Logic\DrivingSchoolLogic;
 use App\Blueprints\Logic\ExamsLogic;
+use App\Blueprints\Logic\HostelLogic;
 use App\Blueprints\Logic\LibraryLogic;
 use App\Blueprints\Logic\LmsLogic;
+use App\Blueprints\Logic\ParentPortalLogic;
 use App\Blueprints\Logic\SchoolLogic;
+use App\Blueprints\Logic\SchoolTransportLogic;
 use App\Blueprints\Logic\TimetableLogic;
+use App\Blueprints\Logic\TutoringLogic;
+use App\Blueprints\Logic\UniversityLogic;
 
 /*
  * Education apps. Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
@@ -150,7 +156,7 @@ return [
             'mode:select=in_person,online',
             'notes:textarea',
         ], ['icon' => 'presentation', 'prefix' => 'LES-', 'amount' => 'Fee', 'date' => 'Date', 'assignee' => true, 'list' => ['student', 'start_time', 'mode']]],
-    ]],
+    ], ['logic' => TutoringLogic::class]],
 
     'parent-portal' => ['Parent & student portal', 'users-round', 'Portal accounts for parents and students, and the messages they send.', [
         'accounts' => ['Portal account', 'Name', 'invited,active,disabled', [
@@ -165,7 +171,7 @@ return [
             'message:textarea*',
             'reply:textarea',
         ], ['icon' => 'mail', 'prefix' => 'PM-', 'date' => 'Received on', 'assignee' => true, 'list' => ['account', 'type']]],
-    ]],
+    ], ['logic' => ParentPortalLogic::class]],
 
     'certificates-verification' => ['Certificates & verification', 'award', 'Issued certificates with a verification code anyone can check.', [
         'certificates' => ['Certificate', 'Holder name', 'issued,revoked', [
@@ -179,7 +185,7 @@ return [
             'code_checked|Code checked*',
             'organisation',
         ], ['icon' => 'shield-check', 'prefix' => 'VER-', 'date' => 'Checked on', 'list' => ['code_checked', 'organisation']]],
-    ]],
+    ], ['logic' => CertificatesLogic::class]],
 
     'university' => ['University & college', 'school', 'Faculties, programmes, semester registration, transcripts and alumni.', [
         'programmes' => ['Programme', 'Programme name', 'active,closed', [
@@ -200,7 +206,7 @@ return [
             'employer',
             'email:email',
         ], ['icon' => 'graduation-cap', 'prefix' => 'ALM-', 'plural' => 'Alumni', 'list' => ['programme', 'graduation_year', 'employer']]],
-    ]],
+    ], ['logic' => UniversityLogic::class]],
 
     'hostel' => ['Hostel & boarding', 'bed', 'Hostel rooms, bed allocations and exeat (leave-out) passes.', [
         'rooms' => ['Room', 'Room / dorm', 'available,full,closed', [
@@ -217,7 +223,7 @@ return [
             'destination',
             'collected_by|Collected by',
         ], ['icon' => 'log-out', 'prefix' => 'EXT-', 'date' => 'Leaving on', 'due' => 'Returning on', 'assignee' => true, 'list' => ['destination', 'collected_by']]],
-    ]],
+    ], ['logic' => HostelLogic::class]],
 
     'school-transport' => ['School transport', 'bus', 'School bus routes, pupils on each route and trip logs.', [
         'routes' => ['Bus route', 'Route name', 'active,suspended', [
@@ -236,7 +242,7 @@ return [
             'pupils:number|Pupils carried',
             'notes:textarea',
         ], ['icon' => 'bus', 'prefix' => 'TRP-', 'date' => 'Date', 'list' => ['route', 'direction', 'pupils']]],
-    ]],
+    ], ['logic' => SchoolTransportLogic::class]],
 
     'canteen' => ['Canteen', 'utensils', 'Tuck-shop sales and prepaid cashless cards for students.', [
         'cards' => ['Cashless card', 'Student name', 'active,blocked,lost', [
