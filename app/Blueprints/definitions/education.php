@@ -1,6 +1,12 @@
 <?php
 
+use App\Blueprints\Logic\DaycareLogic;
+use App\Blueprints\Logic\DrivingSchoolLogic;
+use App\Blueprints\Logic\ExamsLogic;
+use App\Blueprints\Logic\LibraryLogic;
+use App\Blueprints\Logic\LmsLogic;
 use App\Blueprints\Logic\SchoolLogic;
+use App\Blueprints\Logic\TimetableLogic;
 
 /*
  * Education apps. Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
@@ -43,7 +49,7 @@ return [
             'returned_on:date|Returned on',
             'fine:money',
         ], ['icon' => 'book-open', 'prefix' => 'LN-', 'contact' => 'Borrower contact', 'date' => 'Borrowed on', 'due' => 'Due back', 'list' => ['book', 'returned_on']]],
-    ]],
+    ], ['logic' => LibraryLogic::class]],
 
     'daycare' => ['Nursery & daycare', 'baby', 'Children, guardians, daily attendance and incidents.', [
         'children' => ['Child', 'Full name', 'enrolled,waitlisted,left', [
@@ -59,7 +65,7 @@ return [
             'details:textarea*',
             'action_taken:textarea|Action taken',
         ], ['icon' => 'alert-triangle', 'prefix' => 'INC-', 'date' => 'Date', 'assignee' => true, 'list' => ['child']]],
-    ]],
+    ], ['logic' => DaycareLogic::class]],
 
     'driving-school' => ['Driving school', 'car-front', 'Learners, lessons, vehicles and test bookings.', [
         'learners' => ['Learner', 'Full name', 'active,test_booked,licensed,dropped', [
@@ -74,7 +80,7 @@ return [
             'vehicle|Vehicle',
             'feedback:textarea',
         ], ['icon' => 'car-front', 'prefix' => 'LS-', 'date' => 'Lesson date', 'assignee' => true, 'list' => ['learner', 'start_time', 'vehicle']]],
-    ]],
+    ], ['logic' => DrivingSchoolLogic::class]],
 
     'lms' => ['Learning management (LMS)', 'monitor-play', 'Online courses, lessons and learner enrolments.', [
         'courses' => ['Course', 'Course title', 'draft,published,archived', [
@@ -94,7 +100,7 @@ return [
             'progress:number|Progress %',
             'email:email',
         ], ['icon' => 'user-plus', 'prefix' => 'ENR-', 'contact' => 'Learner', 'amount' => 'Paid', 'date' => 'Enrolled on', 'list' => ['course', 'progress']]],
-    ]],
+    ], ['logic' => LmsLogic::class]],
 
     'exams' => ['Exams & report cards', 'file-badge', 'Exams, marks and report cards.', [
         'exams' => ['Exam', 'Exam name', 'scheduled,marking,published', [
@@ -117,7 +123,7 @@ return [
             'teacher_comment:textarea|Teacher\'s comment',
             'head_comment:textarea|Head\'s comment',
         ], ['icon' => 'file-badge', 'prefix' => 'RPT-', 'contact' => 'Parent', 'date' => 'Issued on', 'list' => ['term', 'class_name', 'average']]],
-    ]],
+    ], ['logic' => ExamsLogic::class]],
 
     'timetable' => ['Timetabling', 'calendar-range', 'Lesson periods by class, teacher and room.', [
         'periods' => ['Period', 'Subject', 'active,cancelled', [
@@ -128,7 +134,7 @@ return [
             'teacher:user|Teacher',
             'room',
         ], ['icon' => 'calendar-range', 'prefix' => 'PER-', 'list' => ['class_name', 'day', 'start_time', 'teacher']]],
-    ]],
+    ], ['logic' => TimetableLogic::class]],
 
     'tutoring' => ['Tutoring & lessons', 'presentation', 'Students, lesson bookings and lesson packages.', [
         'students' => ['Student', 'Student name', 'active,paused,finished', [
