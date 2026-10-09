@@ -4,10 +4,15 @@ use App\Blueprints\Logic\CitizenServiceDeskLogic;
 use App\Blueprints\Logic\CivilRegistryLogic;
 use App\Blueprints\Logic\CouncilRevenueLogic;
 use App\Blueprints\Logic\CourtCasesLogic;
+use App\Blueprints\Logic\DataPrivacyLogic;
+use App\Blueprints\Logic\EnvironmentalLogic;
+use App\Blueprints\Logic\GrantsLogic;
 use App\Blueprints\Logic\IncidentReportingLogic;
 use App\Blueprints\Logic\LandRegistryLogic;
+use App\Blueprints\Logic\ParliamentLogic;
 use App\Blueprints\Logic\PermitsLogic;
 use App\Blueprints\Logic\PoliceLogic;
+use App\Blueprints\Logic\PrisonLogic;
 use App\Blueprints\Logic\ProcurementLogic;
 use App\Blueprints\Logic\RiskRegisterLogic;
 use App\Blueprints\Logic\TrafficLogic;
@@ -193,7 +198,7 @@ return [
             'score:number',
             'report_due:date|Report due',
         ], ['icon' => 'hand-coins', 'prefix' => 'GA-', 'contact' => 'Applicant', 'amount' => 'Amount awarded', 'date' => 'Submitted on', 'assignee' => true, 'list' => ['programme', 'requested', 'score']]],
-    ]],
+    ], ['logic' => GrantsLogic::class]],
 
     'data-privacy-gdpr-popia' => ['Data privacy (GDPR / POPIA)', 'lock', 'Processing register, data-subject requests and breaches.', [
         'processing' => ['Processing activity', 'Activity', 'active,retired', [
@@ -213,7 +218,7 @@ return [
             'subjects_notified:checkbox|Data subjects notified',
             'actions:textarea',
         ], ['icon' => 'lock-open', 'prefix' => 'BR-', 'date' => 'Detected on', 'assignee' => true, 'list' => ['records_affected', 'regulator_notified']]],
-    ]],
+    ], ['logic' => DataPrivacyLogic::class]],
 
     'environmental-monitoring-permits' => ['Environmental monitoring & permits', 'leaf', 'Environmental permits, conditions and monitoring samples.', [
         'permits' => ['Environmental permit', 'Permit', 'applied,active,expired,suspended', [
@@ -229,7 +234,7 @@ return [
             'limit:number',
             'lab_reference|Lab reference',
         ], ['icon' => 'test-tube', 'prefix' => 'SMP-', 'date' => 'Sampled on', 'assignee' => true, 'list' => ['medium', 'parameter', 'result']]],
-    ]],
+    ], ['logic' => EnvironmentalLogic::class]],
 
     'parliament-council' => ['Parliament / council business', 'landmark', 'Sittings, motions, bills and resolutions.', [
         'sittings' => ['Sitting', 'Sitting', 'scheduled,held,adjourned,cancelled', [
@@ -246,7 +251,7 @@ return [
             'votes_against:number|Votes against',
             'resolution:textarea',
         ], ['icon' => 'scroll-text', 'prefix' => 'MOT-', 'plural' => 'Motions & bills', 'date' => 'Tabled on', 'list' => ['type', 'sponsor', 'votes_for']]],
-    ]],
+    ], ['logic' => ParliamentLogic::class]],
 
     'prison-correctional-records' => ['Prison & correctional records', 'lock-keyhole', 'Inmate register, sentences, cells and visits.', [
         'inmates' => ['Inmate', 'Inmate name', 'remand,sentenced,released,transferred,escaped', [
@@ -262,5 +267,5 @@ return [
             'id_number|Visitor ID',
             'time:time',
         ], ['icon' => 'users', 'prefix' => 'VIS-', 'date' => 'Date', 'list' => ['inmate', 'relationship', 'time']]],
-    ]],
+    ], ['logic' => PrisonLogic::class]],
 ];
