@@ -334,6 +334,20 @@ $z-color-map: (primary: $z-primary, success: $z-success, info: $z-info, warning:
   &.is-loading { opacity: 1; width: 85%; transition: width 8s cubic-bezier(.1, .7, .2, 1); }
   &.is-done { opacity: 0; width: 100%; transition: width .2s ease, opacity .3s ease .15s; } }
 
+// Placeholder layout shown while a page that wasn't fetched yet loads
+.z-skeleton { animation: z-skel-in .15s ease;
+  .z-skel-crumb { height: .75rem; width: 6rem; margin-bottom: .6rem; }
+  .z-skel-heading { font-size: 1.5rem; font-weight: 500; margin: 0 0 .5rem; line-height: 1.33; }
+  .z-skel-title { display: inline-block; height: 1.5rem; width: 12rem; vertical-align: middle; }
+  .z-skel-sub { height: .9rem; width: min(26rem, 80%); margin-bottom: 1.5rem; }
+  .z-skel-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+  .z-skel-card { height: 84px; border-radius: $z-radius; }
+  .z-skel-table { background: $z-surface; border: 1px solid $z-border; border-radius: $z-radius; padding: 1rem; display: grid; gap: .85rem; }
+  .z-skel-row { height: 1.1rem; &:nth-child(3n+2) { width: 85%; } &:nth-child(3n) { width: 70%; } } }
+.z-skel, .z-skel-crumb { border-radius: 6px; background: linear-gradient(90deg, darken($z-body-bg, 4%) 25%, lighten($z-body-bg, 2%) 50%, darken($z-body-bg, 4%) 75%); background-size: 200% 100%; animation: z-skel-shine 1.2s linear infinite; }
+@keyframes z-skel-shine { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@keyframes z-skel-in { from { opacity: 0; } to { opacity: 1; } }
+
 // ---------- Utilities ----------
 .bg-soft { background: $z-body-bg; }
 .border-dashed { border-style: dashed !important; }

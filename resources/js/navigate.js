@@ -1,22 +1,39 @@
 // ---- Instant page changes ----
 // Links and forms inside the app load with fetch() and only the page body is swapped, so the
 // stylesheet, scripts and fonts are never reloaded. The address bar, Back/Forward, refresh and
-// bookmarks keep working. Pages are fetched as soon as the pointer rests on a link, so most
-// clicks show the next page straight away.
+// bookmarks keep working.
 //
-// Opt out on a link, form or any parent with data-no-ajax. Anything that isn't an app page
-// (a download, the sign-in screen, another site) falls back to a normal page load.
+// Pages open at once because they are usually fetched before the click:
+//  - after each page appears, the sidebar's pages are quietly fetched one by one;
+//  - a link is fetched as soon as the pointer rests on it, touches it or presses it.
+// A page already fetched is shown straight away and then refreshed in the background. A page
+// that isn't ready yet shows a placeholder layout until it arrives.
+//
+// Opt out on a link, form or any parent with data-no-ajax; data-no-prefetch keeps a link from
+// being fetched early (for links that change something when opened). Anything that isn't an app
+// page (a download, the sign-in screen, another site) falls back to a normal page load.
 
 const HEADER = 'X-Zonseo-Navigate';
-const PREFETCH_DELAY = 65;
-const PREFETCH_TTL = 15000;
-const HISTORY_LIMIT = 20;
+const HOVER_DELAY = 65;
+const SHOW_AT_ONCE_FOR = 5 * 60000;
+const REFRESH_AFTER = 10000;
+const WARM_AGAIN_AFTER = 60000;
+const WARM_LIMIT = 8;
+const WARM_START = 1200;
+const PAGE_LIMIT = 30;
+const SKELETON_DELAY = 60;
 const SKIP_PATH = /\/(logout|export|download|print)(\/|$)|\.(pdf|csv|xlsx?|zip|docx?|png|jpe?g|svg|ics|txt|json|xml)$/i;
 
-const prefetched = new Map();
-const snapshots = new Map();
+/** Pages as the server sent them, by URL: { html, at } */
+const pages = new Map();
+/** Requests on their way, by URL, so a page is never fetched twice at once. */
+const inflight = new Map();
+/** Background requests that can be dropped to make way for a click: url => AbortController */
+const background = new Map();
+
 let hydrate = () => {};
-let current = null;
+let navigation = 0;
+let interactions = 0;
 let progressTimer = null;
 
 export function startInstantNavigation(onPageReady) {
@@ -27,9 +44,14 @@ export function startInstantNavigation(onPageReady) {
 
     document.addEventListener('click', onClick);
     document.addEventListener('submit', onSubmit);
-    document.addEventListener('mouseover', onHover, { passive: true });
-    document.addEventListener('touchstart', onHover, { passive: true });
+    document.addEventListener('mouseover', onPointer, { passive: true });
+    document.addEventListener('touchstart', onPointer, { passive: true });
+    document.addEventListener('mousedown', onPointer, { passive: true });
     window.addEventListener('popstate', onPopState);
+    ['keydown', 'input', 'pointerdown', 'focusin'].forEach((type) => document.addEventListener(type, () => { interactions++; }, { passive: true, capture: true }));
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) warmUp(); });
+
+    warmUp();
 }
 
 // ---- Which links and forms we handle ----
@@ -42,10 +64,10 @@ function optedOut(el) {
     return Boolean(el.closest('[data-no-ajax]'));
 }
 
-function linkFor(event) {
-    const link = event.target.closest?.('a[href]');
+function urlOf(link) {
     if (!link || optedOut(link) || link.target && link.target !== '_self' || link.hasAttribute('download')) return null;
-    if (link.getAttribute('href').startsWith('#') || link.dataset.bsToggle) return null;
+    const href = link.getAttribute('href') || '';
+    if (href === '' || href.startsWith('#') || href.startsWith('javascript:') || link.dataset.bsToggle) return null;
     const url = new URL(link.href, location.href);
     if (!sameApp(url)) return null;
     if (url.hash && url.pathname === location.pathname && url.search === location.search) return null;
@@ -54,25 +76,25 @@ function linkFor(event) {
 
 function onClick(event) {
     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    const url = linkFor(event);
+    const link = event.target.closest?.('a[href]');
+    const url = urlOf(link);
     if (!url) return;
     event.preventDefault();
-    visit(url.href);
+    visit(url.href, { link });
 }
 
 let hoverTimer = null;
-function onHover(event) {
+function onPointer(event) {
     const link = event.target.closest?.('a[href]');
     if (!link || link.dataset.noPrefetch !== undefined) return;
-    const url = linkFor(event);
-    if (!url || url.href === location.href) return;
+    const url = urlOf(link);
+    if (!url || url.href === location.href || ready(url.href, REFRESH_AFTER)) return;
     clearTimeout(hoverTimer);
-    const go = () => prefetch(url.href);
-    if (event.type === 'touchstart') {
-        go();
-    } else {
-        hoverTimer = setTimeout(go, PREFETCH_DELAY);
+    if (event.type === 'mouseover') {
+        hoverTimer = setTimeout(() => fetchPage(url.href, { early: true }), HOVER_DELAY);
         link.addEventListener('mouseleave', () => clearTimeout(hoverTimer), { once: true });
+    } else {
+        fetchPage(url.href, { early: true });
     }
 }
 
@@ -94,42 +116,55 @@ function onSubmit(event) {
         visit(action.href);
         return;
     }
-    prefetched.clear();
-    snapshots.clear();
+    // Something changed on the server, so every page we kept may be out of date.
+    pages.clear();
     submitter?.setAttribute('disabled', 'disabled');
-    visit(action.href, { method: 'POST', body: data }).finally(() => submitter?.removeAttribute('disabled'));
+    send(action.href, data).finally(() => submitter?.removeAttribute('disabled'));
 }
 
 function onPopState(event) {
     if (!event.state?.zonseo) return;
-    const snapshot = snapshots.get(location.href);
-    if (snapshot && Date.now() - snapshot.at < 5 * 60000) {
-        render(snapshot.html, location.href, { scroll: event.state.scroll ?? 0, record: false });
-        // Show the remembered page at once, then quietly bring it up to date.
-        load(location.href).then((page) => {
-            if (page.kind === 'page' && page.url === location.href && page.html !== snapshot.html && window.scrollY === (event.state.scroll ?? 0)) {
-                render(page.html, page.url, { scroll: window.scrollY, record: false, quiet: true });
-            }
-        }).catch(() => {});
-        return;
-    }
-    visit(location.href, { history: false, scroll: event.state.scroll ?? 0 });
+    visit(location.href, { record: false, scroll: event.state.scroll ?? 0 });
 }
 
 // ---- Fetching ----
 
-function prefetch(url) {
-    const hit = prefetched.get(url);
-    if (hit && Date.now() - hit.at < PREFETCH_TTL) return hit.promise;
-    const promise = load(url, { prefetch: true });
-    prefetched.set(url, { at: Date.now(), promise });
-    promise.catch(() => prefetched.delete(url));
+function ready(url, maxAge = SHOW_AT_ONCE_FOR) {
+    const page = pages.get(url);
+    return page && Date.now() - page.at < maxAge ? page : null;
+}
+
+function keep(url, html) {
+    pages.delete(url);
+    pages.set(url, { html, at: Date.now() });
+    while (pages.size > PAGE_LIMIT) pages.delete(pages.keys().next().value);
+}
+
+/** GET a page once, however many callers ask for it at the same time. */
+function fetchPage(url, { early = false } = {}) {
+    if (inflight.has(url)) return inflight.get(url);
+    const controller = new AbortController();
+    if (early) background.set(url, controller);
+    const promise = load(url, { early, signal: controller.signal })
+        .then((result) => {
+            if (result.kind === 'page' && result.url === url && result.status === 200 && isAppPage(result.html)) {
+                keep(url, withoutFlash(result.html));
+            }
+            return result;
+        })
+        .finally(() => {
+            inflight.delete(url);
+            background.delete(url);
+        });
+    inflight.set(url, promise);
+    promise.catch(() => {});
     return promise;
 }
 
-async function load(url, { method = 'GET', body = null, prefetch: isPrefetch = false, signal } = {}) {
+async function load(url, { method = 'GET', body = null, early = false, signal = null } = {}) {
     const headers = { [HEADER]: '1', Accept: 'text/html, application/xhtml+xml' };
-    if (isPrefetch) headers.Purpose = 'prefetch';
+    // Laravel leaves "previous URL" alone for prefetches, so fetching early never changes where "back" goes.
+    if (early) headers.Purpose = 'prefetch';
     if (method !== 'GET') headers['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]')?.content || '';
 
     const response = await fetch(url, { method, body, headers, credentials: 'same-origin', redirect: 'follow', signal });
@@ -141,7 +176,7 @@ async function load(url, { method = 'GET', body = null, prefetch: isPrefetch = f
         if (method === 'GET') return { kind: 'away', url: response.url };
         return { kind: 'file', blob: await response.blob(), name: fileName(response), url: response.url };
     }
-    return { kind: 'page', html: await response.text(), url: response.url, status: response.status, redirected: response.redirected, method };
+    return { kind: 'page', html: await response.text(), url: response.url, status: response.status, redirected: response.redirected };
 }
 
 function fileName(response) {
@@ -149,50 +184,99 @@ function fileName(response) {
     return match ? decodeURIComponent(match[1]) : '';
 }
 
-async function visit(url, { method = 'GET', body = null, history: record = true, scroll = 0 } = {}) {
-    current?.abort();
-    const controller = new AbortController();
-    current = controller;
-    startProgress();
+function isAppPage(html) {
+    return html.includes('class="z-app"');
+}
 
-    try {
-        let page;
-        const hit = method === 'GET' && prefetched.get(url);
-        if (hit && Date.now() - hit.at < PREFETCH_TTL) {
-            page = await hit.promise;
-            prefetched.delete(url);
-        } else {
-            page = await load(url, { method, body, signal: controller.signal });
-        }
-        if (controller !== current) return;
+function withoutFlash(html) {
+    return html.replace(/<div data-flash="[^"]*" data-flash-type="[^"]*"><\/div>/g, '');
+}
 
-        if (page.kind === 'away') {
-            location.href = page.url;
+// ---- Opening a page ----
+
+async function visit(url, { link = null, record = true, scroll = 0 } = {}) {
+    const id = ++navigation;
+    const cached = ready(url);
+
+    // Already here: show it at once, then bring it up to date quietly.
+    if (cached) {
+        if (!render(cached.html, url, { record, scroll, replace: url === location.href })) {
+            location.href = url;
             return;
         }
+        if (Date.now() - cached.at > REFRESH_AFTER) refresh(url, id);
+        warmUp();
+        return;
+    }
+
+    makeWayFor(url);
+    const skeletonTimer = setTimeout(() => { if (id === navigation) showSkeleton(link); }, SKELETON_DELAY);
+    startProgress();
+    try {
+        const page = await fetchPage(url);
+        if (id !== navigation) return;
+        open(page, url, { record, scroll });
+    } catch (error) {
+        if (id === navigation) location.href = url;
+    } finally {
+        clearTimeout(skeletonTimer);
+        if (id === navigation) stopProgress();
+    }
+    warmUp();
+}
+
+/** Fetch a page again behind the one on screen and swap it in, unless the person has started using it. */
+function refresh(url, id) {
+    const before = interactions;
+    const shown = pages.get(url)?.html;
+    // Early, so a click elsewhere cancels it instead of waiting behind it.
+    fetchPage(url, { early: true }).then((page) => {
+        if (id !== navigation || interactions !== before || location.href !== url) return;
+        if (page.kind !== 'page' || page.url !== url || withoutFlash(page.html) === shown) return;
+        render(page.html, url, { record: false, scroll: window.scrollY, quiet: true });
+    }).catch(() => {});
+}
+
+/** Send a form, then show wherever the server sends us. */
+async function send(url, body) {
+    const id = ++navigation;
+    makeWayFor(null);
+    startProgress();
+    try {
+        const page = await load(url, { method: 'POST', body });
+        if (id !== navigation) return;
         if (page.kind === 'file') {
             saveFile(page);
             return;
         }
-        if (!render(page.html, page.url, { scroll, record, replace: page.url === location.href })) {
-            // Not an app page (sign-in screen, error page, another layout): show it as a normal load would.
-            if (method === 'GET' || page.redirected) {
-                location.href = page.url;
-            } else {
-                document.open();
-                document.write(page.html);
-                document.close();
-            }
+        if (page.kind === 'page' && !isAppPage(page.html) && !page.redirected) {
+            // A page from another layout answered the form directly (an error page, say): show it as is.
+            document.open();
+            document.write(page.html);
+            document.close();
+            return;
         }
+        open(page, url, { record: true });
     } catch (error) {
-        if (error.name === 'AbortError') return;
-        if (method === 'GET') location.href = url;
-        else window.zonseo.toast("Couldn't reach the server. Check your connection and try again.", 'danger', 6000);
+        window.zonseo.toast("Couldn't reach the server. Check your connection and try again.", 'danger', 6000);
     } finally {
-        if (controller === current) {
-            current = null;
-            stopProgress();
-        }
+        if (id === navigation) stopProgress();
+    }
+    warmUp();
+}
+
+function open(page, requested, { record = true, scroll = 0 } = {}) {
+    if (page.kind === 'away') {
+        location.href = page.url;
+        return;
+    }
+    if (page.kind === 'file') {
+        saveFile(page);
+        return;
+    }
+    if (!render(page.html, page.url, { record, scroll, replace: page.url === location.href })) {
+        // Not an app page (sign-in screen, another layout): load it the normal way.
+        location.href = page.url || requested;
     }
 }
 
@@ -203,6 +287,65 @@ function saveFile({ blob, name, url }) {
     link.click();
     link.remove();
     setTimeout(() => URL.revokeObjectURL(href), 10000);
+}
+
+/** Drop background fetches so the page the person asked for is answered first. */
+function makeWayFor(url) {
+    background.forEach((controller, pending) => {
+        if (pending !== url) controller.abort();
+    });
+}
+
+// ---- Fetching the sidebar's pages before they are needed ----
+
+let warmTimer = null;
+function warmUp() {
+    clearTimeout(warmTimer);
+    if (document.hidden || navigator.connection?.saveData) return;
+    const id = navigation;
+    warmTimer = setTimeout(async () => {
+        const urls = [...new Set([...document.querySelectorAll('.z-nav a[href]')]
+            .filter((link) => link.dataset.noPrefetch === undefined)
+            .map((link) => urlOf(link)?.href)
+            .filter((url) => url && url !== location.href))]
+            .slice(0, WARM_LIMIT)
+            .filter((url) => !ready(url, WARM_AGAIN_AFTER));
+        for (const url of urls) {
+            // Stop as soon as the person moves on; the next page starts its own round.
+            if (id !== navigation || document.hidden) return;
+            await fetchPage(url, { early: true }).catch(() => {});
+            await idle();
+        }
+    }, WARM_START);
+}
+
+function idle() {
+    return new Promise((resolve) => (window.requestIdleCallback ? requestIdleCallback(() => resolve(), { timeout: 500 }) : setTimeout(resolve, 50)));
+}
+
+// ---- Placeholder while a page that wasn't ready loads ----
+
+function showSkeleton(link) {
+    const main = document.querySelector('main.z-content');
+    if (!main) return;
+    if (link?.closest('.z-nav')) {
+        document.querySelectorAll('.z-nav .z-nav-link.active').forEach((el) => el.classList.remove('active'));
+        link.classList.add('active');
+    }
+    document.body.classList.remove('z-sidebar-open');
+    const title = link?.textContent.trim() || '';
+    main.innerHTML = `<div class="z-skeleton" aria-busy="true" aria-label="Loading">
+        <div class="z-skel-crumb"></div>
+        <h1 class="z-skel-heading">${title ? escapeHtml(title) : '<span class="z-skel z-skel-title"></span>'}</h1>
+        <div class="z-skel z-skel-sub"></div>
+        <div class="z-skel-cards">${'<div class="z-skel z-skel-card"></div>'.repeat(4)}</div>
+        <div class="z-skel-table">${'<div class="z-skel z-skel-row"></div>'.repeat(6)}</div>
+    </div>`;
+    window.scrollTo(0, 0);
+}
+
+function escapeHtml(text) {
+    return text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
 // ---- Swapping the page ----
@@ -219,7 +362,7 @@ function render(html, url, { scroll = 0, record = true, replace = false, quiet =
     // Remember where we were on the page we are leaving, for Back.
     if (!quiet) history.replaceState({ ...(history.state || {}), zonseo: true, scroll: window.scrollY }, '', location.href);
 
-    const keep = [...document.body.querySelectorAll(':scope > .z-toasts, :scope > #z-progress')];
+    const kept = [...document.body.querySelectorAll(':scope > .z-toasts, :scope > #z-progress')];
     const navScroll = document.querySelector('.z-nav')?.scrollTop || 0;
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => window.bootstrap.Tooltip.getInstance(el)?.dispose());
 
@@ -231,14 +374,10 @@ function render(html, url, { scroll = 0, record = true, replace = false, quiet =
     document.body.style.removeProperty('overflow');
     document.body.style.removeProperty('padding-right');
     document.body.replaceChildren(...[...doc.body.childNodes].map((node) => document.importNode(node, true)));
-    document.body.append(...keep);
+    document.body.append(...kept);
     runScripts(document.body);
 
-    // Keep the page as the server sent it (minus one-off messages) so Back can show it instantly.
-    doc.querySelectorAll('[data-flash]').forEach((el) => el.remove());
-    snapshots.delete(url);
-    snapshots.set(url, { html: doc.documentElement.outerHTML, at: Date.now() });
-    while (snapshots.size > HISTORY_LIMIT) snapshots.delete(snapshots.keys().next().value);
+    if (isAppPage(html)) keep(url, withoutFlash(html));
 
     const nav = document.querySelector('.z-nav');
     if (nav) nav.scrollTop = navScroll;
@@ -254,9 +393,7 @@ function render(html, url, { scroll = 0, record = true, replace = false, quiet =
     }
 
     hydrate(document.body);
-    if (!quiet) {
-        document.dispatchEvent(new CustomEvent('zonseo:navigated', { detail: { url } }));
-    }
+    if (!quiet) document.dispatchEvent(new CustomEvent('zonseo:navigated', { detail: { url } }));
     return true;
 }
 
@@ -283,8 +420,10 @@ function runScripts(root) {
             const script = document.createElement('script');
             [...old.attributes].forEach((attr) => script.setAttribute(attr.name, attr.value));
             script.textContent = old.textContent;
-            if (old.src) script.async = false;
-            if (old.src) loadedScripts.add(old.src);
+            if (old.src) {
+                script.async = false;
+                loadedScripts.add(old.src);
+            }
             old.replaceWith(script);
         });
     } finally {
@@ -310,7 +449,6 @@ function startProgress() {
     progressTimer = setTimeout(() => {
         const bar = progressBar();
         bar.className = '';
-        bar.style.width = '0';
         void bar.offsetWidth;
         bar.className = 'is-loading';
     }, 120);
