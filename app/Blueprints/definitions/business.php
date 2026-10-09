@@ -5,6 +5,16 @@
  * App\Blueprints\Blueprint and App\Blueprints\Entity.
  */
 
+use App\Blueprints\Logic\CrmLogic;
+use App\Blueprints\Logic\ExpensesLogic;
+use App\Blueprints\Logic\FixedAssetsLogic;
+use App\Blueprints\Logic\InsuranceLogic;
+use App\Blueprints\Logic\LeaveLogic;
+use App\Blueprints\Logic\LoansLogic;
+use App\Blueprints\Logic\PettyCashLogic;
+use App\Blueprints\Logic\ProjectsLogic;
+use App\Blueprints\Logic\RecruitmentLogic;
+
 return [
     'crm' => ['CRM & sales pipeline', 'target', 'Leads and deals moving through your sales pipeline.', [
         'deals' => ['Deal', 'Deal name', 'lead,qualified,proposal,negotiation,won,lost', [
@@ -14,7 +24,7 @@ return [
             'lost_reason|Lost reason',
             'notes:textarea',
         ], ['icon' => 'target', 'prefix' => 'DL-', 'contact' => 'Customer', 'amount' => 'Deal value', 'date' => 'Opened on', 'due' => 'Expected close', 'assignee' => true, 'list' => ['source', 'next_step']]],
-    ]],
+    ], ['logic' => CrmLogic::class]],
 
     'expenses' => ['Expenses', 'receipt', 'Business spending and staff expense claims.', [
         'expenses' => ['Expense', 'Description', 'draft,submitted,approved,reimbursed,rejected', [
@@ -24,7 +34,7 @@ return [
             'receipt_number|Receipt number',
             'billable:checkbox|Billable to a client',
         ], ['icon' => 'receipt', 'prefix' => 'EXP-', 'amount' => 'Amount', 'date' => 'Date', 'assignee' => true, 'list' => ['category', 'supplier']]],
-    ]],
+    ], ['logic' => ExpensesLogic::class]],
 
     'petty-cash' => ['Petty cash & cash books', 'wallet', 'Cash in and out of the till or petty-cash box.', [
         'entries' => ['Cash entry', 'Description', 'recorded,reconciled', [
@@ -32,7 +42,7 @@ return [
             'category',
             'voucher|Voucher number',
         ], ['icon' => 'wallet', 'prefix' => 'PC-', 'plural' => 'Cash entries', 'amount' => 'Amount', 'date' => 'Date', 'list' => ['direction', 'category']]],
-    ]],
+    ], ['logic' => PettyCashLogic::class]],
 
     'fixed-assets' => ['Fixed assets', 'building', 'Asset register with locations, custodians and depreciation basics.', [
         'assets' => ['Asset', 'Asset name', 'in_use,in_storage,under_repair,disposed', [
@@ -43,7 +53,7 @@ return [
             'useful_life_years:number|Useful life (years)',
             'serial_number|Serial number',
         ], ['icon' => 'archive', 'prefix' => 'FA-', 'amount' => 'Cost', 'date' => 'Purchased on', 'due' => 'Warranty ends', 'list' => ['asset_tag', 'category', 'custodian']]],
-    ]],
+    ], ['logic' => FixedAssetsLogic::class]],
 
     'loans' => ['Loans & microfinance', 'piggy-bank', 'Loan book: applications, disbursements and repayments.', [
         'loans' => ['Loan', 'Borrower name', 'application,approved,disbursed,in_arrears,repaid,written_off', [
@@ -57,7 +67,7 @@ return [
             'loan:record=loans|Loan*',
             'method:select=cash,mobile_money,bank,payroll',
         ], ['icon' => 'coins', 'prefix' => 'RP-', 'date' => 'Date', 'amount' => 'Amount', 'list' => ['loan', 'method']]],
-    ]],
+    ], ['logic' => LoansLogic::class]],
 
     'insurance' => ['Insurance management', 'shield', 'Policies, renewals and claims for brokers.', [
         'policies' => ['Policy', 'Policy number', 'quoted,active,lapsed,cancelled', [
@@ -70,7 +80,7 @@ return [
             'incident_date:date|Incident date',
             'details:textarea',
         ], ['icon' => 'file-warning', 'prefix' => 'IC-', 'amount' => 'Claim amount', 'date' => 'Reported on', 'assignee' => true, 'list' => ['policy', 'incident_date']]],
-    ]],
+    ], ['logic' => InsuranceLogic::class]],
 
     'recruitment' => ['Recruitment', 'user-search', 'Vacancies and candidates through your hiring stages.', [
         'vacancies' => ['Vacancy', 'Job title', 'open,on_hold,filled,cancelled', [
@@ -87,7 +97,7 @@ return [
             'rating:select=1,2,3,4,5',
             'notes:textarea',
         ], ['icon' => 'user-round', 'prefix' => 'CAN-', 'date' => 'Applied on', 'list' => ['vacancy', 'rating']]],
-    ]],
+    ], ['logic' => RecruitmentLogic::class]],
 
     'leave' => ['Leave management', 'calendar-off', 'Leave requests and approvals.', [
         'requests' => ['Leave request', 'Employee', 'requested,approved,declined,taken,cancelled', [
@@ -95,7 +105,7 @@ return [
             'days:number|Days*',
             'reason:textarea',
         ], ['icon' => 'calendar-off', 'prefix' => 'LV-', 'date' => 'From', 'due' => 'To', 'assignee' => true, 'list' => ['type', 'days']]],
-    ]],
+    ], ['logic' => LeaveLogic::class]],
 
     'projects' => ['Projects', 'kanban-square', 'Client and internal projects with milestones.', [
         'projects' => ['Project', 'Project name', 'planning,active,on_hold,completed,cancelled', [
@@ -106,5 +116,5 @@ return [
             'project:record=projects|Project*',
             'deliverables:textarea',
         ], ['icon' => 'flag', 'prefix' => 'MS-', 'amount' => 'Billing amount', 'due' => 'Due', 'assignee' => true, 'list' => ['project']]],
-    ]],
+    ], ['logic' => ProjectsLogic::class]],
 ];
