@@ -18,7 +18,7 @@
 
         <div class="row g-4 justify-content-center">
             @foreach($plans as $p)
-                @include('partials.plan-card', ['p' => $p, 'selectable' => true])
+                @include('partials.plan-card', ['p' => $p, 'selectable' => true, 'addonQuote' => $addonQuotes[$p->id] ?? []])
             @endforeach
         </div>
 

@@ -9,6 +9,7 @@ use App\Models\Profession;
 use App\Models\Suite;
 use App\Models\Workspace;
 use App\Support\Lists;
+use App\Support\ModuleBilling;
 use App\Support\Partners;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Http\Request;
@@ -76,8 +77,10 @@ class OnboardingController extends Controller
                 'recommended' => $workspace->profession?->recommendedModules()->pluck('key')->all() ?? [],
             ]),
             4 => view('onboarding.plan', $data + [
-                'plans' => Plan::active()->get(),
+                'plans' => $plans = Plan::active()->get(),
                 'moduleCount' => $workspace->modules()->count(),
+                // Apps picked in step 3 that a plan doesn't cover become paid add-ons; show that on each card.
+                'addonQuotes' => $plans->mapWithKeys(fn (Plan $p) => [$p->id => app(ModuleBilling::class)->quoteSwitch($workspace, $p)]),
             ]),
         };
     }
@@ -205,6 +208,8 @@ class OnboardingController extends Controller
                 'trial_ends_at' => $trialDays ? now()->addDays($trialDays) : null,
             ])->save();
         });
+        $workspace->unsetRelation('subscription');
+        app(ModuleBilling::class)->reconcile($workspace);
 
         return redirect()->route('dashboard')->with('flash', [
             'type' => 'success',

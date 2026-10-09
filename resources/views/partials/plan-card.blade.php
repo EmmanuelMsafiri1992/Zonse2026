@@ -32,6 +32,12 @@
         <ul>
             @foreach($features as $f)<li><x-icon name="check" class="zi zi-sm" /> <span>{{ $f }}</span></li>@endforeach
         </ul>
+        @if(! empty($addonQuote))
+            <div class="alert alert-warning fs-8 p-2 mb-0">
+                {{ count($addonQuote) }} of your chosen apps would be paid add-ons:
+                +{{ \App\Support\Money::format(array_sum(array_column($addonQuote, 'monthly')), $p->currency) }}/month.
+            </div>
+        @endif
         @if(! $selectable)
             <form method="POST" action="{{ route('settings.billing.subscribe', $p) }}" class="mt-3">
                 @csrf

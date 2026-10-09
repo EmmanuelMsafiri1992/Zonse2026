@@ -109,7 +109,7 @@ class Workspace extends Model
     public function modules(): BelongsToMany
     {
         return $this->belongsToMany(Module::class, 'workspace_module')
-            ->withPivot(['enabled_by', 'settings', 'enabled_at'])
+            ->withPivot(['enabled_by', 'settings', 'enabled_at', 'is_addon', 'addon_monthly', 'addon_yearly'])
             ->withTimestamps();
     }
 

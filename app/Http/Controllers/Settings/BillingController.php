@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
+use App\Models\Module;
 use App\Models\Plan;
 use App\Support\Audit;
+use App\Support\ModuleBilling;
+use App\Support\Money;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -16,16 +19,21 @@ use Illuminate\Validation\Rule;
  */
 class BillingController extends Controller
 {
-    public function __construct(protected WorkspaceContext $context) {}
+    public function __construct(protected WorkspaceContext $context, protected ModuleBilling $billing) {}
 
     public function index()
     {
         $workspace = $this->context->getOrFail();
+        $plans = Plan::active()->withCount('modules')->get();
 
         return view('settings.billing', [
             'workspace' => $workspace,
             'subscription' => $workspace->subscription,
-            'plans' => Plan::active()->withCount('modules')->get(),
+            'plans' => $plans,
+            'addons' => $this->billing->addons($workspace),
+            'usage' => $this->billing->usage($workspace),
+            // Apps each plan would start charging as add-ons, so the switch button can say so up front.
+            'switchQuotes' => $plans->mapWithKeys(fn (Plan $p) => [$p->id => $this->billing->quoteSwitch($workspace, $p)]),
             'history' => $workspace->subscriptions()->with('plan')->latest()->limit(10)->get(),
         ]);
     }
@@ -33,9 +41,24 @@ class BillingController extends Controller
     public function subscribe(Request $request, Plan $plan)
     {
         $workspace = $this->context->getOrFail();
-        $data = $request->validate(['billing_cycle' => ['required', Rule::in(['monthly', 'yearly'])]]);
+        $data = $request->validate([
+            'billing_cycle' => ['required', Rule::in(['monthly', 'yearly'])],
+            'keep_addons' => ['nullable', 'boolean'],
+        ]);
         $cycle = $data['billing_cycle'];
         $current = $workspace->subscription;
+
+        // Moving to a smaller plan must never start charging for apps silently.
+        $newAddons = $this->billing->quoteSwitch($workspace, $plan);
+        if ($newAddons && ! $request->boolean('keep_addons')) {
+            $names = collect(array_keys($newAddons))->map(fn ($key) => Module::findByKey($key)?->name)->filter()->implode(', ');
+            $total = Money::format(array_sum(array_column($newAddons, $cycle)), $plan->currency ?? 'USD');
+
+            return back()->with('flash', [
+                'type' => 'warning',
+                'message' => "The {$plan->name} plan doesn't cover {$names}. Turn them off first, or keep them as add-ons for {$total} per ".($cycle === 'yearly' ? 'year' : 'month').'.',
+            ]);
+        }
 
         // Keep whatever trial time is left when moving between paid plans.
         $trialEnds = null;
@@ -62,6 +85,7 @@ class BillingController extends Controller
         ]);
         $workspace->forceFill(['trial_ends_at' => $trialEnds])->save();
         $workspace->unsetRelation('subscription');
+        $this->billing->reconcile($workspace);
 
         Audit::log('settings', 'plan-changed', "Switched to the {$plan->name} plan ({$cycle})", $plan);
 

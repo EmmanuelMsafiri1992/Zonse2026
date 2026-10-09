@@ -34,6 +34,49 @@
         </div>
     @endif
 
+    @if($subscription && ($addons->isNotEmpty() || $usage['allowance'] !== null))
+        @php $per = $subscription->billing_cycle === 'yearly' ? 'year' : 'month'; @endphp
+        <div class="card mb-4">
+            <div class="card-header d-flex align-items-center">
+                <h5 class="card-title mb-0">Apps & add-ons</h5>
+                @if($usage['allowance'] !== null)
+                    <span class="ms-auto text-muted fs-7">{{ $usage['used'] }} of {{ $usage['allowance'] }} apps in your plan used</span>
+                @endif
+            </div>
+            <div class="z-table-wrap">
+                <table class="table z-table">
+                    <thead><tr><th>Add-on app</th><th>Price</th><th>Added</th><th></th></tr></thead>
+                    <tbody>
+                    <tr>
+                        <td class="z-row-title">{{ $subscription->plan?->name }} plan</td>
+                        <td>{{ \App\Support\Money::format($subscription->plan?->priceFor($subscription->billing_cycle), $subscription->currency) }} / {{ $per }}</td>
+                        <td class="text-muted fs-7">—</td><td></td>
+                    </tr>
+                    @forelse($addons as $addon)
+                        <tr>
+                            <td class="z-row-title"><x-icon :name="$addon->icon ?: 'box'" class="zi zi-sm me-1" /> {{ $addon->name }}</td>
+                            <td>{{ \App\Support\Money::format($subscription->billing_cycle === 'yearly' ? $addon->pivot->addon_yearly : $addon->pivot->addon_monthly, $subscription->currency) }} / {{ $per }}</td>
+                            <td class="text-muted fs-7">{{ $addon->pivot->enabled_at ? \Illuminate\Support\Carbon::parse($addon->pivot->enabled_at)->toFormattedDateString() : '—' }}</td>
+                            <td class="text-end">
+                                <form method="POST" action="{{ route('settings.modules.disable', $addon->key) }}" onsubmit="return confirm({{ Js::from('Turn off '.$addon->name.'? Its records are kept.') }})">
+                                    @csrf @method('DELETE')
+                                    <button class="btn btn-sm btn-soft-danger">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="4" class="text-muted fs-7">No paid add-ons. <a href="{{ route('settings.modules.index') }}">Browse apps</a></td></tr>
+                    @endforelse
+                    <tr class="fw-600">
+                        <td>Total</td>
+                        <td colspan="3">{{ \App\Support\Money::format($subscription->amount, $subscription->currency) }} / {{ $per }}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
+
     <div class="alert alert-light border d-flex gap-2 align-items-start">
         <x-icon name="info" class="zi mt-1 text-primary" />
         <div class="fs-7">Online card and mobile-money payments (Paynow, EcoCash, Stripe, Paystack) are being connected. Until then our team confirms payments manually and activates your plan within a working day.</div>
@@ -72,9 +115,19 @@
                             @endif
                         </div>
                         <ul>@foreach($features as $f)<li><x-icon name="check" class="zi zi-sm" /> <span>{{ $f }}</span></li>@endforeach</ul>
+                        @php $quote = $switchQuotes[$p->id] ?? []; @endphp
+                        @if($quote && $subscription?->plan_id !== $p->id)
+                            <div class="alert alert-warning fs-8 p-2 mb-0">
+                                {{ count($quote) }} of your apps aren't covered and would stay on as add-ons:
+                                <span x-show="cycle === 'monthly'">+{{ \App\Support\Money::format(array_sum(array_column($quote, 'monthly')), $p->currency) }}/mo</span>
+                                <span x-show="cycle === 'yearly'" x-cloak>+{{ \App\Support\Money::format(array_sum(array_column($quote, 'yearly')), $p->currency) }}/yr</span>.
+                                Turn apps off first to avoid this.
+                            </div>
+                        @endif
                         <form method="POST" action="{{ route('settings.billing.subscribe', $p) }}" class="mt-3">
                             @csrf
                             <input type="hidden" name="billing_cycle" :value="cycle">
+                            @if($quote)<input type="hidden" name="keep_addons" value="1">@endif
                             @if($subscription?->plan_id === $p->id && in_array($subscription->status, ['trialing', 'active']))
                                 <button type="button" class="btn btn-soft-secondary w-100" disabled>Current plan</button>
                             @else

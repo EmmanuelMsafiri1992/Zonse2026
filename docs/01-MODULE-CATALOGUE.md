@@ -18,7 +18,7 @@ Every module below is designed as an installable **module** inside one codebase.
 | 0.1 | Workspaces (multi-company), branches / locations | ✔ |
 | 0.2 | Users, teams, roles & granular permissions | ✔ |
 | 0.3 | Subscription plans, trials, upgrades, invoices for the platform itself | ✔ |
-| 0.4 | Module marketplace (turn modules on/off, per-module pricing) | ➕ |
+| 0.4 | Module marketplace (turn modules on/off, per-module pricing) | ✔ |
 | 0.5 | Onboarding wizard: "What do you do?" → recommended bundle | ➕ |
 | 0.6 | Dashboards & report builder (drag-and-drop widgets) | ✔ |
 | 0.7 | Notifications: email, SMS, WhatsApp, push, in-app | ✔ |

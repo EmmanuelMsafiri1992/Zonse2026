@@ -108,6 +108,11 @@ class Module extends Model
         return array_keys($result);
     }
 
+    public function priceFor(string $cycle): float
+    {
+        return (float) ($cycle === 'yearly' ? $this->price_yearly : $this->price_monthly);
+    }
+
     public function isAvailable(): bool
     {
         return $this->is_installed && $this->status !== self::STATUS_COMING_SOON;

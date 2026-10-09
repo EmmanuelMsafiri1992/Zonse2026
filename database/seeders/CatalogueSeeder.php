@@ -185,6 +185,20 @@ class CatalogueSeeder extends Seeder
         '20.2' => ['personal-tasks', 'Personal tasks & habits', 'list-checks', []],
     ];
 
+    /**
+     * Default add-on price (USD per month) by suite, used when an app is enabled
+     * beyond what the plan covers. Yearly is ten months (two months free).
+     * Only applied while a module has no price, so edited prices survive reseeding.
+     *
+     * @var array<string, int>
+     */
+    protected array $addonPrices = [
+        'finance' => 4, 'sales' => 4, 'marketing' => 3, 'operations' => 4, 'hr' => 4, 'projects' => 3,
+        'healthcare' => 6, 'education' => 5, 'hospitality' => 5, 'property' => 5, 'construction' => 5,
+        'events' => 3, 'services' => 3, 'retail' => 5, 'agriculture' => 3, 'transport' => 4,
+        'utilities' => 5, 'government' => 6, 'industrial' => 6, 'personal' => 2,
+    ];
+
     /** Extra core rows not in the markdown. */
     protected array $extraCore = [
         ['0.31', 'contacts', 'Contacts & directory', 'Customers, suppliers, patients, students, tenants, members — one shared address book for every app.', 'contact'],
@@ -272,7 +286,7 @@ class CatalogueSeeder extends Seeder
         $tags = collect(preg_split('/[,;\/]/', strtolower($description)))
             ->map(fn ($t) => trim($t))->filter(fn ($t) => $t !== '' && strlen($t) < 40)->take(8)->values()->all();
 
-        Module::updateOrCreate(['key' => $key], [
+        $module = Module::updateOrCreate(['key' => $key], [
             'suite_id' => $suite->id,
             'ref' => $ref,
             'name' => $name,
@@ -285,6 +299,11 @@ class CatalogueSeeder extends Seeder
             'tags' => $tags,
             'sort_order' => $order,
         ]);
+
+        if (! $isCore && (float) $module->price_monthly === 0.0) {
+            $monthly = $this->addonPrices[$suite->key] ?? 3;
+            $module->forceFill(['price_monthly' => $monthly, 'price_yearly' => $monthly * 10])->save();
+        }
     }
 
     /** "Name: details" | "Name → details" | "Name, a, b" => [name, description] */

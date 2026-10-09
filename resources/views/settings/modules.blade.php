@@ -4,7 +4,29 @@
     <x-page-header title="Apps & modules" sub="Switch on what your business needs. Everything shares the same contacts, team and billing." :crumbs="['Settings' => route('settings.workspace.edit'), 'Apps']">
         <span class="z-chip"><x-icon name="layout-grid" class="zi zi-sm" /> {{ $counts['enabled'] }} of {{ $counts['total'] }} apps enabled</span>
         <span class="z-chip"><x-icon name="rocket" class="zi zi-sm" /> {{ $counts['available'] }} ready today</span>
+        @if($usage['allowance'] !== null)
+            <span class="z-chip"><x-icon name="gauge" class="zi zi-sm" /> {{ $usage['used'] }} of {{ $usage['allowance'] }} plan apps used</span>
+        @endif
+        @if($addonKeys)
+            <a href="{{ route('settings.billing.index') }}" class="z-chip"><x-icon name="puzzle" class="zi zi-sm" /> {{ count($addonKeys) }} paid {{ \Illuminate\Support\Str::plural('add-on', count($addonKeys)) }}</a>
+        @endif
     </x-page-header>
+
+    @if($quote = session('addon_quote'))
+        <div class="alert alert-warning d-flex flex-wrap gap-3 align-items-center">
+            <x-icon name="puzzle" class="zi" />
+            <div class="flex-grow-1">
+                <div class="fw-600">{{ $quote['message'] }}</div>
+                @if(count($quote['apps']) > 1)<div class="fs-7">Includes: {{ implode(', ', $quote['apps']) }}.</div>@endif
+            </div>
+            <form method="POST" action="{{ route('settings.modules.enable', $quote['key']) }}">
+                @csrf
+                <input type="hidden" name="confirm_addon" value="all">
+                <button class="btn btn-sm btn-primary">Add for {{ $quote['total'] }}/{{ $quote['per'] }}</button>
+            </form>
+            <a href="{{ route('settings.billing.index') }}" class="btn btn-sm btn-white">Compare plans</a>
+        </div>
+    @endif
 
     <form method="GET" class="card card-flat mb-4">
         <div class="card-body d-flex flex-wrap gap-2 align-items-center">
@@ -17,7 +39,9 @@
                 @endforeach
             </div>
             @if($plan && ! $plan->includes_all_modules)
-                <span class="text-muted fs-7 ms-auto">Your <strong>{{ $plan->name }}</strong> plan includes a limited set of apps. <a href="{{ route('settings.billing.index') }}">Upgrade</a> to unlock all.</span>
+                <span class="text-muted fs-7 ms-auto">Your <strong>{{ $plan->name }}</strong> plan includes a limited set of apps; others can be added at their own price. <a href="{{ route('settings.billing.index') }}">Upgrade</a> to include all.</span>
+            @elseif($slotsLeft === 0)
+                <span class="text-muted fs-7 ms-auto">All the apps in your <strong>{{ $plan->name }}</strong> plan are in use; more can be added at their own price. <a href="{{ route('settings.billing.index') }}">Upgrade</a></span>
             @endif
         </div>
     </form>
@@ -33,7 +57,9 @@
                 @foreach($suite->modules as $m)
                     @php
                         $on = $m->is_core || in_array($m->key, $enabled, true);
-                        $locked = ! $m->is_core && $planKeys !== null && ! in_array($m->key, $planKeys, true);
+                        $isAddon = in_array($m->key, $addonKeys, true);
+                        $wouldBeAddon = ! $m->is_core && ! $on && (($planKeys !== null && ! in_array($m->key, $planKeys, true)) || $slotsLeft === 0);
+                        $price = \App\Support\Money::format($m->priceFor($cycle), 'USD', 0).'/'.($cycle === 'yearly' ? 'yr' : 'mo');
                     @endphp
                     <div class="col-md-6 col-xl-4">
                         <div class="z-module-card {{ $on ? 'selected' : '' }}" style="cursor:default">
@@ -46,7 +72,8 @@
                                     @elseif(! $m->isAvailable())<span class="z-pill z-pill-muted">Coming soon</span>
                                     @elseif($m->status === 'beta')<span class="z-pill z-pill-info">Beta</span>
                                     @else<span class="z-pill z-pill-success">Ready</span>@endif
-                                    @if($locked)<span class="z-pill z-pill-warning">Upgrade</span>@endif
+                                    @if($isAddon)<span class="z-pill z-pill-info">Add-on</span>
+                                    @elseif($wouldBeAddon && $m->isAvailable())<span class="z-pill z-pill-warning">{{ $price }} add-on</span>@endif
                                     @if($m->depends)<span class="fs-8 text-muted">needs {{ implode(', ', $m->depends) }}</span>@endif
                                 </div>
                             </div>
@@ -57,8 +84,12 @@
                                             @csrf @method('DELETE')
                                             <button class="btn btn-sm btn-soft-secondary" title="Disable">On</button>
                                         </form>
-                                    @elseif($locked)
-                                        <a href="{{ route('settings.billing.index') }}" class="btn btn-sm btn-white">Upgrade</a>
+                                    @elseif($wouldBeAddon)
+                                        <form method="POST" action="{{ route('settings.modules.enable', $m->key) }}">
+                                            @csrf
+                                            <input type="hidden" name="confirm_addon" value="1">
+                                            <button class="btn btn-sm btn-white" title="Billed {{ $price }} on top of your plan">Add · {{ $price }}</button>
+                                        </form>
                                     @else
                                         <form method="POST" action="{{ route('settings.modules.enable', $m->key) }}">
                                             @csrf

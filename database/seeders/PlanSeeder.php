@@ -15,7 +15,7 @@ class PlanSeeder extends Seeder
                 'key' => 'free', 'name' => 'Free', 'tagline' => 'For getting started',
                 'description' => 'Invoicing, appointments and tasks for one person.',
                 'price_monthly' => 0, 'price_yearly' => 0, 'trial_days' => 0, 'includes_all_modules' => false,
-                'limits' => ['users' => 1, 'branches' => 1, 'modules' => 3, 'storage_gb' => 1, 'extras' => ['Community support']],
+                'limits' => ['users' => 1, 'branches' => 1, 'modules' => 4, 'storage_gb' => 1, 'extras' => ['Community support']],
                 'modules' => ['invoicing', 'appointments', 'tasks', 'quotes'],
                 'is_featured' => false, 'sort_order' => 1,
             ],

@@ -54,6 +54,14 @@ class Plan extends Model
         return $this->modules()->where('modules.id', $module->id)->exists();
     }
 
+    /** How many non-core apps the plan covers; null means unlimited. */
+    public function moduleAllowance(): ?int
+    {
+        $limit = $this->limit('modules');
+
+        return $limit === null || (int) $limit < 0 ? null : (int) $limit;
+    }
+
     public function priceFor(string $cycle): float
     {
         return (float) ($cycle === 'yearly' ? $this->price_yearly : $this->price_monthly);
