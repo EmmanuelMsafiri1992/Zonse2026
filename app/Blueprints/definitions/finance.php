@@ -1,6 +1,14 @@
 <?php
 
+use App\Blueprints\Logic\AccountingLogic;
+use App\Blueprints\Logic\BankingLogic;
+use App\Blueprints\Logic\BudgetingLogic;
+use App\Blueprints\Logic\PayablesLogic;
+use App\Blueprints\Logic\PayrollLogic;
 use App\Blueprints\Logic\PosLogic;
+use App\Blueprints\Logic\PurchasingLogic;
+use App\Blueprints\Logic\ReceivablesLogic;
+use App\Blueprints\Logic\TaxLogic;
 
 /*
  * Finance apps: books, banking, payroll, tax and specialist money businesses.
@@ -23,7 +31,7 @@ return [
             'reference',
             'source:select=manual,invoice,payment,expense,payroll,adjustment',
         ], ['icon' => 'book-open', 'prefix' => 'JNL-', 'plural' => 'Journal entries', 'amount' => 'Amount', 'date' => 'Entry date', 'list' => ['debit_account', 'credit_account', 'reference']]],
-    ]],
+    ], ['logic' => AccountingLogic::class]],
 
     'banking' => ['Banking & reconciliation', 'landmark', 'Bank accounts, statement lines and reconciliation.', [
         'accounts' => ['Bank account', 'Account name', 'active,closed', [
@@ -45,7 +53,7 @@ return [
             'book_balance:money|Book balance',
             'notes:textarea',
         ], ['icon' => 'check-check', 'prefix' => 'REC-', 'date' => 'Statement date', 'assignee' => true, 'list' => ['account', 'statement_balance', 'book_balance']]],
-    ]],
+    ], ['logic' => BankingLogic::class]],
 
     'payroll' => ['Payroll', 'banknote', 'Pay runs and payslips with statutory deductions.', [
         'runs' => ['Pay run', 'Pay period', 'draft,approved,paid', [
@@ -66,7 +74,7 @@ return [
             'other_deductions:money|Other deductions',
             'bank_account|Bank account',
         ], ['icon' => 'file-text', 'prefix' => 'PS-', 'amount' => 'Net pay', 'list' => ['run', 'employee_number', 'basic_pay']]],
-    ]],
+    ], ['logic' => PayrollLogic::class]],
 
     'budgeting' => ['Budgeting & forecasting', 'trending-up', 'Budgets by period and category, with actuals and variance.', [
         'budgets' => ['Budget', 'Budget name', 'draft,approved,closed', [
@@ -81,7 +89,7 @@ return [
             'actual:money|Actual to date',
             'forecast:money|Forecast',
         ], ['icon' => 'list', 'prefix' => 'BL-', 'amount' => 'Budgeted', 'list' => ['budget', 'type', 'actual']]],
-    ]],
+    ], ['logic' => BudgetingLogic::class]],
 
     'tax' => ['Tax & VAT', 'percent', 'Tax returns, filing deadlines and withholding certificates.', [
         'returns' => ['Tax return', 'Return', 'due,in_progress,filed,paid,overdue', [
@@ -97,7 +105,7 @@ return [
             'rate:number|Rate %',
             'certificate_number|Certificate number',
         ], ['icon' => 'file-check', 'prefix' => 'WHT-', 'contact' => 'Counterparty', 'amount' => 'Tax withheld', 'date' => 'Date', 'list' => ['direction', 'rate', 'certificate_number']]],
-    ]],
+    ], ['logic' => TaxLogic::class]],
 
     'pos' => ['Point of sale', 'monitor-smartphone', 'Tills, cashier shifts and counter sales.', [
         'sales' => ['Sale', 'Receipt', 'completed,refunded,voided', [
@@ -140,7 +148,7 @@ return [
             'delivery_address|Delivery address',
             'payment_terms|Payment terms',
         ], ['icon' => 'shopping-bag', 'prefix' => 'PO-', 'contact' => 'Supplier', 'amount' => 'Order total', 'date' => 'Order date', 'due' => 'Expected delivery', 'assignee' => true, 'list' => ['requisition', 'payment_terms']]],
-    ]],
+    ], ['logic' => PurchasingLogic::class]],
 
     'receivables' => ['Receivables & credit control', 'hand-coins', 'Customer accounts, statements, reminders and collections.', [
         'accounts' => ['Debtor account', 'Customer', 'current,overdue,in_collection,handed_over,settled', [
@@ -154,7 +162,7 @@ return [
             'action:select=statement_sent,reminder_sms,reminder_email,phone_call,letter_of_demand,handed_to_lawyer*',
             'outcome:textarea',
         ], ['icon' => 'phone-call', 'prefix' => 'CA-', 'date' => 'Date', 'assignee' => true, 'list' => ['account', 'action']]],
-    ]],
+    ], ['depends' => ['contacts', 'invoicing'], 'logic' => ReceivablesLogic::class]],
 
     'payables' => ['Payables & bills', 'file-minus', 'Supplier bills, approvals and payment runs.', [
         'bills' => ['Bill', 'Description', 'received,approved,part_paid,paid,disputed', [
@@ -168,7 +176,7 @@ return [
             'method:select=bank_transfer,cheque,cash,mobile_money*',
             'cheque_number|Cheque number',
         ], ['icon' => 'send', 'prefix' => 'SP-', 'amount' => 'Amount', 'date' => 'Payment date', 'list' => ['bill', 'method']]],
-    ]],
+    ], ['logic' => PayablesLogic::class]],
 
     'savings-groups' => ['Savings groups & SACCOs', 'users-round', 'Members, contributions and internal loans for savings clubs, stokvels and SACCOs.', [
         'members' => ['Member', 'Member name', 'active,suspended,exited', [

@@ -43,6 +43,9 @@ class AppLogic
     /** Side effects after a record is saved (e.g. mark a unit occupied when its lease starts). */
     public function saved(Record $record): void {}
 
+    /** Side effects after a record is deleted (e.g. take a payment off its bill's paid total). */
+    public function deleted(Record $record): void {}
+
     /**
      * Business rules the field definitions cannot express. Return field => message for anything wrong.
      *
@@ -237,6 +240,45 @@ class AppLogic
     {
         return $this->records($entity)->where(fn ($query) => $query->whereBetween('occurs_on', [$from->copy()->startOfDay(), $to->copy()->endOfDay()])
             ->orWhere(fn ($query) => $query->whereNull('occurs_on')->whereBetween('created_at', [$from, $to])));
+    }
+
+    /**
+     * Save a record again so its saving() hook works out its totals afresh (a bill after one of its
+     * payments changes). Eloquent runs "saving" before it checks for changes, so this always recalculates.
+     */
+    protected function recalculate(?Record $record): void
+    {
+        $record?->save();
+    }
+
+    /** The record a record-field points at, as it is now in the database. */
+    protected function parent(Record $record, string $field): ?Record
+    {
+        $id = $record->value($field);
+        $entity = $record->definition()->field($field)?->relatedEntity;
+
+        return $id && $entity ? $this->records($entity)->find($id) : null;
+    }
+
+    /** A record-field's previous target when the record was just moved to another one. */
+    protected function previousParent(Record $record, string $field): ?Record
+    {
+        $previous = ((array) $record->getOriginal('data'))[$field] ?? null;
+        $entity = $record->definition()->field($field)?->relatedEntity;
+
+        return $previous && $entity && (int) $previous !== (int) $record->value($field) ? $this->records($entity)->find($previous) : null;
+    }
+
+    /** Store worked-out values in the record's data. @param  array<string, mixed>  $values */
+    protected function put(Record $record, array $values): void
+    {
+        $record->data = array_merge((array) $record->data, $values);
+    }
+
+    /** A number from the record's data, 0 when blank. */
+    protected function number(Record $record, string $key): float
+    {
+        return (float) ($record->value($key) ?? 0);
     }
 
     /** @return Builder<Record> */

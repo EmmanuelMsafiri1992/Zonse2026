@@ -76,6 +76,10 @@ class Record extends Model
         static::saved(function (Record $record) {
             $record->appLogic()?->saved($record);
         });
+
+        static::deleted(function (Record $record) {
+            $record->appLogic()?->deleted($record);
+        });
     }
 
     // ----- Definition -------------------------------------------------------
