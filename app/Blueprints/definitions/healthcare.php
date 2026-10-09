@@ -1,11 +1,18 @@
 <?php
 
+use App\Blueprints\Logic\AmbulanceLogic;
+use App\Blueprints\Logic\BloodBankLogic;
 use App\Blueprints\Logic\ClinicLogic;
 use App\Blueprints\Logic\EmrLogic;
+use App\Blueprints\Logic\HospitalLogic;
 use App\Blueprints\Logic\LaboratoryLogic;
 use App\Blueprints\Logic\MedicalClaimsLogic;
 use App\Blueprints\Logic\PatientAppointmentsLogic;
 use App\Blueprints\Logic\PatientQueueLogic;
+use App\Blueprints\Logic\PharmacyLogic;
+use App\Blueprints\Logic\RadiologyLogic;
+use App\Blueprints\Logic\SpecialistPracticeLogic;
+use App\Blueprints\Logic\TelemedicineLogic;
 use App\Blueprints\Logic\VeterinaryLogic;
 
 /*
@@ -159,7 +166,7 @@ return [
             'balance:number|Running balance',
             'witness:user|Witness',
         ], ['icon' => 'shield-alert', 'prefix' => 'CD-', 'plural' => 'Controlled-drug register', 'date' => 'Date', 'assignee' => true, 'list' => ['drug', 'movement', 'balance']]],
-    ]],
+    ], ['logic' => PharmacyLogic::class]],
 
     'hospital' => ['Hospital & wards', 'hospital', 'Admissions, beds and wards, theatre bookings and discharges.', [
         'wards' => ['Ward', 'Ward name', 'open,closed', [
@@ -182,7 +189,7 @@ return [
             'anaesthetist',
             'theatre_number|Theatre',
         ], ['icon' => 'scissors', 'prefix' => 'THR-', 'date' => 'Date', 'list' => ['admission', 'surgeon', 'start_time']]],
-    ]],
+    ], ['logic' => HospitalLogic::class]],
 
     'telemedicine' => ['Telemedicine', 'video', 'Video consultations and electronic prescriptions.', [
         'consults' => ['Video consult', 'Patient name', 'booked,waiting_room,in_call,completed,no_show', [
@@ -196,7 +203,7 @@ return [
             'dosage|Dosage & directions*',
             'pharmacy|Pharmacy',
         ], ['icon' => 'file-heart', 'prefix' => 'ERX-', 'plural' => 'E-prescriptions', 'date' => 'Issued on', 'list' => ['consult', 'pharmacy']]],
-    ]],
+    ], ['logic' => TelemedicineLogic::class]],
 
     'specialist-practice' => ['Dental, optometry & physio', 'smile', 'Specialist treatment plans and procedures for dental, eye and physio practices.', [
         'plans' => ['Treatment plan', 'Patient name', 'proposed,accepted,in_progress,completed', [
@@ -211,7 +218,7 @@ return [
             'tooth_or_site|Tooth / eye / site',
             'lab_work|Lab work',
         ], ['icon' => 'stethoscope', 'prefix' => 'PRC-', 'amount' => 'Fee', 'date' => 'Date', 'assignee' => true, 'list' => ['plan', 'code', 'tooth_or_site']]],
-    ]],
+    ], ['logic' => SpecialistPracticeLogic::class]],
 
     'radiology-diagnostic-imaging-ris' => ['Radiology & diagnostic imaging (RIS)', 'scan', 'Imaging requests, scans and radiologist reports.', [
         'studies' => ['Imaging study', 'Patient name', 'requested,booked,scanned,reported,cancelled', [
@@ -222,7 +229,7 @@ return [
             'dicom_link:url|DICOM / PACS link',
             'report:textarea|Radiologist report',
         ], ['icon' => 'scan', 'prefix' => 'IMG-', 'contact' => 'Patient', 'amount' => 'Fee', 'date' => 'Scan date', 'assignee' => true, 'list' => ['modality', 'body_part', 'referring_doctor']]],
-    ]],
+    ], ['logic' => RadiologyLogic::class]],
 
     'blood-bank' => ['Blood bank', 'droplet', 'Donors, blood units in stock and issues to patients.', [
         'donors' => ['Donor', 'Donor name', 'eligible,deferred,inactive', [
@@ -237,7 +244,7 @@ return [
             'screening:select=pending,negative,reactive',
             'issued_to|Issued to (patient / ward)',
         ], ['icon' => 'droplet', 'prefix' => 'BU-', 'date' => 'Collected on', 'due' => 'Expiry date', 'list' => ['blood_group', 'component', 'screening']]],
-    ]],
+    ], ['logic' => BloodBankLogic::class]],
 
     'ambulance-emergency-dispatch' => ['Ambulance & emergency dispatch', 'ambulance', 'Emergency calls, ambulance dispatch and patient care reports.', [
         'incidents' => ['Emergency call', 'Nature of emergency', 'received,dispatched,on_scene,transporting,at_hospital,closed', [
@@ -248,7 +255,7 @@ return [
             'hospital|Taken to',
             'patient_report:textarea|Patient care report',
         ], ['icon' => 'ambulance', 'prefix' => 'EMS-', 'contact' => 'Patient', 'amount' => 'Charge', 'date' => 'Call time', 'assignee' => true, 'list' => ['priority', 'ambulance', 'hospital']]],
-    ]],
+    ], ['logic' => AmbulanceLogic::class]],
 
     'mental-health-counselling-therapy' => ['Mental health / counselling & therapy practice', 'brain', 'Clients, therapy sessions and confidential session notes.', [
         'clients' => ['Client', 'Client name', 'intake,active,on_hold,discharged', [
