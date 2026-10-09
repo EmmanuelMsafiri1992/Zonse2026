@@ -116,6 +116,23 @@ class StarterBundlesTest extends TestCase
         $this->actingAs($owner)->get('/onboarding/4')->assertOk()->assertSee('Best value for your apps');
     }
 
+    public function test_plan_cards_describe_the_app_allowance_and_count_only_paid_apps(): void
+    {
+        [$owner, $workspace] = $this->ownerWithWorkspace('none');
+        $workspace->forceFill(['onboarding_step' => 4, 'onboarded_at' => null])->save();
+        $workspace->enableModules(['invoicing', 'tasks'], $owner);
+        $paidApps = $workspace->modules()->where('is_core', false)->count();
+
+        $this->assertSame(['Any 6 of 300+ apps included', 'More apps as paid add-ons'], Plan::where('key', 'solo')->firstOrFail()->appsSummary());
+        $this->assertSame(['All 300+ apps included', 'Unlimited active apps'], Plan::where('key', 'business')->firstOrFail()->appsSummary());
+
+        $this->actingAs($owner)->get('/onboarding/4')
+            ->assertOk()
+            ->assertSee("You picked {$paidApps} apps")
+            ->assertSee('Any 6 of 300+ apps included')
+            ->assertDontSee('Up to 6 active apps');
+    }
+
     public function test_a_starter_bundle_can_be_applied_from_settings(): void
     {
         [$owner, $workspace] = $this->ownerWithWorkspace('business');

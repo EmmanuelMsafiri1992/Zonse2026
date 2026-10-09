@@ -3,8 +3,7 @@
     $selectable = $selectable ?? false;
     $limits = $p->limits ?? [];
     $features = array_filter([
-        $p->includes_all_modules ? 'All 300+ apps included' : ($p->modules_count ?? $p->modules()->count()).' apps included',
-        isset($limits['modules']) ? ($limits['modules'] === -1 ? 'Unlimited active apps' : "Up to {$limits['modules']} active apps") : null,
+        ...$p->appsSummary(),
         isset($limits['users']) ? ($limits['users'] === -1 ? 'Unlimited team members' : "{$limits['users']} ".\Illuminate\Support\Str::plural('team member', $limits['users'])) : null,
         isset($limits['branches']) ? ($limits['branches'] === -1 ? 'Unlimited branches' : "{$limits['branches']} ".\Illuminate\Support\Str::plural('branch', $limits['branches'])) : null,
         isset($limits['storage_gb']) ? "{$limits['storage_gb']} GB file storage" : null,

@@ -228,7 +228,7 @@ class OnboardingController extends Controller
 
         return view('onboarding.plan', $data + [
             'plans' => $plans,
-            'moduleCount' => $workspace->modules()->count(),
+            'moduleCount' => $workspace->modules()->where('is_core', false)->count(),
             // Apps picked in step 3 that a plan doesn't cover become paid add-ons; show that on each card.
             'addonQuotes' => $plans->mapWithKeys(fn (Plan $p) => [$p->id => app(ModuleBilling::class)->quoteSwitch($workspace, $p)]),
             'recommendedPlan' => $recommendation['plan'],

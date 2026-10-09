@@ -58,7 +58,7 @@
                 @foreach($professions->groupBy('group') as $group => $items)
                     <optgroup label="{{ $group }}">
                         @foreach($items as $profession)
-                            <option value="{{ $profession->key }}" @selected((int) $workspace->profession_id === $profession->id)>{{ $profession->name }}</option>
+                            <option value="{{ $profession->key }}" @selected(session('addon_quote.fields.profession') ? session('addon_quote.fields.profession') === $profession->key : (int) $workspace->profession_id === $profession->id)>{{ $profession->name }}</option>
                         @endforeach
                     </optgroup>
                 @endforeach

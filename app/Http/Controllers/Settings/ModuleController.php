@@ -11,6 +11,7 @@ use App\Support\ModuleBilling;
 use App\Support\Money;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 /**
  * The in-app marketplace: every catalogue module grouped by suite, with
@@ -66,7 +67,7 @@ class ModuleController extends Controller
             'q' => $q,
             'filter' => $filter,
             'counts' => [
-                'enabled' => count($enabled),
+                'enabled' => Module::whereIn('key', $enabled)->where('is_core', false)->count(),
                 'total' => Module::where('is_core', false)->count(),
                 'available' => Module::where('is_core', false)->installed()->count(),
             ],
@@ -128,7 +129,7 @@ class ModuleController extends Controller
             return back()->with('addon_quote', [
                 'action' => route('settings.modules.bundle'),
                 'fields' => ['profession' => $profession->key],
-                'message' => count($addons).' of the '.count($missing)." apps in the {$profession->name} bundle aren't covered by your {$workspace->plan()?->name} plan. Add them for {$total} per {$per}, or upgrade your plan.",
+                'message' => "The {$profession->name} bundle adds ".count($addons).' '.Str::plural('app', count($addons))." your {$workspace->plan()?->name} plan doesn't cover. Add ".(count($addons) === 1 ? 'it' : 'them')." for {$total} per {$per}, or upgrade your plan.",
                 'apps' => collect(array_keys($addons))->map(fn ($key) => Module::findByKey($key)?->name)->filter()->values()->all(),
                 'total' => $total,
                 'per' => $per,

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Str;
 
 class Plan extends Model
 {
@@ -60,6 +61,26 @@ class Plan extends Model
         $limit = $this->limit('modules');
 
         return $limit === null || (int) $limit < 0 ? null : (int) $limit;
+    }
+
+    /**
+     * Plan-card lines describing which apps the plan covers and what happens beyond that.
+     *
+     * @return array<int, string>
+     */
+    public function appsSummary(): array
+    {
+        $allowance = $this->moduleAllowance();
+
+        if ($this->includes_all_modules) {
+            return $allowance === null
+                ? ['All 300+ apps included', 'Unlimited active apps']
+                : ["Any {$allowance} of 300+ apps included", 'More apps as paid add-ons'];
+        }
+
+        $count = $this->modules_count ?? $this->modules()->count();
+
+        return [$count.' starter '.Str::plural('app', $count).' included', 'Other apps as paid add-ons'];
     }
 
     public function priceFor(string $cycle): float
