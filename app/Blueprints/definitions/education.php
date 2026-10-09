@@ -1,16 +1,21 @@
 <?php
 
+use App\Blueprints\Logic\CanteenLogic;
 use App\Blueprints\Logic\CertificatesLogic;
 use App\Blueprints\Logic\DaycareLogic;
+use App\Blueprints\Logic\DisciplineLogic;
 use App\Blueprints\Logic\DrivingSchoolLogic;
 use App\Blueprints\Logic\ExamsLogic;
 use App\Blueprints\Logic\HostelLogic;
 use App\Blueprints\Logic\LibraryLogic;
 use App\Blueprints\Logic\LmsLogic;
 use App\Blueprints\Logic\ParentPortalLogic;
+use App\Blueprints\Logic\ScholarshipsLogic;
 use App\Blueprints\Logic\SchoolLogic;
 use App\Blueprints\Logic\SchoolTransportLogic;
+use App\Blueprints\Logic\SportsAcademyLogic;
 use App\Blueprints\Logic\TimetableLogic;
+use App\Blueprints\Logic\TrainingCentresLogic;
 use App\Blueprints\Logic\TutoringLogic;
 use App\Blueprints\Logic\UniversityLogic;
 
@@ -259,7 +264,7 @@ return [
             'card:record=cards|Card*',
             'method:select=cash,mobile_money,bank',
         ], ['icon' => 'plus-circle', 'prefix' => 'TOP-', 'amount' => 'Amount', 'date' => 'Date', 'list' => ['card', 'method']]],
-    ]],
+    ], ['logic' => CanteenLogic::class]],
 
     'scholarships' => ['Scholarships', 'hand-coins', 'Scholarship, bursary and student loan applications and awards.', [
         'schemes' => ['Scheme', 'Scheme name', 'open,closed', [
@@ -274,7 +279,7 @@ return [
             'household_income:money|Household income',
             'motivation:textarea',
         ], ['icon' => 'file-text', 'prefix' => 'SAP-', 'contact' => 'Applicant', 'amount' => 'Award amount', 'date' => 'Applied on', 'assignee' => true, 'list' => ['scheme', 'institution']]],
-    ]],
+    ], ['logic' => ScholarshipsLogic::class]],
 
     'training-centres-vocational-colleges' => ['Training centres & vocational colleges (short courses, certifications)', 'wrench', 'Short-course intakes, trainees and assessments.', [
         'intakes' => ['Course intake', 'Course', 'open,running,completed', [
@@ -288,7 +293,7 @@ return [
             'attendance:number|Attendance %',
             'assessment_result|Assessment result',
         ], ['icon' => 'hard-hat', 'prefix' => 'TRN-', 'contact' => 'Trainee', 'amount' => 'Paid', 'list' => ['intake', 'attendance', 'assessment_result']]],
-    ]],
+    ], ['logic' => TrainingCentresLogic::class]],
 
     'discipline-behaviour-tracking' => ['Discipline & behaviour tracking', 'shield-alert', 'Merits, demerits and disciplinary incidents for students.', [
         'entries' => ['Behaviour entry', 'Student name', 'recorded,parent_informed,resolved', [
@@ -297,7 +302,7 @@ return [
             'class_name|Class',
             'description:textarea*',
         ], ['icon' => 'shield-alert', 'prefix' => 'BEH-', 'plural' => 'Behaviour log', 'contact' => 'Parent', 'date' => 'Date', 'assignee' => true, 'list' => ['type', 'points', 'class_name']]],
-    ]],
+    ], ['logic' => DisciplineLogic::class]],
 
     'sports-academies-coaching' => ['Sports academies & coaching', 'trophy', 'Athletes, training squads, sessions and assessments.', [
         'squads' => ['Squad', 'Squad name', 'active,inactive', [
@@ -317,5 +322,5 @@ return [
             'attendance:number',
             'notes:textarea',
         ], ['icon' => 'dumbbell', 'prefix' => 'TS-', 'date' => 'Date', 'assignee' => true, 'list' => ['squad', 'start_time', 'attendance']]],
-    ]],
+    ], ['logic' => SportsAcademyLogic::class]],
 ];
