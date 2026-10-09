@@ -1,12 +1,17 @@
 <?php
 
 use App\Blueprints\Logic\ChurchLogic;
+use App\Blueprints\Logic\CinemaLogic;
 use App\Blueprints\Logic\EventRegistrationLogic;
+use App\Blueprints\Logic\FundraisingLogic;
 use App\Blueprints\Logic\MembershipsLogic;
+use App\Blueprints\Logic\MosqueLogic;
 use App\Blueprints\Logic\NgoLogic;
+use App\Blueprints\Logic\SportsLeaguesLogic;
 use App\Blueprints\Logic\TicketingLogic;
 use App\Blueprints\Logic\VenueBookingLogic;
 use App\Blueprints\Logic\VolunteersLogic;
+use App\Blueprints\Logic\VotingLogic;
 
 /*
  * Events & community apps. Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
@@ -134,7 +139,7 @@ return [
             'guardian_phone:phone|Guardian phone',
             'hifz_progress|Hifz progress',
         ], ['icon' => 'book-open', 'prefix' => 'MDR-', 'amount' => 'Monthly fee', 'list' => ['class', 'guardian', 'hifz_progress']]],
-    ]],
+    ], ['logic' => MosqueLogic::class]],
 
     'fundraising' => ['Fundraising & donations', 'hand-heart', 'Campaigns, donors and pledges.', [
         'campaigns' => ['Campaign', 'Campaign name', 'planning,live,closed', [
@@ -148,7 +153,7 @@ return [
             'recurring:checkbox',
             'tax_certificate:checkbox|Tax certificate issued',
         ], ['icon' => 'hand-heart', 'prefix' => 'DON-', 'contact' => 'Donor', 'amount' => 'Amount', 'date' => 'Date', 'list' => ['campaign', 'method', 'recurring']]],
-    ]],
+    ], ['logic' => FundraisingLogic::class]],
 
     'voting-elections-online-polls' => ['Voting, elections & online polls', 'vote', 'Elections, candidates and the voter register.', [
         'elections' => ['Election / poll', 'Title', 'draft,nominations,voting,closed,results_published', [
@@ -169,7 +174,7 @@ return [
             'email:email',
             'voting_code|Voting code',
         ], ['icon' => 'user-round', 'prefix' => 'VTR-', 'list' => ['election', 'member_number']]],
-    ]],
+    ], ['logic' => VotingLogic::class]],
 
     'cinema-theatre-booking' => ['Cinema & theatre booking', 'clapperboard', 'Shows, screenings and seat bookings.', [
         'shows' => ['Show / screening', 'Title', 'scheduled,on_sale,sold_out,completed,cancelled', [
@@ -184,7 +189,7 @@ return [
             'seats_booked|Seats (e.g. F7, F8)*',
             'concessions|Snacks & drinks',
         ], ['icon' => 'ticket', 'prefix' => 'SB-', 'contact' => 'Customer', 'amount' => 'Total', 'date' => 'Booked on', 'list' => ['show', 'seats_booked']]],
-    ]],
+    ], ['logic' => CinemaLogic::class]],
 
     'sports-leagues' => ['Sports leagues & clubs', 'trophy', 'Teams, players, fixtures and results.', [
         'teams' => ['Team', 'Team name', 'active,withdrawn', [
@@ -206,7 +211,7 @@ return [
             'home_score:number|Home score',
             'away_score:number|Away score',
         ], ['icon' => 'trophy', 'prefix' => 'FX-', 'date' => 'Date', 'assignee' => true, 'list' => ['home_team', 'away_team', 'home_score', 'away_score']]],
-    ]],
+    ], ['logic' => SportsLeaguesLogic::class]],
 
     'wedding-event-planning-vendors' => ['Wedding & event planning (vendors)', 'heart', 'Client events, vendors booked and the planning checklist.', [
         'events' => ['Client event', 'Couple / client', 'enquiry,contracted,planning,completed,cancelled', [
