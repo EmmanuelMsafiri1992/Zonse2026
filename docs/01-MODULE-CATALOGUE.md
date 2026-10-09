@@ -22,7 +22,7 @@ Every module below is designed as an installable **module** inside one codebase.
 | 0.5 | Onboarding wizard: "What do you do?" → recommended bundle | ✔ |
 | 0.6 | Dashboards & report builder (drag-and-drop widgets) | ✔ |
 | 0.7 | Notifications: email, SMS, WhatsApp, push, in-app | ✔ |
-| 0.8 | Unified inbox (email, SMS, WhatsApp, Facebook/Instagram DMs) | ➕ |
+| 0.8 | Unified inbox (email, SMS, WhatsApp, Facebook/Instagram DMs) | ✔ |
 | 0.9 | Multi-currency, multi-language, RTL, time zones | ✔ |
 | 0.10 | API, webhooks & integrations marketplace (Zapier-style) | ✔ |
 | 0.11 | Audit logs, backups, data export (GDPR/POPIA) | ✔ |

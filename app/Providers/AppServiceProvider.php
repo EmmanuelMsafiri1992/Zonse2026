@@ -76,6 +76,12 @@ class AppServiceProvider extends ServiceProvider
             return $workspace !== null && ! in_array($user->roleIn($workspace), [null, 'viewer'], true);
         });
 
+        Gate::define('use-inbox', function (User $user) {
+            $workspace = app(WorkspaceContext::class)->get();
+
+            return $workspace !== null && ! in_array($user->roleIn($workspace), [null, 'viewer'], true);
+        });
+
         Gate::define('use-assistant', function (User $user) {
             $workspace = app(WorkspaceContext::class)->get();
 
@@ -139,6 +145,7 @@ class AppServiceProvider extends ServiceProvider
 
         $menu->section('main', 'Main', 0)
             ->add(MenuItem::make('Dashboard', 'dashboard', 'layout-dashboard')->order(0)->active('dashboard'))
+            ->add(MenuItem::make('Inbox', 'inbox.index', 'inbox')->can('use-inbox')->order(1)->active(['inbox.*', 'settings.inbox.*']))
             ->add(MenuItem::make('Approvals', 'approvals.index', 'circle-check')->order(1)->active('approvals.*'))
             ->add(MenuItem::make('E-signatures', 'signatures.index', 'file-signature')->order(2)->active('signatures.*'))
             ->add(MenuItem::make('Scan documents', 'captures.index', 'scan-text')->can('capture-documents')->order(3)->active(['captures.*', 'settings.ocr.*']))

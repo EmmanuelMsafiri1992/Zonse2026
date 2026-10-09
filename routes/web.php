@@ -11,6 +11,8 @@ use App\Http\Controllers\DocumentCaptureController;
 use App\Http\Controllers\FiscalVerificationController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\InboxController;
+use App\Http\Controllers\InboxWebhookController;
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardingController;
@@ -33,6 +35,7 @@ use App\Http\Controllers\Settings\DataExportController;
 use App\Http\Controllers\Settings\FiscalSettingsController;
 use App\Http\Controllers\Settings\HardwareSettingsController;
 use App\Http\Controllers\Settings\ImportController;
+use App\Http\Controllers\Settings\InboxChannelController;
 use App\Http\Controllers\Settings\MemberController;
 use App\Http\Controllers\Settings\ModuleController;
 use App\Http\Controllers\Settings\OcrSettingsController;
@@ -108,6 +111,10 @@ Route::get('/verify/{code}', [FiscalVerificationController::class, 'show'])->whe
 
 Route::post('/webhooks/ussd/{token}', UssdCallbackController::class)->middleware('throttle:120,1')->name('ussd.callback');
 
+// Incoming messages for the unified inbox; the token in the URL picks the channel.
+Route::get('/webhooks/inbox/{token}', [InboxWebhookController::class, 'verify'])->middleware('throttle:60,1')->name('inbox.webhook.verify');
+Route::post('/webhooks/inbox/{token}', [InboxWebhookController::class, 'receive'])->middleware('throttle:300,1')->name('inbox.webhook');
+
 // Sign in with Google or Microsoft (guests), or link one to the signed-in user's profile.
 Route::prefix('auth/{provider}')->name('sso.')->whereIn('provider', ['google', 'microsoft'])->middleware('throttle:20,1')->group(function () {
     Route::get('/redirect', [SocialLoginController::class, 'redirect'])->name('redirect');
@@ -177,6 +184,14 @@ Route::middleware(['auth', 'workspace'])->group(function () {
         Route::post('/help/tours/{tour}/start', [HelpController::class, 'tourStart'])->where('tour', '[a-z0-9-]+')->name('help.tours.start');
         Route::get('/help/{slug}', [HelpController::class, 'show'])->where('slug', '[a-z0-9-]+')->name('help.show');
         Route::post('/help/{slug}/feedback', [HelpController::class, 'feedback'])->where('slug', '[a-z0-9-]+')->middleware('throttle:20,1')->name('help.feedback');
+
+        Route::middleware('can:use-inbox')->group(function () {
+            Route::get('/inbox', [InboxController::class, 'index'])->name('inbox.index');
+            Route::get('/inbox/{conversation}', [InboxController::class, 'show'])->whereNumber('conversation')->name('inbox.show');
+            Route::patch('/inbox/{conversation}', [InboxController::class, 'update'])->whereNumber('conversation')->name('inbox.update');
+            Route::post('/inbox/{conversation}/reply', [InboxController::class, 'reply'])->whereNumber('conversation')->middleware('throttle:30,1')->name('inbox.reply');
+            Route::post('/inbox/{conversation}/contact', [InboxController::class, 'createContact'])->whereNumber('conversation')->name('inbox.contact');
+        });
 
         Route::middleware('can:access-workspace')->group(function () {
             Route::get('/phone-access', [UssdController::class, 'index'])->name('ussd.index');
@@ -299,6 +314,12 @@ Route::middleware(['auth', 'workspace'])->group(function () {
             Route::post('/imports/{import}/run', [ImportController::class, 'run'])->middleware('throttle:10,1')->name('imports.run');
             Route::post('/imports/{import}/undo', [ImportController::class, 'undo'])->middleware('throttle:10,1')->name('imports.undo');
             Route::delete('/imports/{import}', [ImportController::class, 'destroy'])->name('imports.destroy');
+
+            Route::get('/inbox', [InboxChannelController::class, 'index'])->name('inbox.index');
+            Route::post('/inbox', [InboxChannelController::class, 'store'])->name('inbox.store');
+            Route::put('/inbox/{channel}', [InboxChannelController::class, 'update'])->name('inbox.update');
+            Route::delete('/inbox/{channel}', [InboxChannelController::class, 'destroy'])->name('inbox.destroy');
+            Route::post('/inbox/{channel}/simulate', [InboxChannelController::class, 'simulate'])->middleware('throttle:30,1')->name('inbox.simulate');
 
             Route::get('/sms', [SmsSettingsController::class, 'edit'])->name('sms.edit');
             Route::put('/sms', [SmsSettingsController::class, 'update'])->name('sms.update');

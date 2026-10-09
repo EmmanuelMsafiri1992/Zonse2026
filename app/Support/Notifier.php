@@ -22,6 +22,7 @@ class Notifier
     public const KINDS = [
         'assigned' => ['label' => 'Work assigned to me', 'hint' => 'Tasks, tickets, appointments and records given to you.', 'app' => true, 'email' => true],
         'comments' => ['label' => 'Notes on my work', 'hint' => 'Someone adds a note to something assigned to you or that you created.', 'app' => true, 'email' => false],
+        'messages' => ['label' => 'Inbox messages', 'hint' => 'A customer writes in on a conversation assigned to you (unassigned ones go to admins).', 'app' => true, 'email' => false],
         'bookings' => ['label' => 'Online bookings and orders', 'hint' => 'Someone books, orders or asks to pay through your public page (admins only).', 'app' => true, 'email' => true],
         'payments' => ['label' => 'Payments received', 'hint' => 'Money recorded against an invoice (admins only).', 'app' => true, 'email' => false],
         'team' => ['label' => 'Team changes', 'hint' => 'Someone accepts an invitation and joins the workspace (admins only).', 'app' => true, 'email' => false],
