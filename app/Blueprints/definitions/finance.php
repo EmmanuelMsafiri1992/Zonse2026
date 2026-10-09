@@ -3,12 +3,20 @@
 use App\Blueprints\Logic\AccountingLogic;
 use App\Blueprints\Logic\BankingLogic;
 use App\Blueprints\Logic\BudgetingLogic;
+use App\Blueprints\Logic\ConsolidationLogic;
+use App\Blueprints\Logic\HirePurchaseLogic;
+use App\Blueprints\Logic\InventoryValuationLogic;
+use App\Blueprints\Logic\JobCostingLogic;
 use App\Blueprints\Logic\PayablesLogic;
+use App\Blueprints\Logic\PaymentGatewaysLogic;
 use App\Blueprints\Logic\PayrollLogic;
 use App\Blueprints\Logic\PosLogic;
 use App\Blueprints\Logic\PurchasingLogic;
 use App\Blueprints\Logic\ReceivablesLogic;
+use App\Blueprints\Logic\RecurringBillingLogic;
+use App\Blueprints\Logic\SavingsGroupsLogic;
 use App\Blueprints\Logic\TaxLogic;
+use App\Blueprints\Logic\TreasuryLogic;
 
 /*
  * Finance apps: books, banking, payroll, tax and specialist money businesses.
@@ -201,7 +209,7 @@ return [
             'attendance:number|Members present',
             'minutes:textarea',
         ], ['icon' => 'calendar', 'prefix' => 'MTG-', 'amount' => 'Total collected', 'date' => 'Meeting date', 'list' => ['venue', 'attendance']]],
-    ]],
+    ], ['logic' => SavingsGroupsLogic::class]],
 
     'recurring-billing' => ['Subscription billing', 'repeat', 'Subscription plans and recurring charges for your own customers.', [
         'plans' => ['Plan', 'Plan name', 'active,retired', [
@@ -213,8 +221,8 @@ return [
             'plan:record=plans|Plan*',
             'quantity:number',
             'payment_method:select=card,debit_order,mobile_money,invoice',
-        ], ['icon' => 'repeat', 'prefix' => 'SUB-', 'contact' => 'Customer', 'amount' => 'Recurring amount', 'date' => 'Started on', 'due' => 'Next bill date', 'list' => ['plan', 'quantity', 'payment_method']]],
-    ]],
+        ], ['icon' => 'repeat', 'prefix' => 'SUB-', 'contact' => 'Customer', 'amount' => 'Recurring amount', 'date' => 'Started on', 'due' => 'Next bill date', 'bill' => ['periodic' => true], 'list' => ['plan', 'quantity', 'payment_method']]],
+    ], ['depends' => ['contacts', 'invoicing'], 'logic' => RecurringBillingLogic::class]],
 
     'payments' => ['Payment gateways & wallet', 'credit-card', 'Online and mobile-money collections, with a log of every gateway transaction.', [
         'gateways' => ['Gateway', 'Gateway name', 'live,test,disabled', [
@@ -230,7 +238,7 @@ return [
             'paid_for|Paid for (invoice, order…)',
             'fee:money',
         ], ['icon' => 'credit-card', 'prefix' => 'PAY-', 'contact' => 'Payer', 'amount' => 'Amount', 'date' => 'Date', 'list' => ['gateway', 'gateway_reference', 'paid_for']]],
-    ]],
+    ], ['logic' => PaymentGatewaysLogic::class]],
 
     'job-costing' => ['Job costing & project accounting', 'pie-chart', 'Cost centres and jobs with budgeted and actual costs.', [
         'jobs' => ['Job', 'Job name', 'open,in_progress,completed,closed', [
@@ -244,7 +252,7 @@ return [
             'quantity:number',
             'billable:checkbox',
         ], ['icon' => 'receipt', 'prefix' => 'JC-', 'amount' => 'Cost', 'date' => 'Date', 'list' => ['job', 'type', 'quantity']]],
-    ]],
+    ], ['logic' => JobCostingLogic::class]],
 
     'multi-entity-consolidation' => ['Multi-entity consolidation', 'network', 'Group companies, inter-company transactions and consolidation runs.', [
         'entities' => ['Group entity', 'Company name', 'active,dormant,disposed', [
@@ -262,7 +270,7 @@ return [
             'exchange_rates:textarea|Exchange rates used',
             'adjustments:textarea',
         ], ['icon' => 'calculator', 'prefix' => 'CNS-', 'date' => 'Period end', 'assignee' => true]],
-    ]],
+    ], ['logic' => ConsolidationLogic::class]],
 
     'inventory-valuation-fifo-weighted' => ['Inventory valuation (FIFO / weighted average / landed cost)', 'calculator', 'Cost layers and landed-cost allocations behind your stock value.', [
         'valuations' => ['Valuation', 'Period', 'draft,final', [
@@ -277,7 +285,7 @@ return [
             'clearing:money|Clearing & handling',
             'allocation:select=by_value,by_quantity,by_weight|Allocate',
         ], ['icon' => 'ship', 'prefix' => 'LC-', 'amount' => 'Total landed cost', 'date' => 'Arrival date', 'list' => ['supplier_cost', 'freight', 'duty']]],
-    ]],
+    ], ['logic' => InventoryValuationLogic::class]],
 
     'treasury' => ['Treasury', 'vault', 'Fixed deposits, investments and foreign-currency positions.', [
         'investments' => ['Investment', 'Investment', 'active,matured,redeemed', [
@@ -292,7 +300,7 @@ return [
             'rate:number|Exchange rate',
             'bank',
         ], ['icon' => 'circle-dollar-sign', 'prefix' => 'FX-', 'plural' => 'FX positions', 'amount' => 'Local equivalent', 'date' => 'Date', 'list' => ['currency_code', 'foreign_amount', 'rate']]],
-    ]],
+    ], ['logic' => TreasuryLogic::class]],
 
     'hire-purchase' => ['Hire purchase', 'calendar-clock', 'Hire purchase, lay-by and instalment plans.', [
         'agreements' => ['Agreement', 'Goods', 'active,completed,defaulted,repossessed,cancelled', [
@@ -306,7 +314,7 @@ return [
             'agreement:record=agreements|Agreement*',
             'method:select=cash,mobile_money,bank,card',
         ], ['icon' => 'coins', 'prefix' => 'INS-', 'amount' => 'Amount', 'date' => 'Date', 'list' => ['agreement', 'method']]],
-    ]],
+    ], ['logic' => HirePurchaseLogic::class]],
 
     'credit-scoring' => ['Credit scoring', 'shield-check', 'KYC checks, AML screening and credit scores for applicants.', [
         'applicants' => ['Applicant', 'Full name', 'pending,verified,rejected', [
