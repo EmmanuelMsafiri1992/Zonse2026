@@ -69,11 +69,14 @@
                                     <td class="fs-7">{{ $p->receiver?->name ?? '—' }}</td>
                                     <td class="text-end fw-600 fs-7">{{ $p->money() }}</td>
                                     <td class="text-end">
-                                        @can('delete', $p)
-                                            <form method="POST" action="{{ route('payments.destroy', $p) }}" onsubmit="return confirm('Remove this payment of {{ $p->money() }}?')">@csrf @method('DELETE')
-                                                <button class="btn btn-sm btn-icon btn-soft-danger" title="Remove"><x-icon name="trash-2" class="zi zi-sm" /></button>
-                                            </form>
-                                        @endcan
+                                        <div class="d-inline-flex gap-1">
+                                            <x-document-menu :for="$p" small />
+                                            @can('delete', $p)
+                                                <form method="POST" action="{{ route('payments.destroy', $p) }}" onsubmit="return confirm('Remove this payment of {{ $p->money() }}?')">@csrf @method('DELETE')
+                                                    <button class="btn btn-sm btn-icon btn-soft-danger" title="Remove"><x-icon name="trash-2" class="zi zi-sm" /></button>
+                                                </form>
+                                            @endcan
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach

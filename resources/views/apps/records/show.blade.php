@@ -6,6 +6,7 @@
         @foreach($documents as $documentKey => $documentLabel)
             <a href="{{ route('apps.records.document', [$app->key, $def->key, $record->id, $documentKey]) }}" target="_blank" class="btn btn-white"><x-icon name="printer" /> {{ $documentLabel }}</a>
         @endforeach
+        <x-document-menu :for="$record" />
         @can('use-assistant')
             <form method="POST" action="{{ route('assistant.store') }}">
                 @csrf

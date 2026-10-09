@@ -8,6 +8,7 @@ use App\Http\Controllers\Apps\RecordWorkflowController;
 use App\Http\Controllers\AssistantController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentCaptureController;
+use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\FiscalVerificationController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\HomeController;
@@ -33,6 +34,7 @@ use App\Http\Controllers\Settings\BranchController;
 use App\Http\Controllers\Settings\BrandingController;
 use App\Http\Controllers\Settings\CustomFieldController;
 use App\Http\Controllers\Settings\DataExportController;
+use App\Http\Controllers\Settings\DocumentTemplateController;
 use App\Http\Controllers\Settings\FiscalSettingsController;
 use App\Http\Controllers\Settings\HardwareSettingsController;
 use App\Http\Controllers\Settings\ImportController;
@@ -160,6 +162,7 @@ Route::middleware(['auth', 'workspace'])->group(function () {
         Route::post('/approvals/{approvalRequest}/reject', [ApprovalController::class, 'reject'])->name('approvals.reject');
         Route::post('/approvals/{approvalRequest}/withdraw', [ApprovalController::class, 'withdraw'])->name('approvals.withdraw');
 
+        Route::get('/documents/{documentTemplate}/{subject?}', [DocumentController::class, 'show'])->whereNumber('subject')->name('documents.show');
         Route::get('/signatures', [SignatureRequestController::class, 'index'])->name('signatures.index');
         Route::get('/signatures/create', [SignatureRequestController::class, 'create'])->name('signatures.create');
         Route::post('/signatures', [SignatureRequestController::class, 'store'])->middleware('throttle:20,1')->name('signatures.store');
@@ -283,6 +286,9 @@ Route::middleware(['auth', 'workspace'])->group(function () {
             Route::resource('custom-fields', CustomFieldController::class)->except('show');
             Route::resource('approval-rules', ApprovalRuleController::class)->except('show');
             Route::post('/custom-fields/{custom_field}/move', [CustomFieldController::class, 'move'])->name('custom-fields.move');
+            Route::resource('document-templates', DocumentTemplateController::class)->except('show')->parameters(['document-templates' => 'documentTemplate']);
+            Route::match(['get', 'post'], '/document-templates/{documentTemplate}/preview', [DocumentTemplateController::class, 'preview'])->name('document-templates.preview');
+            Route::get('/document-templates/{documentTemplate}/sample', [DocumentTemplateController::class, 'sample'])->name('document-templates.sample');
 
             Route::get('/branding', [BrandingController::class, 'edit'])->name('branding.edit');
             Route::put('/branding', [BrandingController::class, 'update'])->name('branding.update');

@@ -27,7 +27,7 @@
         @else
             <div class="z-table-wrap">
                 <table class="table z-table align-middle">
-                    <thead><tr><th>Receipt</th><th>Date</th><th>Invoice</th><th>Customer</th><th>Method</th><th>Reference</th><th class="text-end">Amount</th></tr></thead>
+                    <thead><tr><th>Receipt</th><th>Date</th><th>Invoice</th><th>Customer</th><th>Method</th><th>Reference</th><th class="text-end">Amount</th><th></th></tr></thead>
                     <tbody>
                     @foreach($payments as $p)
                         <tr>
@@ -38,6 +38,7 @@
                             <td class="fs-7">{{ $p->methodLabel() }}</td>
                             <td class="fs-7">{{ $p->reference ?: '—' }}</td>
                             <td class="text-end fs-7 fw-600">{{ $p->money() }}</td>
+                            <td class="text-end"><x-document-menu :for="$p" small /></td>
                         </tr>
                     @endforeach
                     </tbody>
