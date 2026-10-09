@@ -6,12 +6,16 @@ use App\Blueprints\Logic\ClinicLogic;
 use App\Blueprints\Logic\EmrLogic;
 use App\Blueprints\Logic\HomeCareLogic;
 use App\Blueprints\Logic\HospitalLogic;
+use App\Blueprints\Logic\ImmunisationLogic;
 use App\Blueprints\Logic\LaboratoryLogic;
 use App\Blueprints\Logic\MaternityLogic;
+use App\Blueprints\Logic\MedicalBillingLogic;
 use App\Blueprints\Logic\MedicalClaimsLogic;
+use App\Blueprints\Logic\MedicalSuppliesLogic;
 use App\Blueprints\Logic\MentalHealthLogic;
 use App\Blueprints\Logic\NutritionLogic;
 use App\Blueprints\Logic\PatientAppointmentsLogic;
+use App\Blueprints\Logic\PatientPortalLogic;
 use App\Blueprints\Logic\PatientQueueLogic;
 use App\Blueprints\Logic\PharmacyLogic;
 use App\Blueprints\Logic\RadiologyLogic;
@@ -368,7 +372,7 @@ return [
             'referral|Referred to',
             'notes:textarea',
         ], ['icon' => 'house', 'prefix' => 'CHW-', 'plural' => 'CHW visits', 'date' => 'Date', 'assignee' => true, 'list' => ['village', 'reason']]],
-    ]],
+    ], ['logic' => ImmunisationLogic::class]],
 
     'medical-supplies-distribution' => ['Medical supplies distribution', 'briefcase-medical', 'Supply orders from facilities and deliveries made.', [
         'orders' => ['Supply order', 'Facility', 'received,approved,picked,delivered,cancelled', [
@@ -377,7 +381,7 @@ return [
             'cold_chain:checkbox|Needs cold chain',
             'delivery_note|Delivery note',
         ], ['icon' => 'briefcase-medical', 'prefix' => 'MSO-', 'contact' => 'Facility contact', 'amount' => 'Order value', 'date' => 'Ordered on', 'due' => 'Deliver by', 'assignee' => true, 'list' => ['urgency', 'cold_chain']]],
-    ]],
+    ], ['logic' => MedicalSuppliesLogic::class]],
 
     'patient-portal' => ['Patient portal', 'user-round', 'Patient portal accounts and the requests patients send.', [
         'accounts' => ['Portal account', 'Patient name', 'invited,active,disabled', [
@@ -391,7 +395,7 @@ return [
             'message:textarea*',
             'reply:textarea',
         ], ['icon' => 'inbox', 'prefix' => 'PPR-', 'date' => 'Received on', 'assignee' => true, 'list' => ['account', 'type']]],
-    ]],
+    ], ['logic' => PatientPortalLogic::class]],
 
     'medical-billing-coding-for' => ['Medical billing & coding for insurers', 'file-check', 'Coded claims to medical aids and insurers, with remittances.', [
         'claims' => ['Claim', 'Patient name', 'draft,submitted,accepted,part_paid,paid,rejected,resubmitted', [
@@ -402,5 +406,5 @@ return [
             'paid_amount:money|Amount paid',
             'rejection_reason:textarea|Rejection reason',
         ], ['icon' => 'file-check', 'prefix' => 'MBC-', 'contact' => 'Patient', 'amount' => 'Claimed', 'date' => 'Service date', 'due' => 'Submit by', 'assignee' => true, 'list' => ['insurer', 'icd10', 'paid_amount']]],
-    ]],
+    ], ['logic' => MedicalBillingLogic::class]],
 ];
