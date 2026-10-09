@@ -6,8 +6,14 @@
  */
 
 use App\Blueprints\Logic\CalendarLogic;
+use App\Blueprints\Logic\ClientPortalLogic;
 use App\Blueprints\Logic\DocumentsLogic;
 use App\Blueprints\Logic\FormsApprovalsLogic;
+use App\Blueprints\Logic\FreelancerLogic;
+use App\Blueprints\Logic\GoalsOkrLogic;
+use App\Blueprints\Logic\IssuesLogic;
+use App\Blueprints\Logic\MeetingMinutesLogic;
+use App\Blueprints\Logic\NotesWhiteboardsLogic;
 use App\Blueprints\Logic\TeamChatLogic;
 use App\Blueprints\Logic\TimeTrackingLogic;
 use App\Blueprints\Logic\VideoMeetingsLogic;
@@ -107,7 +113,7 @@ return [
             'image_url:url|Whiteboard image',
             'shared:checkbox|Shared with team',
         ], ['icon' => 'sticky-note', 'prefix' => 'NT-', 'date' => 'Date', 'assignee' => true, 'list' => ['type', 'shared']]],
-    ]],
+    ], ['logic' => NotesWhiteboardsLogic::class]],
 
     'goals-okr-tracking' => ['Goals & OKR tracking', 'goal', 'Company and team objectives with measurable key results.', [
         'objectives' => ['Objective', 'Objective', 'on_track,at_risk,off_track,achieved,dropped', [
@@ -121,7 +127,7 @@ return [
             'target_value:number|Target value*',
             'current_value:number|Current value',
         ], ['icon' => 'target', 'prefix' => 'KR-', 'assignee' => true, 'list' => ['objective', 'target_value', 'current_value']]],
-    ]],
+    ], ['logic' => GoalsOkrLogic::class]],
 
     'issues' => ['Issue tracking & roadmap', 'bug', 'Bugs, feature requests and a product roadmap.', [
         'issues' => ['Issue', 'Summary', 'open,triaged,in_progress,in_review,done,wont_fix', [
@@ -135,7 +141,7 @@ return [
             'goals:textarea',
             'release_notes:textarea|Release notes',
         ], ['icon' => 'milestone', 'prefix' => 'REL-', 'due' => 'Target date', 'list' => []]],
-    ]],
+    ], ['logic' => IssuesLogic::class]],
 
     'meeting-minutes-action-items' => ['Meeting minutes & action items', 'notebook-pen', 'Minutes of meetings and the actions agreed.', [
         'meetings' => ['Meeting', 'Meeting', 'scheduled,held,minutes_approved', [
@@ -148,7 +154,7 @@ return [
             'meeting:record=meetings|Meeting*',
             'owner:user|Owner*',
         ], ['icon' => 'list-todo', 'prefix' => 'ACT-', 'due' => 'Due date', 'list' => ['meeting', 'owner']]],
-    ]],
+    ], ['logic' => MeetingMinutesLogic::class]],
 
     'client-portal-for-agencies' => ['Client portal for agencies/consultants', 'presentation', 'Client projects, deliverables for sign-off and shared updates.', [
         'projects' => ['Client project', 'Project', 'active,on_hold,completed', [
@@ -164,7 +170,7 @@ return [
             'project:record=projects|Project*',
             'body:textarea*',
         ], ['icon' => 'megaphone', 'prefix' => 'UPD-', 'date' => 'Date', 'list' => ['project']]],
-    ]],
+    ], ['logic' => ClientPortalLogic::class]],
 
     'freelancer' => ['Freelancer workspace', 'laptop', 'Proposals, contracts, time and invoices for solo professionals.', [
         'gigs' => ['Gig', 'Gig / project', 'lead,proposal_sent,contracted,in_progress,delivered,paid', [
@@ -178,5 +184,5 @@ return [
             'gig:record=gigs|Gig*',
             'hours:number*',
         ], ['icon' => 'timer', 'prefix' => 'TL-', 'plural' => 'Time logs', 'date' => 'Date', 'list' => ['gig', 'hours']]],
-    ]],
+    ], ['logic' => FreelancerLogic::class]],
 ];
