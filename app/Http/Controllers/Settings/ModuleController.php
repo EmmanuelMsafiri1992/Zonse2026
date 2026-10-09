@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Models\Module;
+use App\Models\Profession;
 use App\Models\Suite;
 use App\Support\Audit;
 use App\Support\ModuleBilling;
@@ -55,6 +56,7 @@ class ModuleController extends Controller
             'workspace' => $workspace,
             'plan' => $plan,
             'cycle' => $workspace->subscription?->billing_cycle ?? 'monthly',
+            'professions' => Profession::orderBy('sort_order')->get(['id', 'key', 'name', 'group']),
             'addonKeys' => $this->billing->addons($workspace)->pluck('key')->all(),
             'usage' => $usage,
             'slotsLeft' => $usage['allowance'] === null ? null : max(0, $usage['allowance'] - $usage['used']),
@@ -102,6 +104,43 @@ class ModuleController extends Controller
         Audit::log('settings', 'module-enabled', $addons ? "Added the {$module->name} app as a paid add-on" : "Turned on the {$module->name} app", $module);
 
         return back()->with('flash', ['type' => 'success', 'message' => $addons ? "{$module->name} added as a paid add-on." : "{$module->name} enabled."]);
+    }
+
+    /** Switch on a profession's starter bundle in one go (the same bundles onboarding recommends). */
+    public function applyBundle(Request $request)
+    {
+        $workspace = $this->context->getOrFail();
+        $data = $request->validate(['profession' => ['required', 'exists:professions,key']]);
+        $profession = Profession::where('key', $data['profession'])->firstOrFail();
+
+        $keys = $profession->recommendedModules()->reject(fn (Module $m) => $m->is_core)->pluck('key')->values()->all();
+        $missing = array_values(array_diff($keys, $workspace->enabledModuleKeys()));
+        if (! $missing) {
+            return back()->with('flash', ['type' => 'info', 'message' => "Every app in the {$profession->name} bundle is already on."]);
+        }
+
+        $cycle = $workspace->subscription?->billing_cycle ?? 'monthly';
+        $addons = $this->billing->quoteEnable($workspace, $missing);
+        if ($addons && $request->input('confirm_addon') !== 'all') {
+            $total = Money::format(array_sum(array_column($addons, $cycle)), $workspace->subscription?->currency ?? 'USD');
+            $per = $cycle === 'yearly' ? 'year' : 'month';
+
+            return back()->with('addon_quote', [
+                'action' => route('settings.modules.bundle'),
+                'fields' => ['profession' => $profession->key],
+                'message' => count($addons).' of the '.count($missing)." apps in the {$profession->name} bundle aren't covered by your {$workspace->plan()?->name} plan. Add them for {$total} per {$per}, or upgrade your plan.",
+                'apps' => collect(array_keys($addons))->map(fn ($key) => Module::findByKey($key)?->name)->filter()->values()->all(),
+                'total' => $total,
+                'per' => $per,
+            ]);
+        }
+
+        $workspace->enableModules($missing, $request->user());
+        $this->billing->reconcile($workspace);
+
+        Audit::log('settings', 'bundle-applied', "Turned on the {$profession->name} starter bundle", $profession);
+
+        return back()->with('flash', ['type' => 'success', 'message' => count($missing)." apps from the {$profession->name} bundle are now on."]);
     }
 
     public function disable(Module $module)

@@ -232,6 +232,7 @@ Route::middleware(['auth', 'workspace'])->group(function () {
 
             Route::get('/modules', [ModuleController::class, 'index'])->name('modules.index');
             Route::post('/modules/{module:key}/enable', [ModuleController::class, 'enable'])->name('modules.enable');
+            Route::post('/modules/bundle', [ModuleController::class, 'applyBundle'])->name('modules.bundle');
             Route::delete('/modules/{module:key}', [ModuleController::class, 'disable'])->name('modules.disable');
 
             Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');

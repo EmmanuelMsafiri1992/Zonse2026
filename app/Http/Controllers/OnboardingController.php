@@ -8,6 +8,7 @@ use App\Models\Plan;
 use App\Models\Profession;
 use App\Models\Suite;
 use App\Models\Workspace;
+use App\Support\BundleAdvisor;
 use App\Support\Lists;
 use App\Support\ModuleBilling;
 use App\Support\Partners;
@@ -31,7 +32,7 @@ class OnboardingController extends Controller
 
     public const DEFAULT_MODULES = ['contacts', 'invoicing', 'tasks', 'appointments'];
 
-    public function __construct(protected WorkspaceContext $context) {}
+    public function __construct(protected WorkspaceContext $context, protected BundleAdvisor $advisor) {}
 
     public function start()
     {
@@ -69,6 +70,8 @@ class OnboardingController extends Controller
             ]),
             2 => view('onboarding.profession', $data + [
                 'groups' => Profession::orderBy('sort_order')->get()->groupBy('group'),
+                'describe' => $describe = trim((string) $request->query('describe')),
+                'matches' => $this->advisor->match($describe),
             ]),
             3 => view('onboarding.modules', $data + [
                 'suites' => Suite::with(['modules' => fn ($q) => $q->where('is_core', false)->orderBy('sort_order')])
@@ -76,12 +79,7 @@ class OnboardingController extends Controller
                 'selected' => $this->preselectedModules($workspace),
                 'recommended' => $workspace->profession?->recommendedModules()->pluck('key')->all() ?? [],
             ]),
-            4 => view('onboarding.plan', $data + [
-                'plans' => $plans = Plan::active()->get(),
-                'moduleCount' => $workspace->modules()->count(),
-                // Apps picked in step 3 that a plan doesn't cover become paid add-ons; show that on each card.
-                'addonQuotes' => $plans->mapWithKeys(fn (Plan $p) => [$p->id => app(ModuleBilling::class)->quoteSwitch($workspace, $p)]),
-            ]),
+            4 => $this->showPlans($workspace, $data),
         };
     }
 
@@ -148,7 +146,13 @@ class OnboardingController extends Controller
         $workspace = $this->context->getOrFail();
         $data = $request->validate(['profession_id' => ['nullable', 'exists:professions,id']]);
 
-        $workspace->update(['profession_id' => $data['profession_id'] ?? null]);
+        $professionId = isset($data['profession_id']) ? (int) $data['profession_id'] : null;
+        $currentId = $workspace->profession_id === null ? null : (int) $workspace->profession_id;
+        if ($currentId !== $professionId) {
+            // A different answer means a different starter bundle: drop the apps picked for the old one.
+            $workspace->modules()->detach();
+        }
+        $workspace->update(['profession_id' => $professionId]);
         $this->advance($workspace, 3);
 
         return redirect()->route('onboarding.step', 3);
@@ -214,6 +218,20 @@ class OnboardingController extends Controller
         return redirect()->route('dashboard')->with('flash', [
             'type' => 'success',
             'message' => 'Welcome to Zonseo! Your workspace is ready.',
+        ]);
+    }
+
+    protected function showPlans(Workspace $workspace, array $data)
+    {
+        $plans = Plan::active()->get();
+        $recommendation = $this->advisor->recommendPlan($workspace, $plans);
+
+        return view('onboarding.plan', $data + [
+            'plans' => $plans,
+            'moduleCount' => $workspace->modules()->count(),
+            // Apps picked in step 3 that a plan doesn't cover become paid add-ons; show that on each card.
+            'addonQuotes' => $plans->mapWithKeys(fn (Plan $p) => [$p->id => app(ModuleBilling::class)->quoteSwitch($workspace, $p)]),
+            'recommendedPlan' => $recommendation['plan'],
         ]);
     }
 

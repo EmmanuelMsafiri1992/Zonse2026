@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Profession extends Model
 {
-    protected $fillable = ['key', 'name', 'description', 'icon', 'group', 'module_keys', 'is_featured', 'sort_order'];
+    protected $fillable = ['key', 'name', 'description', 'icon', 'group', 'module_keys', 'keywords', 'is_featured', 'sort_order'];
 
     protected function casts(): array
     {
-        return ['module_keys' => 'array', 'is_featured' => 'boolean'];
+        return ['module_keys' => 'array', 'keywords' => 'array', 'is_featured' => 'boolean'];
     }
 
     /** Recommended modules that actually exist in the catalogue. */

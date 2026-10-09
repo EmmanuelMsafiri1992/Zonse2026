@@ -14,7 +14,8 @@
 <div class="col-md-6 col-xl-3">
     <div class="z-plan-card {{ $p->is_featured ? 'featured' : '' }}"
          @if($selectable) :class="{ selected: plan === {{ Js::from($p->key) }} }" x-on:click="plan = {{ Js::from($p->key) }}" @endif>
-        @if($p->is_featured)<span class="z-plan-tag">Most popular</span>@endif
+        @if(! empty($bestValue))<span class="z-plan-tag">Best value for your apps</span>
+        @elseif($p->is_featured)<span class="z-plan-tag">Most popular</span>@endif
         <h5 class="mb-0">{{ $p->name }}</h5>
         <div class="text-muted fs-7 mb-3">{{ $p->tagline }}</div>
         <div class="z-plan-price mb-3">

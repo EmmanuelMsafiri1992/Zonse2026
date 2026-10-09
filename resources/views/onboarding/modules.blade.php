@@ -17,6 +17,11 @@
             </div>
             <div class="d-flex gap-2 align-items-center">
                 <span class="z-chip"><x-icon name="layout-grid" class="zi zi-sm" /> <span x-text="list.length"></span> selected</span>
+                @if($recommended)
+                    <button type="button" class="btn btn-white" x-on:click="selected = new Set({{ Js::from($recommended) }})" title="Go back to the {{ $workspace->profession->name }} starter bundle">
+                        <x-icon name="rotate-ccw" /> Recommended bundle
+                    </button>
+                @endif
                 <a href="{{ route('onboarding.step', 2) }}" class="btn btn-white"><x-icon name="arrow-left" /> Back</a>
                 <button type="submit" class="btn btn-primary">Continue <x-icon name="arrow-right" /></button>
             </div>

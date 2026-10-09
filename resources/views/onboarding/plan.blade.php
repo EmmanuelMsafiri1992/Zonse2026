@@ -1,7 +1,7 @@
 @extends('layouts.onboarding')
 @section('title', 'Choose a plan')
 @section('content')
-    @php $featured = $plans->firstWhere('is_featured', true) ?? $plans->first(); @endphp
+    @php $featured = $recommendedPlan ?? $plans->firstWhere('is_featured', true) ?? $plans->first(); @endphp
     <form method="POST" action="{{ route('onboarding.store', 4) }}" x-data="{ plan: {{ Js::from($featured?->key) }}, cycle: 'monthly' }">
         @csrf
         <input type="hidden" name="plan" :value="plan">
@@ -18,7 +18,7 @@
 
         <div class="row g-4 justify-content-center">
             @foreach($plans as $p)
-                @include('partials.plan-card', ['p' => $p, 'selectable' => true, 'addonQuote' => $addonQuotes[$p->id] ?? []])
+                @include('partials.plan-card', ['p' => $p, 'selectable' => true, 'addonQuote' => $addonQuotes[$p->id] ?? [], 'bestValue' => $recommendedPlan?->is($p)])
             @endforeach
         </div>
 

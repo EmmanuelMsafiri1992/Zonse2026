@@ -19,8 +19,9 @@
                 <div class="fw-600">{{ $quote['message'] }}</div>
                 @if(count($quote['apps']) > 1)<div class="fs-7">Includes: {{ implode(', ', $quote['apps']) }}.</div>@endif
             </div>
-            <form method="POST" action="{{ route('settings.modules.enable', $quote['key']) }}">
+            <form method="POST" action="{{ $quote['action'] ?? route('settings.modules.enable', $quote['key']) }}">
                 @csrf
+                @foreach($quote['fields'] ?? [] as $name => $value)<input type="hidden" name="{{ $name }}" value="{{ $value }}">@endforeach
                 <input type="hidden" name="confirm_addon" value="all">
                 <button class="btn btn-sm btn-primary">Add for {{ $quote['total'] }}/{{ $quote['per'] }}</button>
             </form>
@@ -43,6 +44,26 @@
             @elseif($slotsLeft === 0)
                 <span class="text-muted fs-7 ms-auto">All the apps in your <strong>{{ $plan->name }}</strong> plan are in use; more can be added at their own price. <a href="{{ route('settings.billing.index') }}">Upgrade</a></span>
             @endif
+        </div>
+    </form>
+
+    <form method="POST" action="{{ route('settings.modules.bundle') }}" class="card card-flat mb-4">
+        @csrf
+        <div class="card-body d-flex flex-wrap gap-2 align-items-center">
+            <x-icon name="package-plus" class="zi text-primary" />
+            <span class="fw-600">Starter bundles</span>
+            <span class="text-muted fs-7">Switch on the set of apps we recommend for a type of business.</span>
+            <select name="profession" class="form-select form-select-sm ms-auto" style="max-width:280px" required>
+                <option value="">Choose a business type…</option>
+                @foreach($professions->groupBy('group') as $group => $items)
+                    <optgroup label="{{ $group }}">
+                        @foreach($items as $profession)
+                            <option value="{{ $profession->key }}" @selected((int) $workspace->profession_id === $profession->id)>{{ $profession->name }}</option>
+                        @endforeach
+                    </optgroup>
+                @endforeach
+            </select>
+            <button class="btn btn-sm btn-primary">Apply bundle</button>
         </div>
     </form>
 

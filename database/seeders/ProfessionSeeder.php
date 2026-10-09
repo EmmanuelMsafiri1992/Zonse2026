@@ -52,6 +52,50 @@ class ProfessionSeeder extends Seeder
         ['Individual', 'Personal', 'user', '20.1, 20.2, 20.3, 20.7', false],
     ];
 
+    /**
+     * Everyday words people use for each business, matched against the
+     * onboarding "What do you do?" box (see App\Support\BundleAdvisor).
+     *
+     * @var array<string, array<int, string>>
+     */
+    protected array $keywords = [
+        'doctor-clinic' => ['doctor', 'gp', 'clinic', 'surgery', 'medical', 'practice', 'nurse', 'health'],
+        'dentist-optometrist-physio' => ['dentist', 'dental', 'optometrist', 'optician', 'eye', 'physio', 'physiotherapy', 'chiropractor'],
+        'pharmacy' => ['pharmacy', 'chemist', 'drugstore', 'medicine', 'pharmacist', 'dispensary'],
+        'hospital' => ['hospital', 'ward', 'wards', 'inpatient', 'theatre', 'maternity', 'beds'],
+        'vet' => ['vet', 'veterinary', 'animal', 'animals', 'pets', 'pet'],
+        'accountant-bookkeeper' => ['accountant', 'accounting', 'bookkeeper', 'bookkeeping', 'audit', 'tax', 'payroll bureau'],
+        'lawyer' => ['lawyer', 'law', 'legal', 'attorney', 'advocate', 'solicitor', 'conveyancing'],
+        'insurance-broker' => ['insurance', 'broker', 'policies', 'funeral cover', 'underwriting'],
+        'microfinance-sacco' => ['microfinance', 'sacco', 'loans', 'lending', 'savings', 'mukando', 'stokvel', 'credit'],
+        'freelancer-consultant' => ['freelancer', 'freelance', 'consultant', 'consulting', 'designer', 'writer', 'photographer', 'coach'],
+        'software-it-company' => ['software', 'it company', 'it support', 'developer', 'web', 'apps', 'tech', 'hosting', 'computer'],
+        'retail-shop-supermarket' => ['shop', 'store', 'retail', 'supermarket', 'tuckshop', 'spaza', 'grocery', 'hardware', 'boutique'],
+        'restaurant-cafe-bar' => ['restaurant', 'cafe', 'coffee', 'bar', 'pub', 'takeaway', 'food', 'bakery', 'kitchen', 'catering'],
+        'hotel-lodge' => ['hotel', 'lodge', 'guesthouse', 'bnb', 'airbnb', 'accommodation', 'resort', 'backpackers'],
+        'school' => ['school', 'primary', 'secondary', 'high school', 'preschool', 'creche', 'pupils', 'students'],
+        'university-college' => ['university', 'college', 'polytechnic', 'campus', 'tertiary', 'lecturers'],
+        'online-tutor-trainer' => ['tutor', 'tutoring', 'trainer', 'training', 'courses', 'lessons', 'teacher', 'online classes'],
+        'church' => ['church', 'ministry', 'congregation', 'pastor', 'parish', 'mosque', 'temple', 'tithes'],
+        'ngo' => ['ngo', 'charity', 'nonprofit', 'non-profit', 'foundation', 'trust', 'donors', 'grants'],
+        'event-organiser' => ['events', 'event', 'weddings', 'concerts', 'conference', 'tickets', 'festival', 'planner'],
+        'salon-spa-barber' => ['salon', 'hair', 'hairdresser', 'braids', 'barber', 'barbershop', 'spa', 'nails', 'beauty', 'massage'],
+        'gym' => ['gym', 'fitness', 'yoga', 'pilates', 'crossfit', 'personal trainer', 'members'],
+        'electrician-plumber-technician' => ['electrician', 'plumber', 'technician', 'repairs', 'handyman', 'solar installer', 'aircon', 'maintenance'],
+        'garage-mechanic' => ['garage', 'mechanic', 'workshop', 'car repairs', 'panel beater', 'tyres', 'car sales'],
+        'security-company' => ['security', 'guards', 'guarding', 'patrol', 'alarm'],
+        'landlord-estate-agent' => ['landlord', 'rentals', 'rent', 'tenants', 'estate agent', 'property', 'real estate', 'flats'],
+        'construction-contractor' => ['construction', 'contractor', 'builder', 'building', 'civil', 'engineering', 'renovations'],
+        'transport-fleet-owner' => ['transport', 'fleet', 'trucks', 'haulage', 'logistics', 'delivery', 'courier', 'kombi'],
+        'bus-company' => ['bus', 'buses', 'coach', 'intercity', 'routes'],
+        'taxi-ride-owner' => ['taxi', 'cab', 'ride', 'uber', 'drivers'],
+        'farmer-cooperative' => ['farm', 'farmer', 'farming', 'agriculture', 'crops', 'cattle', 'poultry', 'chickens', 'dairy', 'cooperative', 'tobacco', 'maize'],
+        'manufacturer' => ['manufacturer', 'manufacturing', 'factory', 'production', 'plant', 'assembly'],
+        'isp-wifi-business' => ['isp', 'wifi', 'internet', 'hotspot', 'broadband', 'fibre'],
+        'government-department-council' => ['government', 'council', 'municipality', 'ministry', 'department', 'public sector', 'parastatal'],
+        'individual' => ['personal', 'individual', 'myself', 'family', 'household', 'budget'],
+    ];
+
     public function run(): void
     {
         $byRef = Module::all()->keyBy('ref');
@@ -65,6 +109,7 @@ class ProfessionSeeder extends Seeder
                 'group' => $group,
                 'icon' => $icon,
                 'module_keys' => $keys,
+                'keywords' => $this->keywords[Str::slug($name)] ?? [],
                 'is_featured' => $featured,
                 'sort_order' => $i,
                 'description' => null,
