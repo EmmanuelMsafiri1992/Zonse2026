@@ -48,7 +48,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [SecurityHeaders::class, CapturePartnerReferral::class, HandleInstantNavigation::class]);
 
         // Payment gateways post their notifications without a session; each one is verified in the controller.
-        $middleware->validateCsrfTokens(except: ['webhooks/*']);
+        $middleware->validateCsrfTokens(except: ['webhooks/*', 'f/*']);
 
         // Resolve the tenant before route-model binding so scoped models never leak across workspaces.
         $middleware->priority([

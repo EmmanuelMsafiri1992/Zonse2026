@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Blueprints\BlueprintRegistry;
 use App\Tenancy\BelongsToWorkspace;
 use Carbon\CarbonImmutable;
 use Database\Factories\CustomFieldFactory;
@@ -15,8 +16,9 @@ use Modules\Helpdesk\Models\Ticket;
 use Modules\Tasks\Models\Task;
 
 /**
- * An extra field a workspace adds to one kind of record, such as "Medical aid number" on contacts.
- * Values live in the record's own custom_fields column, keyed by the field's key.
+ * An extra field a workspace adds to one kind of record, such as "Medical aid number" on contacts
+ * or "Allergies" on a clinic's patients. Values live in the record's own custom_fields column,
+ * keyed by the field's key.
  *
  * @property list<string>|null $options
  */
@@ -83,12 +85,57 @@ class CustomField extends Model
         return $key;
     }
 
-    /** Which kind of record a model is, or null when it cannot carry custom fields. */
+    /** Which kind of record a model is, or null when it cannot carry custom fields. App records are "app.entity". */
     public static function entityFor(Model|string $model): ?string
     {
+        if ($model instanceof Record) {
+            return self::appEntity((string) $model->blueprint, (string) $model->entity);
+        }
+
         $class = is_string($model) ? $model : $model::class;
 
         return collect(self::ENTITIES)->search(fn (array $entity) => $entity['model'] === $class) ?: null;
+    }
+
+    /** The kind name for records of one app entity, e.g. "clinic.patient". */
+    public static function appEntity(string $blueprint, string $entity): string
+    {
+        return $blueprint.'.'.$entity;
+    }
+
+    /** "Clinic › Patients" for an app kind, or null when it names no existing app entity. */
+    public static function appEntityLabel(string $entity): ?string
+    {
+        if (! str_contains($entity, '.')) {
+            return null;
+        }
+        [$blueprintKey, $entityKey] = explode('.', $entity, 2);
+        $blueprint = app(BlueprintRegistry::class)->get($blueprintKey);
+        $definition = $blueprint?->entity($entityKey);
+
+        return $definition ? $blueprint->name.' › '.$definition->plural : null;
+    }
+
+    /**
+     * The kinds of record a workspace can add fields to: the built-in ones, then each entity of its apps.
+     *
+     * @return array<string, array<string, string>> group name => [entity => label]
+     */
+    public static function entityChoices(Workspace $workspace): array
+    {
+        $choices = ['Records' => collect(self::ENTITIES)->map(fn (array $entity) => $entity['label'])->all()];
+        $enabled = $workspace->enabledModuleKeys();
+
+        foreach (app(BlueprintRegistry::class)->all() as $blueprint) {
+            if (! in_array($blueprint->key, $enabled, true)) {
+                continue;
+            }
+            foreach ($blueprint->entities as $definition) {
+                $choices[$blueprint->name][self::appEntity($blueprint->key, $definition->key)] = $definition->plural;
+            }
+        }
+
+        return $choices;
     }
 
     public function typeLabel(): string
@@ -98,7 +145,7 @@ class CustomField extends Model
 
     public function entityLabel(): string
     {
-        return self::ENTITIES[$this->entity]['label'] ?? $this->entity;
+        return self::ENTITIES[$this->entity]['label'] ?? self::appEntityLabel($this->entity) ?? $this->entity;
     }
 
     /**

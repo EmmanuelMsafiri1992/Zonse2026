@@ -47,6 +47,7 @@
                         </div>
                     </div>
                 </div>
+                <x-custom-fields.inputs :entity="\App\Models\CustomField::appEntity($app->key, $def->key)" :record="$record" />
             </div>
 
             <div class="col-lg-4">

@@ -10,6 +10,7 @@ use App\Blueprints\Field;
 use App\Support\Sequence;
 use App\Tenancy\BelongsToWorkspace;
 use App\Tenancy\HasComments;
+use App\Tenancy\HasCustomFields;
 use App\Tenancy\RecordsActivity;
 use App\Tenancy\WorkspaceContext;
 use Database\Factories\RecordFactory;
@@ -32,7 +33,7 @@ use Modules\Invoicing\Models\Invoice;
 class Record extends Model
 {
     /** @use HasFactory<RecordFactory> */
-    use BelongsToWorkspace, HasComments, HasFactory, RecordsActivity, SoftDeletes;
+    use BelongsToWorkspace, HasComments, HasCustomFields, HasFactory, RecordsActivity, SoftDeletes;
 
     /** Statuses that mean nothing more needs doing, whatever the app. */
     public const DONE_STATUSES = ['done', 'completed', 'closed', 'cancelled', 'archived', 'resolved', 'paid', 'delivered', 'rejected', 'expired'];
@@ -97,7 +98,7 @@ class Record extends Model
             ?? throw new \RuntimeException("Unknown entity [{$this->entity}] on blueprint [{$this->blueprint}].");
     }
 
-    /** Value of a custom field from the data JSON. */
+    /** Value of one of the app's own fields from the data JSON (the workspace's extra fields are customField()). */
     public function value(string $key): mixed
     {
         return $this->data[$key] ?? null;
@@ -249,6 +250,11 @@ class Record extends Model
             }
         } catch (\RuntimeException) {
             // Unknown definition (e.g. a removed blueprint); index the shared columns only.
+        }
+        foreach ((array) ($this->custom_fields ?? []) as $value) {
+            if (is_string($value) && $value !== '') {
+                $parts[] = $value;
+            }
         }
 
         return mb_strtolower(implode(' ', array_filter($parts)));

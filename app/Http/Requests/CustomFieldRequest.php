@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\CustomField;
+use App\Tenancy\WorkspaceContext;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -40,7 +41,7 @@ class CustomFieldRequest extends FormRequest
         $entity = $field instanceof CustomField ? $field->entity : $this->input('entity');
 
         return [
-            'entity' => $field instanceof CustomField ? ['prohibited'] : ['required', Rule::in(array_keys(CustomField::ENTITIES))],
+            'entity' => $field instanceof CustomField ? ['prohibited'] : ['required', 'string', Rule::in($this->entities())],
             'label' => ['required', 'string', 'max:120', Rule::unique('custom_fields', 'label')
                 ->where('workspace_id', $this->user()->current_workspace_id)->where('entity', $entity)
                 ->ignore($field instanceof CustomField ? $field->id : null)],
@@ -50,6 +51,17 @@ class CustomFieldRequest extends FormRequest
             'is_required' => ['boolean'],
             'help' => ['nullable', 'string', 'max:255'],
         ];
+    }
+
+    /**
+     * The kinds of record this workspace can add fields to.
+     *
+     * @return list<string>
+     */
+    public function entities(): array
+    {
+        return collect(CustomField::entityChoices(app(WorkspaceContext::class)->getOrFail()))
+            ->flatMap(fn (array $group) => array_keys($group))->values()->all();
     }
 
     /** @return array<string, string> */

@@ -4,7 +4,9 @@ namespace App\Http\Requests;
 
 use App\Blueprints\BlueprintRegistry;
 use App\Blueprints\Entity;
+use App\Models\CustomField;
 use App\Models\Record;
+use App\Support\CustomFields;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -22,6 +24,22 @@ class RecordRequest extends FormRequest
     {
         return app(BlueprintRegistry::class)->entity((string) $this->route('blueprint'), (string) $this->route('entity'))
             ?? abort(404);
+    }
+
+    /** The workspace's extra-field kind for this entity, e.g. "clinic.patient". */
+    public function customEntity(): string
+    {
+        $entity = $this->entity();
+
+        return CustomField::appEntity($entity->blueprintKey, $entity->key);
+    }
+
+    /** The record being edited, or null when one is being added. */
+    public function existing(): ?Record
+    {
+        $entity = $this->entity();
+
+        return $this->route('record') ? Record::query()->ofEntity($entity->blueprintKey, $entity->key)->find($this->route('record')) : null;
     }
 
     /** @return array<string, mixed> */
@@ -56,7 +74,7 @@ class RecordRequest extends FormRequest
             $rules['data.'.$field->key] = $fieldRules;
         }
 
-        return $rules;
+        return $rules + CustomFields::rules($this->customEntity(), $this, $this->existing());
     }
 
     /**
@@ -71,7 +89,7 @@ class RecordRequest extends FormRequest
                 return;
             }
             $entity = $this->entity();
-            $existing = $this->route('record') ? Record::query()->ofEntity($entity->blueprintKey, $entity->key)->find($this->route('record')) : null;
+            $existing = $this->existing();
             $logic = app(BlueprintRegistry::class)->get($entity->blueprintKey)?->logic();
 
             foreach ($logic?->validate($entity, $this->payload(), $existing) ?? [] as $field => $message) {
@@ -90,7 +108,7 @@ class RecordRequest extends FormRequest
             $names['data.'.$field->key] = $field->label;
         }
 
-        return $names;
+        return $names + CustomFields::attributes($this->customEntity());
     }
 
     /** @return array<string, mixed> attributes ready for Record::create / update */
@@ -115,6 +133,7 @@ class RecordRequest extends FormRequest
             'occurs_on' => $entity->hasDate() ? ($validated['occurs_on'] ?? null) : null,
             'due_on' => $entity->hasDue() ? ($validated['due_on'] ?? null) : null,
             'data' => $data,
+            ...CustomFields::payload($this->customEntity(), $this, $this->existing()),
         ];
     }
 

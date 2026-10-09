@@ -24,6 +24,7 @@ class Notifier
         'comments' => ['label' => 'Notes on my work', 'hint' => 'Someone adds a note to something assigned to you or that you created.', 'app' => true, 'email' => false],
         'messages' => ['label' => 'Inbox messages', 'hint' => 'A customer writes in on a conversation assigned to you (unassigned ones go to admins).', 'app' => true, 'email' => false],
         'bookings' => ['label' => 'Online bookings and orders', 'hint' => 'Someone books, orders or asks to pay through your public page (admins only).', 'app' => true, 'email' => true],
+        'forms' => ['label' => 'Form answers', 'hint' => 'Someone fills in one of your public forms (admins only).', 'app' => true, 'email' => false],
         'payments' => ['label' => 'Payments received', 'hint' => 'Money recorded against an invoice (admins only).', 'app' => true, 'email' => false],
         'team' => ['label' => 'Team changes', 'hint' => 'Someone accepts an invitation and joins the workspace (admins only).', 'app' => true, 'email' => false],
         'approvals' => ['label' => 'Approvals', 'hint' => 'Something waits for your sign-off, or a request you made is decided.', 'app' => true, 'email' => true],

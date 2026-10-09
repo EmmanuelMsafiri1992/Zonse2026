@@ -8,7 +8,9 @@ use App\Blueprints\Entity;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RecordRequest;
 use App\Models\Branch;
+use App\Models\CustomField;
 use App\Models\Record;
+use App\Support\CustomFields;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -186,7 +188,9 @@ class RecordController extends Controller
 
         $filename = $app->key.'-'.$def->key.'-'.now()->format('Ymd').'.csv';
 
-        return response()->streamDownload(function () use ($records, $def) {
+        $extra = CustomFields::for(CustomField::appEntity($app->key, $def->key));
+
+        return response()->streamDownload(function () use ($records, $def, $extra) {
             $out = fopen('php://output', 'w');
             $header = ['Number', $def->titleLabel, 'Status'];
             if ($def->hasContact()) {
@@ -205,6 +209,9 @@ class RecordController extends Controller
                 $header[] = $def->dueLabel;
             }
             foreach ($def->fields as $field) {
+                $header[] = $field->label;
+            }
+            foreach ($extra as $field) {
                 $header[] = $field->label;
             }
             $header[] = 'Created';
@@ -229,6 +236,9 @@ class RecordController extends Controller
                 }
                 foreach ($def->fields as $field) {
                     $row[] = $record->displayValue($field);
+                }
+                foreach ($extra as $field) {
+                    $row[] = $field->display($record->customField($field->key)) ?? '';
                 }
                 $row[] = $record->created_at?->toDateTimeString();
                 fputcsv($out, $row);

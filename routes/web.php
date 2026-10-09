@@ -19,6 +19,7 @@ use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\Portal\PortalAuthController;
 use App\Http\Controllers\Portal\PortalController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicFormController;
 use App\Http\Controllers\PublicPageController;
 use App\Http\Controllers\PublicSigningController;
 use App\Http\Controllers\SearchController;
@@ -50,6 +51,7 @@ use App\Http\Controllers\SmsController;
 use App\Http\Controllers\SocialLoginController;
 use App\Http\Controllers\UssdCallbackController;
 use App\Http\Controllers\UssdController;
+use App\Http\Controllers\WebFormController;
 use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
 
@@ -93,6 +95,12 @@ Route::prefix('portal/{workspace:slug}')->name('portal.')->middleware('throttle:
 });
 
 // Public page (link in bio): visitors book, order or pay without an account.
+Route::prefix('f/{uuid}')->name('forms.public.')->whereUuid('uuid')->middleware('throttle:60,1')->group(function () {
+    Route::get('/', [PublicFormController::class, 'show'])->name('show');
+    Route::post('/', [PublicFormController::class, 'store'])->middleware('throttle:public-form')->name('store');
+    Route::get('/thanks', [PublicFormController::class, 'thanks'])->name('thanks');
+});
+
 Route::prefix('p/{workspace:slug}')->name('public.')->middleware('throttle:60,1')->group(function () {
     Route::get('/', [PublicPageController::class, 'show'])->name('show');
     Route::get('/book', [PublicPageController::class, 'booking'])->name('booking');
@@ -337,6 +345,7 @@ Route::middleware(['auth', 'workspace'])->group(function () {
         });
 
         Route::middleware('can:manage-workspace')->group(function () {
+            Route::resource('forms', WebFormController::class)->parameters(['forms' => 'webForm']);
             Route::get('/sms', [SmsController::class, 'index'])->name('sms.index');
             Route::post('/sms', [SmsController::class, 'store'])->middleware('throttle:10,1')->name('sms.store');
         });

@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
-/** The workspace's own extra fields on contacts, tasks, tickets and appointments. */
+/** The workspace's own extra fields on contacts, tasks, tickets, appointments and every app's records. */
 class CustomFieldController extends Controller
 {
     public function __construct(protected WorkspaceContext $context) {}
@@ -21,8 +21,11 @@ class CustomFieldController extends Controller
     {
         $workspace = $this->context->getOrFail();
 
+        $choices = CustomField::entityChoices($workspace);
+
         return view('settings.custom-fields.index', [
             'entities' => CustomField::ENTITIES,
+            'apps' => collect($choices)->except('Records')->all(),
             'fields' => CustomField::query()->orderBy('position')->orderBy('id')->get()->groupBy('entity'),
             'enabled' => collect(CustomField::ENTITIES)->map(fn (array $entity) => $workspace->hasModule($entity['module'])),
         ]);
@@ -31,15 +34,16 @@ class CustomFieldController extends Controller
     public function create(Request $request): View
     {
         $entity = $request->string('entity')->toString();
+        $known = collect(CustomField::entityChoices($this->context->getOrFail()))->contains(fn (array $group) => isset($group[$entity]));
 
-        return $this->form(new CustomField(['entity' => isset(CustomField::ENTITIES[$entity]) ? $entity : 'contact', 'type' => 'text']));
+        return $this->form(new CustomField(['entity' => $known ? $entity : 'contact', 'type' => 'text']));
     }
 
     public function store(CustomFieldRequest $request): RedirectResponse
     {
         $data = $request->field();
         if (CustomField::query()->where('entity', $data['entity'])->count() >= CustomField::MAX_PER_ENTITY) {
-            return back()->withInput()->withErrors(['label' => CustomField::ENTITIES[$data['entity']]['label'].' already have '.CustomField::MAX_PER_ENTITY.' extra fields.']);
+            return back()->withInput()->withErrors(['label' => (new CustomField(['entity' => $data['entity']]))->entityLabel().' already have '.CustomField::MAX_PER_ENTITY.' extra fields.']);
         }
 
         $field = CustomField::create($data);
@@ -90,7 +94,7 @@ class CustomFieldController extends Controller
     {
         return view('settings.custom-fields.form', [
             'field' => $field,
-            'entities' => collect(CustomField::ENTITIES)->map(fn (array $entity) => $entity['label'])->all(),
+            'entities' => CustomField::entityChoices($this->context->getOrFail()),
             'types' => CustomField::TYPES,
         ]);
     }

@@ -11,6 +11,7 @@
 </head>
 <body class="bg-body-tertiary">
 @php $publicLogo = $publicWorkspace->logo_url ?? $brand['logo_url']; @endphp
+@unless($embed ?? false)
 <header class="bg-white border-bottom">
     <div class="container py-3 d-flex align-items-center gap-3" style="max-width: 720px">
         <a href="{{ route('public.show', $publicWorkspace) }}" class="d-inline-flex align-items-center gap-2 text-decoration-none text-dark font-heading fw-600 fs-5 me-auto">
@@ -19,14 +20,17 @@
         </a>
     </div>
 </header>
+@endunless
 
-<main class="container py-4" style="max-width: 720px">
+<main class="container {{ ($embed ?? false) ? 'py-2' : 'py-4' }}" style="max-width: 720px">
     @include('partials.flash')
     @yield('content')
 </main>
 
+@unless($embed ?? false)
 <footer class="container pb-4 fs-8 text-muted text-center" style="max-width: 720px">
     &copy; {{ date('Y') }} {{ $publicWorkspace->name }}@unless($brand['hide_powered_by']) · Powered by {{ config('app.name') }}@endunless
 </footer>
+@endunless
 </body>
 </html>

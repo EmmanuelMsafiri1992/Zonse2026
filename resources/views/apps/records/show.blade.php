@@ -123,6 +123,8 @@
                 </div>
             @endif
 
+            <x-custom-fields.details :record="$record" />
+
             @foreach($linked as $link)
                 <div class="card mb-3">
                     <div class="card-header">

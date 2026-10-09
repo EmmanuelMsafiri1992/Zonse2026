@@ -27,7 +27,7 @@ Every module below is designed as an installable **module** inside one codebase.
 | 0.10 | API, webhooks & integrations marketplace (Zapier-style) | ✔ |
 | 0.11 | Audit logs, backups, data export (GDPR/POPIA) | ✔ |
 | 0.12 | Workflow automation builder (triggers → conditions → actions) | ✔ |
-| 0.13 | Custom fields & form builder on every record | ➕ |
+| 0.13 | Custom fields & form builder on every record | ✔ |
 | 0.14 | Approval engine (multi-level approvals on any document) | ✔ (forms & approvals) |
 | 0.15 | Document templates & PDF designer (invoice, receipt, letter, certificate) | ➕ |
 | 0.16 | E-signature | ✔ |
