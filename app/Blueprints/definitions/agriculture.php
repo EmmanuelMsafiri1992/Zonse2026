@@ -1,5 +1,14 @@
 <?php
 
+use App\Blueprints\Logic\CooperativeLogic;
+use App\Blueprints\Logic\DairyLogic;
+use App\Blueprints\Logic\FarmLogic;
+use App\Blueprints\Logic\FishFarmingLogic;
+use App\Blueprints\Logic\GreenhouseLogic;
+use App\Blueprints\Logic\LivestockLogic;
+use App\Blueprints\Logic\PoultryLogic;
+use App\Blueprints\Logic\ProduceSalesLogic;
+
 /*
  * Agriculture apps. Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
  */
@@ -32,7 +41,7 @@ return [
             'grade',
             'storage|Stored at',
         ], ['icon' => 'wheat', 'prefix' => 'HRV-', 'date' => 'Harvested on', 'amount' => 'Value', 'list' => ['planting', 'quantity', 'unit']]],
-    ]],
+    ], ['logic' => FarmLogic::class]],
 
     'livestock' => ['Livestock', 'beef', 'Herd register, health treatments, breeding and sales.', [
         'animals' => ['Animal', 'Tag number', 'alive,sold,died,slaughtered', [
@@ -54,7 +63,7 @@ return [
             'weight_kg:number|Weight (kg)*',
             'body_condition:select=1,2,3,4,5|Body condition score',
         ], ['icon' => 'scale', 'prefix' => 'WT-', 'date' => 'Date', 'list' => ['animal', 'weight_kg']]],
-    ]],
+    ], ['logic' => LivestockLogic::class]],
 
     'poultry' => ['Poultry', 'egg', 'Flocks, daily production, feed and mortality.', [
         'flocks' => ['Flock', 'Flock name', 'active,sold,closed', [
@@ -70,7 +79,7 @@ return [
             'mortality:number',
             'notes:textarea',
         ], ['icon' => 'clipboard-list', 'prefix' => 'DR-', 'date' => 'Date', 'list' => ['flock', 'eggs_collected', 'mortality']]],
-    ]],
+    ], ['logic' => PoultryLogic::class]],
 
     'dairy' => ['Dairy & milk collection', 'milk', 'Milk deliveries from farmers and monthly payouts.', [
         'deliveries' => ['Delivery', 'Farmer', 'accepted,rejected', [
@@ -79,7 +88,7 @@ return [
             'fat_percent:number|Fat %',
             'centre|Collection centre',
         ], ['icon' => 'milk', 'prefix' => 'MD-', 'plural' => 'Deliveries', 'contact' => 'Farmer contact', 'date' => 'Date', 'amount' => 'Value', 'list' => ['session', 'litres', 'centre']]],
-    ]],
+    ], ['logic' => DairyLogic::class]],
 
     'cooperative' => ['Cooperative & members', 'users-round', 'Member register, share capital and member contributions.', [
         'members' => ['Member', 'Member name', 'active,suspended,exited', [
@@ -94,7 +103,7 @@ return [
             'type:select=share_capital,subscription,levy,savings*',
             'reference',
         ], ['icon' => 'coins', 'prefix' => 'CON-', 'date' => 'Date', 'amount' => 'Amount', 'list' => ['member', 'type']]],
-    ]],
+    ], ['logic' => CooperativeLogic::class]],
 
     'produce-sales' => ['Produce sales & grading', 'apple', 'Harvest lots, grading and sales to buyers and markets.', [
         'lots' => ['Harvest lot', 'Crop & lot', 'harvested,graded,in_store,sold,spoiled', [
@@ -109,7 +118,7 @@ return [
             'price_per_kg:money|Price per kg',
             'market:select=farm_gate,fresh_produce_market,retailer,processor,export,contract',
         ], ['icon' => 'scale', 'prefix' => 'PS-', 'contact' => 'Buyer', 'amount' => 'Total', 'date' => 'Sold on', 'list' => ['lot', 'quantity', 'market']]],
-    ]],
+    ], ['logic' => ProduceSalesLogic::class]],
 
     'fish-farming-aquaculture' => ['Fish farming / aquaculture', 'fish', 'Ponds and cages, stocking, feeding, water quality and harvests.', [
         'units' => ['Pond / cage', 'Pond or cage', 'empty,stocked,harvesting,maintenance', [
@@ -131,7 +140,7 @@ return [
             'weight:number|Total weight (kg)*',
             'buyer',
         ], ['icon' => 'fish', 'prefix' => 'FH-', 'amount' => 'Sales value', 'date' => 'Harvested on', 'list' => ['unit', 'weight', 'buyer']]],
-    ]],
+    ], ['logic' => FishFarmingLogic::class]],
 
     'greenhouse-irrigation-scheduling' => ['Greenhouse & irrigation scheduling', 'sprout', 'Greenhouses or blocks, irrigation and fertigation schedules.', [
         'blocks' => ['Greenhouse / block', 'Name', 'planted,fallow,harvesting', [
@@ -147,7 +156,7 @@ return [
             'fertiliser|Fertigation mix',
             'ec:number|EC',
         ], ['icon' => 'droplets', 'prefix' => 'IRR-', 'date' => 'Date', 'assignee' => true, 'list' => ['block', 'start_time', 'minutes']]],
-    ]],
+    ], ['logic' => GreenhouseLogic::class]],
 
     'agro-dealer-input-supply-store' => ['Agro-dealer / input supply store', 'store', 'Seed, fertiliser and chemical stock with farmer credit sales.', [
         'products' => ['Input product', 'Product name', 'in_stock,low_stock,out_of_stock', [
