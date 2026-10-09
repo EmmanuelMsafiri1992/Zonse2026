@@ -1,16 +1,25 @@
 <?php
 
 use App\Blueprints\Logic\AccountingLogic;
+use App\Blueprints\Logic\AccountingPracticeLogic;
+use App\Blueprints\Logic\AgentFloatLogic;
+use App\Blueprints\Logic\AuditWorkingPapersLogic;
 use App\Blueprints\Logic\BankingLogic;
 use App\Blueprints\Logic\BudgetingLogic;
 use App\Blueprints\Logic\ConsolidationLogic;
+use App\Blueprints\Logic\CreditScoringLogic;
+use App\Blueprints\Logic\ForexBureauLogic;
 use App\Blueprints\Logic\HirePurchaseLogic;
 use App\Blueprints\Logic\InventoryValuationLogic;
+use App\Blueprints\Logic\InvestmentClubsLogic;
 use App\Blueprints\Logic\JobCostingLogic;
+use App\Blueprints\Logic\PawnshopLogic;
 use App\Blueprints\Logic\PayablesLogic;
 use App\Blueprints\Logic\PaymentGatewaysLogic;
 use App\Blueprints\Logic\PayrollLogic;
+use App\Blueprints\Logic\PersonalFinanceLogic;
 use App\Blueprints\Logic\PosLogic;
+use App\Blueprints\Logic\PremiumFinancingLogic;
 use App\Blueprints\Logic\PurchasingLogic;
 use App\Blueprints\Logic\ReceivablesLogic;
 use App\Blueprints\Logic\RecurringBillingLogic;
@@ -332,7 +341,7 @@ return [
             'aml_result:select=clear,match,possible_match|AML / sanctions result',
             'recommendation:textarea',
         ], ['icon' => 'gauge', 'prefix' => 'CS-', 'amount' => 'Recommended limit', 'date' => 'Assessed on', 'assignee' => true, 'list' => ['applicant', 'score', 'aml_result']]],
-    ]],
+    ], ['logic' => CreditScoringLogic::class]],
 
     'accounting-practice' => ['Accounting practice management', 'briefcase', 'Clients, statutory deadlines, filings and engagement letters for accounting firms.', [
         'clients' => ['Client', 'Client name', 'active,onboarding,inactive', [
@@ -351,7 +360,7 @@ return [
             'client:record=clients|Client*',
             'terms:textarea',
         ], ['icon' => 'file-signature', 'prefix' => 'ENG-', 'amount' => 'Fee', 'date' => 'Sent on', 'due' => 'Renewal date', 'list' => ['client']]],
-    ]],
+    ], ['logic' => AccountingPracticeLogic::class]],
 
     'audit-working-papers' => ['Audit working papers', 'file-search', 'Audit engagements, working papers and findings.', [
         'engagements' => ['Audit engagement', 'Client & year', 'planning,fieldwork,review,reported,archived', [
@@ -371,7 +380,7 @@ return [
             'recommendation:textarea',
             'management_response:textarea|Management response',
         ], ['icon' => 'flag', 'prefix' => 'FND-', 'list' => ['engagement', 'risk']]],
-    ]],
+    ], ['logic' => AuditWorkingPapersLogic::class]],
 
     'insurance-premium-financing' => ['Insurance premium financing', 'umbrella', 'Finance agreements that spread insurance premiums into instalments.', [
         'agreements' => ['Finance agreement', 'Policy', 'active,completed,cancelled,in_arrears', [
@@ -385,7 +394,7 @@ return [
             'agreement:record=agreements|Agreement*',
             'method:select=debit_order,mobile_money,cash,bank',
         ], ['icon' => 'coins', 'prefix' => 'PFI-', 'amount' => 'Amount', 'date' => 'Date', 'list' => ['agreement', 'method']]],
-    ]],
+    ], ['logic' => PremiumFinancingLogic::class]],
 
     'forex-bureau-money-transfer' => ['Forex bureau / money transfer agent', 'circle-dollar-sign', 'Currency exchange deals, daily rates and remittances.', [
         'rates' => ['Rate', 'Currency pair', 'current,superseded', [
@@ -406,7 +415,7 @@ return [
             'fee:money',
             'secret_code|Collection code',
         ], ['icon' => 'send', 'prefix' => 'MT-', 'amount' => 'Amount sent', 'date' => 'Date', 'list' => ['receiver', 'destination', 'fee']]],
-    ]],
+    ], ['logic' => ForexBureauLogic::class]],
 
     'mobile-money-agent-float-management' => ['Mobile-money agent float management', 'smartphone', 'Float balances, top-ups and cash-in / cash-out at each agent outlet.', [
         'outlets' => ['Outlet', 'Outlet name', 'active,inactive', [
@@ -421,7 +430,7 @@ return [
             'closing_float:money|Closing e-float',
             'closing_cash:money|Closing cash',
         ], ['icon' => 'arrow-left-right', 'prefix' => 'FLT-', 'amount' => 'Amount', 'date' => 'Date', 'list' => ['outlet', 'type', 'closing_float']]],
-    ]],
+    ], ['logic' => AgentFloatLogic::class]],
 
     'pawnshop-collateral-lending' => ['Pawnshop & collateral lending', 'gem', 'Pledged items, pawn loans, redemptions and forfeits.', [
         'pledges' => ['Pledge', 'Item description', 'pledged,redeemed,extended,forfeited,sold', [
@@ -436,7 +445,7 @@ return [
             'pledge:record=pledges|Pledge*',
             'type:select=interest,part_payment,redemption*',
         ], ['icon' => 'coins', 'prefix' => 'PWP-', 'amount' => 'Amount', 'date' => 'Date', 'list' => ['pledge', 'type']]],
-    ]],
+    ], ['logic' => PawnshopLogic::class]],
 
     'investment-clubs-crowdfunding-of' => ['Investment clubs & crowdfunding of businesses', 'handshake', 'Pooled investments: members, contributions, ventures and returns.', [
         'members' => ['Investor', 'Investor name', 'active,exited', [
@@ -457,7 +466,7 @@ return [
             'venture:record=ventures|Venture*',
             'type:select=dividend,profit_share,capital_return*',
         ], ['icon' => 'hand-coins', 'prefix' => 'DIS-', 'amount' => 'Amount', 'date' => 'Date', 'list' => ['venture', 'type']]],
-    ]],
+    ], ['logic' => InvestmentClubsLogic::class]],
 
     'personal-finance-household-budgeting' => ['Personal finance & household budgeting', 'wallet', 'Household income, spending and monthly budgets.', [
         'transactions' => ['Transaction', 'Description', 'recorded', [
@@ -470,5 +479,5 @@ return [
             'limit:money|Limit*',
             'spent:money|Spent so far',
         ], ['icon' => 'target', 'prefix' => 'BGT-', 'list' => ['category', 'limit', 'spent']]],
-    ]],
+    ], ['logic' => PersonalFinanceLogic::class]],
 ];
