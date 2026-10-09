@@ -1,11 +1,16 @@
 <?php
 
 use App\Blueprints\Logic\CitizenServiceDeskLogic;
+use App\Blueprints\Logic\CivilRegistryLogic;
 use App\Blueprints\Logic\CouncilRevenueLogic;
 use App\Blueprints\Logic\CourtCasesLogic;
 use App\Blueprints\Logic\IncidentReportingLogic;
+use App\Blueprints\Logic\LandRegistryLogic;
 use App\Blueprints\Logic\PermitsLogic;
+use App\Blueprints\Logic\PoliceLogic;
+use App\Blueprints\Logic\ProcurementLogic;
 use App\Blueprints\Logic\RiskRegisterLogic;
+use App\Blueprints\Logic\TrafficLogic;
 
 /*
  * Government, public-sector and compliance apps.
@@ -115,7 +120,7 @@ return [
             'exhibit_number|Exhibit number',
             'storage_location|Storage location',
         ], ['icon' => 'package', 'prefix' => 'EXH-', 'date' => 'Booked in on', 'assignee' => true, 'list' => ['docket', 'exhibit_number']]],
-    ]],
+    ], ['logic' => PoliceLogic::class]],
 
     'land-registry-title-deeds' => ['Land registry & title deeds', 'file-badge', 'Land parcels, title deeds and registered transfers.', [
         'titles' => ['Title deed', 'Parcel / erf number', 'registered,encumbered,transferred,cancelled', [
@@ -132,7 +137,7 @@ return [
             'conveyancer',
             'consideration:money|Purchase price',
         ], ['icon' => 'arrow-right-left', 'prefix' => 'TRF-', 'amount' => 'Fees', 'date' => 'Lodged on', 'assignee' => true, 'list' => ['title', 'to_owner', 'conveyancer']]],
-    ]],
+    ], ['logic' => LandRegistryLogic::class]],
 
     'civil-registry' => ['Civil registry (births, deaths, marriages)', 'scroll-text', 'Birth, death and marriage registrations and certificates.', [
         'registrations' => ['Registration', 'Name(s)', 'registered,certificate_issued,amended,cancelled', [
@@ -143,7 +148,7 @@ return [
             'informant',
             'details:textarea|Parents / spouses / cause of death',
         ], ['icon' => 'scroll-text', 'prefix' => 'CR-', 'amount' => 'Fee', 'date' => 'Registered on', 'assignee' => true, 'list' => ['type', 'registration_number', 'event_date']]],
-    ]],
+    ], ['logic' => CivilRegistryLogic::class]],
 
     'e-procurement-tender-portal' => ['E-procurement & tenders', 'file-search', 'Tenders, supplier bids and evaluation scores.', [
         'tenders' => ['Tender', 'Tender title', 'draft,published,closed,evaluating,awarded,cancelled', [
@@ -160,7 +165,7 @@ return [
             'preference_points:number|Preference points',
             'tax_compliant:checkbox|Tax compliant',
         ], ['icon' => 'file-text', 'prefix' => 'BID-', 'contact' => 'Bidder', 'amount' => 'Bid price', 'date' => 'Received on', 'list' => ['tender', 'technical_score', 'price_score']]],
-    ]],
+    ], ['logic' => ProcurementLogic::class]],
 
     'traffic-fines-vehicle-licensing' => ['Traffic fines & vehicle licensing', 'car', 'Vehicle licence renewals and traffic fines.', [
         'vehicles' => ['Licensed vehicle', 'Registration', 'licensed,expired,deregistered', [
@@ -175,7 +180,7 @@ return [
             'location',
             'officer|Officer',
         ], ['icon' => 'receipt', 'prefix' => 'FINE-', 'amount' => 'Fine', 'date' => 'Issued on', 'due' => 'Pay by', 'list' => ['vehicle', 'offence', 'location']]],
-    ]],
+    ], ['logic' => TrafficLogic::class]],
 
     'grants-subsidies-management' => ['Grants & subsidies management', 'hand-coins', 'Grant programmes, applications, awards and reporting.', [
         'programmes' => ['Programme', 'Programme name', 'open,closed,completed', [
