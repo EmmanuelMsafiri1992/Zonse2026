@@ -1,5 +1,12 @@
 <?php
 
+use App\Blueprints\Logic\CitizenServiceDeskLogic;
+use App\Blueprints\Logic\CouncilRevenueLogic;
+use App\Blueprints\Logic\CourtCasesLogic;
+use App\Blueprints\Logic\IncidentReportingLogic;
+use App\Blueprints\Logic\PermitsLogic;
+use App\Blueprints\Logic\RiskRegisterLogic;
+
 /*
  * Government, public-sector and compliance apps.
  * Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
@@ -18,7 +25,7 @@ return [
             'application:record=applications|Application*',
             'findings:textarea',
         ], ['icon' => 'clipboard-check', 'prefix' => 'INSP-', 'date' => 'Date', 'assignee' => true, 'list' => ['application']]],
-    ]],
+    ], ['logic' => PermitsLogic::class]],
 
     'risk-management-register' => ['Risk register', 'shield-alert', 'Risks with likelihood, impact, owners and mitigations.', [
         'risks' => ['Risk', 'Risk', 'identified,assessed,mitigating,accepted,closed', [
@@ -28,7 +35,7 @@ return [
             'controls:textarea|Existing controls',
             'mitigation:textarea|Mitigation plan',
         ], ['icon' => 'shield-alert', 'prefix' => 'RSK-', 'date' => 'Identified on', 'due' => 'Review date', 'assignee' => true, 'list' => ['category', 'likelihood', 'impact']]],
-    ]],
+    ], ['logic' => RiskRegisterLogic::class]],
 
     'health-safety-incident-reporting' => ['Incident reporting (H&S)', 'triangle-alert', 'Incidents, near misses, investigations and corrective actions.', [
         'incidents' => ['Incident', 'What happened', 'reported,investigating,actions_open,closed', [
@@ -43,7 +50,7 @@ return [
         'actions' => ['Corrective action', 'Action', 'open,done,verified', [
             'incident:record=incidents|Incident*',
         ], ['icon' => 'list-checks', 'prefix' => 'CA-', 'due' => 'Due date', 'assignee' => true, 'list' => ['incident']]],
-    ]],
+    ], ['logic' => IncidentReportingLogic::class]],
 
     'e-citizen-service-desk-complaints' => ['Citizen service desk & complaints', 'messages-square', 'Citizen requests and complaints routed to departments.', [
         'requests' => ['Citizen request', 'Subject', 'received,assigned,in_progress,resolved,closed,escalated', [
@@ -54,7 +61,7 @@ return [
             'description:textarea*',
             'resolution:textarea',
         ], ['icon' => 'messages-square', 'prefix' => 'CSR-', 'contact' => 'Citizen', 'date' => 'Received on', 'due' => 'Service-level due', 'assignee' => true, 'list' => ['type', 'department', 'ward']]],
-    ]],
+    ], ['logic' => CitizenServiceDeskLogic::class]],
 
     'council-revenue' => ['Council revenue (rates)', 'landmark', 'Rateable properties, rates bills and payments.', [
         'properties' => ['Rateable property', 'Stand / erf number', 'active,exempt,in_arrears,handed_over', [
@@ -71,7 +78,7 @@ return [
             'water:money',
             'sewer:money',
         ], ['icon' => 'receipt', 'prefix' => 'RB-', 'amount' => 'Total', 'date' => 'Billed on', 'due' => 'Due date', 'list' => ['property', 'rates']]],
-    ]],
+    ], ['logic' => CouncilRevenueLogic::class]],
 
     'court-case-management-cause' => ['Court case management & cause lists', 'gavel', 'Court files, hearings and cause lists.', [
         'cases' => ['Court case', 'Case title (A v B)', 'filed,pending,part_heard,judgment_reserved,decided,appealed,closed', [
@@ -87,7 +94,7 @@ return [
             'courtroom',
             'outcome:textarea',
         ], ['icon' => 'gavel', 'prefix' => 'HRG-', 'plural' => 'Hearings / cause list', 'date' => 'Date', 'assignee' => true, 'list' => ['case', 'time', 'courtroom']]],
-    ]],
+    ], ['logic' => CourtCasesLogic::class]],
 
     'police-occurrence-book-case' => ['Police occurrence book & case dockets', 'siren', 'Occurrence-book entries, case dockets and exhibits.', [
         'occurrences' => ['OB entry', 'Summary', 'recorded,docket_opened,no_further_action', [
