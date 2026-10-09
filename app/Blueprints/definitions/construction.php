@@ -6,10 +6,15 @@
  */
 
 use App\Blueprints\Logic\ConstructionLogic;
+use App\Blueprints\Logic\ContractorJobsLogic;
+use App\Blueprints\Logic\DrawingsLogic;
 use App\Blueprints\Logic\PlantHireLogic;
+use App\Blueprints\Logic\PracticeManagementLogic;
 use App\Blueprints\Logic\SiteDiaryLogic;
 use App\Blueprints\Logic\SnagListsLogic;
+use App\Blueprints\Logic\SolarInstallerLogic;
 use App\Blueprints\Logic\SubcontractorsLogic;
+use App\Blueprints\Logic\SurveyingLogic;
 
 return [
     'construction' => ['Construction projects & BOQ', 'hard-hat', 'Tenders, bills of quantities and estimates for construction jobs.', [
@@ -94,7 +99,7 @@ return [
             'drawings:textarea|Drawings & revisions*',
             'purpose:select=information,approval,construction,tender',
         ], ['icon' => 'send', 'prefix' => 'TRN-', 'contact' => 'Recipient', 'date' => 'Sent on', 'list' => ['purpose']]],
-    ]],
+    ], ['logic' => DrawingsLogic::class]],
 
     'architecture-engineering-practice-management' => ['Architecture / engineering practice management', 'drafting-compass', 'Commissions by work stage, fee tracking and staff time.', [
         'commissions' => ['Commission', 'Project name', 'proposal,appointed,in_progress,on_hold,completed', [
@@ -107,7 +112,7 @@ return [
             'hours:number*',
             'stage:select=inception,concept,design_development,documentation,tender,construction,close_out',
         ], ['icon' => 'timer', 'prefix' => 'AT-', 'plural' => 'Time entries', 'date' => 'Date', 'assignee' => true, 'list' => ['commission', 'hours', 'stage']]],
-    ]],
+    ], ['logic' => PracticeManagementLogic::class]],
 
     'surveying-gis-jobs' => ['Surveying & GIS jobs', 'locate-fixed', 'Survey jobs, field work and deliverables.', [
         'jobs' => ['Survey job', 'Site / property', 'quoted,booked,fieldwork,processing,delivered,lodged', [
@@ -117,7 +122,7 @@ return [
             'deliverables:textarea',
             'diagram_number|Diagram / SG number',
         ], ['icon' => 'locate-fixed', 'prefix' => 'SVY-', 'contact' => 'Client', 'amount' => 'Fee', 'date' => 'Field date', 'due' => 'Due date', 'assignee' => true, 'list' => ['type', 'surveyor', 'diagram_number']]],
-    ]],
+    ], ['logic' => SurveyingLogic::class]],
 
     'contractor-jobs' => ['Contractor job cards', 'wrench', 'Electrical, plumbing and HVAC job cards with materials and certificates.', [
         'jobs' => ['Job card', 'Job description', 'booked,on_the_way,in_progress,complete,invoiced', [
@@ -129,7 +134,7 @@ return [
             'certificate_number|Compliance certificate',
             'customer_signature|Signed off by',
         ], ['icon' => 'wrench', 'prefix' => 'JC-', 'contact' => 'Customer', 'amount' => 'Job total', 'date' => 'Job date', 'assignee' => true, 'list' => ['trade', 'technician', 'certificate_number']]],
-    ]],
+    ], ['logic' => ContractorJobsLogic::class]],
 
     'solar-installer' => ['Solar installer', 'solar-panel', 'Site surveys, system quotes, installations and monitoring.', [
         'surveys' => ['Site survey', 'Site / customer', 'booked,done,quoted,won,lost', [
@@ -147,5 +152,5 @@ return [
             'monitoring_url:url|Monitoring link',
             'warranty_until:date|Warranty until',
         ], ['icon' => 'solar-panel', 'prefix' => 'INST-', 'contact' => 'Customer', 'amount' => 'Contract value', 'date' => 'Install date', 'assignee' => true, 'list' => ['survey', 'inverter', 'warranty_until']]],
-    ]],
+    ], ['logic' => SolarInstallerLogic::class]],
 ];
