@@ -1,17 +1,21 @@
 <?php
 
+use App\Blueprints\Logic\AlumniLogic;
 use App\Blueprints\Logic\ChurchLogic;
 use App\Blueprints\Logic\CinemaLogic;
 use App\Blueprints\Logic\EventRegistrationLogic;
 use App\Blueprints\Logic\FundraisingLogic;
+use App\Blueprints\Logic\FuneralLogic;
 use App\Blueprints\Logic\MembershipsLogic;
 use App\Blueprints\Logic\MosqueLogic;
 use App\Blueprints\Logic\NgoLogic;
+use App\Blueprints\Logic\SocialWorkLogic;
 use App\Blueprints\Logic\SportsLeaguesLogic;
 use App\Blueprints\Logic\TicketingLogic;
 use App\Blueprints\Logic\VenueBookingLogic;
 use App\Blueprints\Logic\VolunteersLogic;
 use App\Blueprints\Logic\VotingLogic;
+use App\Blueprints\Logic\WeddingPlanningLogic;
 
 /*
  * Events & community apps. Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
@@ -230,7 +234,7 @@ return [
             'event:record=events|Event*',
             'notes:textarea',
         ], ['icon' => 'list-checks', 'prefix' => 'WCK-', 'plural' => 'Checklist', 'due' => 'Due date', 'assignee' => true, 'list' => ['event']]],
-    ]],
+    ], ['logic' => WeddingPlanningLogic::class]],
 
     'alumni-professional-associations-cpd' => ['Alumni / professional associations (CPD)', 'graduation-cap', 'Members, annual subscriptions and CPD points.', [
         'members' => ['Member', 'Member name', 'active,lapsed,suspended,resigned,deceased', [
@@ -246,7 +250,7 @@ return [
             'points:number|CPD points*',
             'evidence_url:url|Evidence',
         ], ['icon' => 'award', 'prefix' => 'CPD-', 'plural' => 'CPD records', 'date' => 'Completed on', 'list' => ['member', 'category', 'points']]],
-    ]],
+    ], ['logic' => AlumniLogic::class]],
 
     'social-work-case-management' => ['Social work case management', 'hand-helping', 'Clients, cases, visits and referrals for social workers and NGOs.', [
         'cases' => ['Case', 'Client name', 'intake,assessment,active,referred,closed', [
@@ -262,7 +266,7 @@ return [
             'notes:textarea*',
             'referral|Referred to',
         ], ['icon' => 'notebook-pen', 'prefix' => 'VST-', 'date' => 'Date', 'assignee' => true, 'list' => ['case', 'type', 'referral']]],
-    ]],
+    ], ['logic' => SocialWorkLogic::class]],
 
     'funeral-services-funeral-policies' => ['Funeral services & funeral policies', 'flower-2', 'Funeral policies, premiums, claims and funeral arrangements.', [
         'policies' => ['Funeral policy', 'Main member', 'active,lapsed,claimed,cancelled', [
@@ -281,5 +285,5 @@ return [
             'coffin',
             'death_certificate|Death certificate number',
         ], ['icon' => 'flower-2', 'prefix' => 'FUN-', 'contact' => 'Next of kin', 'amount' => 'Funeral cost', 'date' => 'Funeral date', 'assignee' => true, 'list' => ['policy', 'service_venue', 'cemetery']]],
-    ]],
+    ], ['logic' => FuneralLogic::class]],
 ];
