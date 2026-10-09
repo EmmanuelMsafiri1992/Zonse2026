@@ -103,7 +103,7 @@
                     window.zonseo?.toast?.('Moved to ' + data.label, 'success');
                 } catch (err) {
                     window.zonseo?.toast?.(err.message, 'danger');
-                    window.location.reload();
+                    window.zonseo.reload();
                 }
             });
         });

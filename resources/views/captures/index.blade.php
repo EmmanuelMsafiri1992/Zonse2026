@@ -98,6 +98,6 @@
     </div>
 
     @if($captures->contains('status', 'processing'))
-        <script>setTimeout(() => location.reload(), 4000);</script>
+        <script>setTimeout(() => window.zonseo.reload(@js(request()->url())), 4000);</script>
     @endif
 @endsection

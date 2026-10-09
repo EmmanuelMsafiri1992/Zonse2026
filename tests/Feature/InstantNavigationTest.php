@@ -33,6 +33,21 @@ class InstantNavigationTest extends TestCase
             ->assertSessionHasErrors('name');
     }
 
+    public function test_a_failed_form_goes_back_to_the_page_on_screen_rather_than_the_address_bar(): void
+    {
+        $this->withHeaders($this->navigateHeaders(url('/dashboard')) + [HandleInstantNavigation::PAGE_HEADER => url('/contacts/create')])
+            ->post('/_navigate/save', [])
+            ->assertRedirect(url('/contacts/create'))
+            ->assertSessionHasErrors('name');
+    }
+
+    public function test_a_page_header_naming_another_site_is_ignored(): void
+    {
+        $this->withHeaders($this->navigateHeaders(url('/dashboard')) + [HandleInstantNavigation::PAGE_HEADER => 'https://evil.example.com/steal'])
+            ->post('/_navigate/save', [])
+            ->assertRedirect(url('/dashboard'));
+    }
+
     public function test_a_successful_form_sent_in_page_redirects_as_usual(): void
     {
         $this->withHeaders($this->navigateHeaders())

@@ -109,7 +109,7 @@ export const passkeyRegister = (optionsUrl, storeUrl, confirmUrl) => ({
         this.error = null;
         try {
             if (await registerPasskey({ optionsUrl, storeUrl, confirmUrl, name: this.name.trim() || 'Passkey' })) {
-                window.location.reload();
+                window.zonseo.reload();
             }
         } catch (e) {
             this.error = e.name === 'NotAllowedError' ? 'Adding the passkey was cancelled.' : e.message;

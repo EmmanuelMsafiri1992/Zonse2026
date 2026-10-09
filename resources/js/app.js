@@ -22,6 +22,8 @@ window.zonseo = {
         }
     },
     closeSidebar() { body.classList.remove('z-sidebar-open'); },
+    /** Show the current page again with fresh data; instant navigation does this without a full reload. */
+    reload() { window.location.reload(); },
     toast(message, type = 'success', timeout = 3500) {
         let wrap = document.querySelector('.z-toasts');
         if (!wrap) { wrap = document.createElement('div'); wrap.className = 'z-toasts'; document.body.appendChild(wrap); }
@@ -32,7 +34,8 @@ window.zonseo = {
         setTimeout(() => el.remove(), timeout);
     },
     confirm(form, message) {
-        if (window.confirm(message || 'Are you sure?')) form.submit();
+        // requestSubmit, unlike submit, lets instant navigation send the form in-page.
+        if (window.confirm(message || 'Are you sure?')) form.requestSubmit ? form.requestSubmit() : form.submit();
     },
 };
 

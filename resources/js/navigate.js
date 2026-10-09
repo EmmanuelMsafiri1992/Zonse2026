@@ -1,7 +1,8 @@
 // ---- Instant page changes ----
 // Links and forms inside the app load with fetch() and only the page body is swapped, so the
-// stylesheet, scripts and fonts are never reloaded. The address bar, Back/Forward, refresh and
-// bookmarks keep working.
+// stylesheet, scripts and fonts are never reloaded. The address bar keeps the address the app was
+// opened on; the page on screen is tracked here instead. Back/Forward and refresh still return to
+// the right page, and each request tells the server which page it came from (X-Zonseo-Page).
 //
 // Pages open at once because they are usually fetched before the click:
 //  - after each page appears, the sidebar's pages are quietly fetched one by one;
@@ -14,12 +15,14 @@
 // page (a download, the sign-in screen, another site) falls back to a normal page load.
 
 const HEADER = 'X-Zonseo-Navigate';
+const PAGE_HEADER = 'X-Zonseo-Page';
 const HOVER_DELAY = 65;
 const SHOW_AT_ONCE_FOR = 5 * 60000;
 const REFRESH_AFTER = 10000;
 const WARM_AGAIN_AFTER = 60000;
 const WARM_LIMIT = 8;
 const WARM_START = 1200;
+const WARM_SLOW = 1500;
 const PAGE_LIMIT = 30;
 const SKELETON_DELAY = 60;
 const SKIP_PATH = /\/(logout|export|download|print)(\/|$)|\.(pdf|csv|xlsx?|zip|docx?|png|jpe?g|svg|ics|txt|json|xml)$/i;
@@ -32,6 +35,12 @@ const inflight = new Map();
 const background = new Map();
 
 let hydrate = () => {};
+/** The page on screen, which the address bar no longer shows. */
+let current = location.href;
+/** Set when a page arrives built with newer stylesheets/scripts than the ones loaded. */
+let staleAssets = false;
+/** True while reopening the page that was on screen before a full reload. */
+let restoring = false;
 let navigation = 0;
 let interactions = 0;
 let progressTimer = null;
@@ -40,7 +49,12 @@ export function startInstantNavigation(onPageReady) {
     if (!window.fetch || !window.history.pushState || !window.DOMParser || !document.querySelector('.z-app')) return;
     hydrate = onPageReady;
     history.scrollRestoration = 'manual';
-    history.replaceState({ zonseo: true, scroll: 0 }, '', location.href);
+    // After a refresh (or coming Back from another site) the address bar still holds the first page,
+    // but the history entry remembers the one that was on screen.
+    const restore = history.state?.zonseo && history.state.page && history.state.page !== location.href ? history.state : null;
+    history.replaceState({ zonseo: true, page: restore?.page || location.href, scroll: restore?.scroll || 0 }, '');
+    setBase(current);
+    window.zonseo.reload = reload;
 
     document.addEventListener('click', onClick);
     document.addEventListener('submit', onSubmit);
@@ -51,7 +65,38 @@ export function startInstantNavigation(onPageReady) {
     ['keydown', 'input', 'pointerdown', 'focusin'].forEach((type) => document.addEventListener(type, () => { interactions++; }, { passive: true, capture: true }));
     document.addEventListener('visibilitychange', () => { if (!document.hidden) warmUp(); });
 
-    warmUp();
+    if (restore) {
+        restoring = true;
+        showSkeleton(null);
+        visit(restore.page, { record: false, scroll: restore.scroll || 0 });
+    } else {
+        warmUp();
+    }
+}
+
+/**
+ * Show the page on screen again with fresh data, without the placeholder. Pages that refresh
+ * themselves pass their own address so a timer left running never reloads a page opened since.
+ */
+function reload(onlyOn = null) {
+    if (onlyOn && new URL(onlyOn, current).pathname !== new URL(current).pathname) return;
+    const url = current;
+    pages.delete(url);
+    fetchPage(url).then((page) => {
+        if (url !== current) return;
+        if (page.kind !== 'page' || !render(page.html, url, { record: false, scroll: window.scrollY, quiet: true })) open(page, url, { record: false });
+    }).catch(() => { location.href = url; });
+}
+
+/** Relative links and fetches in page scripts resolve against the page on screen, not the address bar. */
+function setBase(url) {
+    let base = document.head.querySelector('base[data-zonseo]');
+    if (!base) {
+        base = Object.assign(document.createElement('base'), { href: url });
+        base.dataset.zonseo = '';
+        document.head.prepend(base);
+    }
+    base.href = url;
 }
 
 // ---- Which links and forms we handle ----
@@ -68,15 +113,23 @@ function urlOf(link) {
     if (!link || optedOut(link) || link.target && link.target !== '_self' || link.hasAttribute('download')) return null;
     const href = link.getAttribute('href') || '';
     if (href === '' || href.startsWith('#') || href.startsWith('javascript:') || link.dataset.bsToggle) return null;
-    const url = new URL(link.href, location.href);
+    const url = new URL(link.href, current);
+    const here = new URL(current);
     if (!sameApp(url)) return null;
-    if (url.hash && url.pathname === location.pathname && url.search === location.search) return null;
+    if (url.hash && url.pathname === here.pathname && url.search === here.search) return null;
     return url;
 }
 
 function onClick(event) {
     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     const link = event.target.closest?.('a[href]');
+    if (link && link.getAttribute('href').startsWith('#') && !optedOut(link)) {
+        // With the address bar on another page, the browser would treat "#..." as a link to that page.
+        event.preventDefault();
+        const id = decodeURIComponent(link.getAttribute('href').slice(1));
+        if (id && !link.dataset.bsToggle) document.getElementById(id)?.scrollIntoView();
+        return;
+    }
     const url = urlOf(link);
     if (!url) return;
     event.preventDefault();
@@ -88,7 +141,7 @@ function onPointer(event) {
     const link = event.target.closest?.('a[href]');
     if (!link || link.dataset.noPrefetch !== undefined) return;
     const url = urlOf(link);
-    if (!url || url.href === location.href || ready(url.href, REFRESH_AFTER)) return;
+    if (!url || url.href === current || ready(url.href, REFRESH_AFTER)) return;
     clearTimeout(hoverTimer);
     if (event.type === 'mouseover') {
         hoverTimer = setTimeout(() => fetchPage(url.href, { early: true }), HOVER_DELAY);
@@ -105,7 +158,7 @@ function onSubmit(event) {
     if (submitter && (submitter.hasAttribute('data-no-ajax') || submitter.getAttribute('formtarget'))) return;
     if (form.target && form.target !== '_self') return;
 
-    const action = new URL(submitter?.getAttribute('formaction') || form.getAttribute('action') || location.href, location.href);
+    const action = new URL(submitter?.getAttribute('formaction') || form.getAttribute('action') || current, current);
     const method = (submitter?.getAttribute('formmethod') || form.getAttribute('method') || 'GET').toUpperCase();
     if (!sameApp(action) || action.pathname.endsWith('/switch')) return;
 
@@ -124,7 +177,7 @@ function onSubmit(event) {
 
 function onPopState(event) {
     if (!event.state?.zonseo) return;
-    visit(location.href, { record: false, scroll: event.state.scroll ?? 0 });
+    visit(event.state.page || location.href, { record: false, scroll: event.state.scroll ?? 0 });
 }
 
 // ---- Fetching ----
@@ -162,7 +215,7 @@ function fetchPage(url, { early = false } = {}) {
 }
 
 async function load(url, { method = 'GET', body = null, early = false, signal = null } = {}) {
-    const headers = { [HEADER]: '1', Accept: 'text/html, application/xhtml+xml' };
+    const headers = { [HEADER]: '1', [PAGE_HEADER]: current, Accept: 'text/html, application/xhtml+xml' };
     // Laravel leaves "previous URL" alone for prefetches, so fetching early never changes where "back" goes.
     if (early) headers.Purpose = 'prefetch';
     if (method !== 'GET') headers['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]')?.content || '';
@@ -200,8 +253,8 @@ async function visit(url, { link = null, record = true, scroll = 0 } = {}) {
 
     // Already here: show it at once, then bring it up to date quietly.
     if (cached) {
-        if (!render(cached.html, url, { record, scroll, replace: url === location.href })) {
-            location.href = url;
+        if (!render(cached.html, url, { record, scroll, replace: url === current })) {
+            loadFully(url);
             return;
         }
         if (Date.now() - cached.at > REFRESH_AFTER) refresh(url, id);
@@ -217,6 +270,7 @@ async function visit(url, { link = null, record = true, scroll = 0 } = {}) {
         if (id !== navigation) return;
         open(page, url, { record, scroll });
     } catch (error) {
+        console.warn('[zonseo] Loading the whole page instead:', error);
         if (id === navigation) location.href = url;
     } finally {
         clearTimeout(skeletonTimer);
@@ -231,7 +285,7 @@ function refresh(url, id) {
     const shown = pages.get(url)?.html;
     // Early, so a click elsewhere cancels it instead of waiting behind it.
     fetchPage(url, { early: true }).then((page) => {
-        if (id !== navigation || interactions !== before || location.href !== url) return;
+        if (id !== navigation || interactions !== before || current !== url) return;
         if (page.kind !== 'page' || page.url !== url || withoutFlash(page.html) === shown) return;
         render(page.html, url, { record: false, scroll: window.scrollY, quiet: true });
     }).catch(() => {});
@@ -274,10 +328,23 @@ function open(page, requested, { record = true, scroll = 0 } = {}) {
         saveFile(page);
         return;
     }
-    if (!render(page.html, page.url, { record, scroll, replace: page.url === location.href })) {
-        // Not an app page (sign-in screen, another layout): load it the normal way.
-        location.href = page.url || requested;
+    if (!render(page.html, page.url, { record, scroll, replace: page.url === current })) {
+        // Not an app page (sign-in screen, another layout) or the app was updated: load it the normal way.
+        loadFully(page.url || requested);
     }
+}
+
+/**
+ * Load a page the normal way. When only the app's files changed (a new release), reload the address
+ * already in the address bar and reopen the page from there, so the address still doesn't change.
+ */
+function loadFully(url) {
+    if (staleAssets && !restoring && sameApp(new URL(url))) {
+        history.replaceState({ zonseo: true, page: url, scroll: 0 }, '');
+        location.reload();
+        return;
+    }
+    location.href = url;
 }
 
 function saveFile({ blob, name, url }) {
@@ -307,13 +374,16 @@ function warmUp() {
         const urls = [...new Set([...document.querySelectorAll('.z-nav a[href]')]
             .filter((link) => link.dataset.noPrefetch === undefined)
             .map((link) => urlOf(link)?.href)
-            .filter((url) => url && url !== location.href))]
+            .filter((url) => url && url !== current))]
             .slice(0, WARM_LIMIT)
             .filter((url) => !ready(url, WARM_AGAIN_AFTER));
         for (const url of urls) {
             // Stop as soon as the person moves on; the next page starts its own round.
             if (id !== navigation || document.hidden) return;
+            const started = Date.now();
             await fetchPage(url, { early: true }).catch(() => {});
+            // A struggling server would only make the next click wait behind these; try again later.
+            if (Date.now() - started > WARM_SLOW) return;
             await idle();
         }
     }, WARM_START);
@@ -357,10 +427,16 @@ function headSignature(doc) {
 
 function render(html, url, { scroll = 0, record = true, replace = false, quiet = false } = {}) {
     const doc = new DOMParser().parseFromString(html, 'text/html');
-    if (!doc.querySelector('.z-app') || headSignature(doc) !== headSignature(document)) return false;
+    if (!doc.querySelector('.z-app')) return false;
+    if (headSignature(doc) !== headSignature(document)) {
+        staleAssets = true;
+        return false;
+    }
+    restoring = false;
 
     // Remember where we were on the page we are leaving, for Back.
-    if (!quiet) history.replaceState({ ...(history.state || {}), zonseo: true, scroll: window.scrollY }, '', location.href);
+    // (On Back/Forward the browser has already moved to the entry being opened, so there is nothing to save.)
+    if (!quiet && record) history.replaceState({ ...(history.state || {}), zonseo: true, page: current, scroll: window.scrollY }, '');
 
     const kept = [...document.body.querySelectorAll(':scope > .z-toasts, :scope > #z-progress')];
     const navScroll = document.querySelector('.z-nav')?.scrollTop || 0;
@@ -378,13 +454,19 @@ function render(html, url, { scroll = 0, record = true, replace = false, quiet =
     runScripts(document.body);
 
     if (isAppPage(html)) keep(url, withoutFlash(html));
+    current = url;
+    setBase(url);
 
     const nav = document.querySelector('.z-nav');
     if (nav) nav.scrollTop = navScroll;
 
     if (record && !quiet) {
-        const state = { zonseo: true, scroll: 0 };
-        replace ? history.replaceState(state, '', url) : history.pushState(state, '', url);
+        // A new history entry for Back, with the address bar left as it is.
+        const state = { zonseo: true, page: url, scroll: 0 };
+        replace ? history.replaceState(state, '') : history.pushState(state, '');
+    } else if (!quiet) {
+        // Back/Forward or a refresh: the entry may have been sent on elsewhere (a redirect).
+        history.replaceState({ ...(history.state || {}), zonseo: true, page: url }, '');
     }
     window.scrollTo(0, scroll);
     if (!quiet && !scroll) {

@@ -33,7 +33,7 @@
                         <p class="text-muted fs-7 mb-0">This usually takes a few seconds. The page refreshes by itself.</p>
                     </div>
                 </div>
-                <script>setTimeout(() => location.reload(), 3000);</script>
+                <script>setTimeout(() => window.zonseo.reload(@js(request()->url())), 3000);</script>
             @elseif($capture->status === 'failed')
                 <div class="card">
                     <div class="card-body">

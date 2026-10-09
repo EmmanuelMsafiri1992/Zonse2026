@@ -49,7 +49,7 @@
                     (function check(delay) {
                         setTimeout(() => fetch(document.getElementById('assistant-thinking').dataset.statusUrl, { headers: { Accept: 'application/json' } })
                             .then(response => response.json())
-                            .then(data => data.status === 'thinking' ? check(2000) : location.reload())
+                            .then(data => data.status === 'thinking' ? check(2000) : window.zonseo.reload(@js(request()->url())))
                             .catch(() => check(5000)), delay);
                     })(1500);
                 </script>
