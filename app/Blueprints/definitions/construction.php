@@ -5,6 +5,12 @@
  * Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
  */
 
+use App\Blueprints\Logic\ConstructionLogic;
+use App\Blueprints\Logic\PlantHireLogic;
+use App\Blueprints\Logic\SiteDiaryLogic;
+use App\Blueprints\Logic\SnagListsLogic;
+use App\Blueprints\Logic\SubcontractorsLogic;
+
 return [
     'construction' => ['Construction projects & BOQ', 'hard-hat', 'Tenders, bills of quantities and estimates for construction jobs.', [
         'tenders' => ['Tender', 'Project name', 'preparing,submitted,won,lost,withdrawn', [
@@ -20,7 +26,7 @@ return [
             'quantity:number*',
             'rate:money*',
         ], ['icon' => 'list-ordered', 'prefix' => 'BOQ-', 'plural' => 'BOQ items', 'amount' => 'Amount', 'list' => ['tender', 'item_number', 'quantity', 'rate']]],
-    ]],
+    ], ['logic' => ConstructionLogic::class]],
 
     'site-diary' => ['Site diary', 'notebook-pen', 'Daily site reports: weather, labour, work done and photos.', [
         'entries' => ['Diary entry', 'Site', 'draft,submitted,signed_off', [
@@ -31,7 +37,7 @@ return [
             'delays:textarea|Delays & issues',
             'photos_url:url|Progress photos',
         ], ['icon' => 'notebook-pen', 'prefix' => 'SD-', 'plural' => 'Diary entries', 'date' => 'Date', 'assignee' => true, 'list' => ['weather', 'workers_on_site']]],
-    ]],
+    ], ['logic' => SiteDiaryLogic::class]],
 
     'subcontractors' => ['Subcontractors', 'users', 'Subcontract orders, progress claims and payment certificates.', [
         'subcontracts' => ['Subcontract', 'Package / trade', 'tender,awarded,on_site,complete,final_account', [
@@ -45,7 +51,7 @@ return [
             'certificate_number|Payment certificate',
             'retention_held:money|Retention held',
         ], ['icon' => 'file-check', 'prefix' => 'PC-', 'amount' => 'Certified amount', 'date' => 'Claim date', 'due' => 'Pay by', 'list' => ['subcontract', 'claimed', 'certificate_number']]],
-    ]],
+    ], ['logic' => SubcontractorsLogic::class]],
 
     'plant-equipment-hire-and' => ['Plant & equipment hire and tracking', 'forklift', 'Plant register, hire agreements and hour-meter readings.', [
         'plant' => ['Plant item', 'Machine', 'available,on_hire,on_site,breakdown,service', [
@@ -61,7 +67,7 @@ return [
             'operator',
             'hours_used:number|Hours used',
         ], ['icon' => 'calendar-range', 'prefix' => 'PH-', 'contact' => 'Customer', 'amount' => 'Hire total', 'date' => 'Out on', 'due' => 'Return by', 'list' => ['plant', 'rate', 'hours_used']]],
-    ]],
+    ], ['logic' => PlantHireLogic::class]],
 
     'snag-lists' => ['Snag lists', 'list-checks', 'Inspections, snags and handover sign-off.', [
         'inspections' => ['Inspection', 'Unit / area', 'scheduled,done,handed_over', [
@@ -75,7 +81,7 @@ return [
             'location',
             'photo_url:url|Photo',
         ], ['icon' => 'circle-alert', 'prefix' => 'SNG-', 'due' => 'Fix by', 'assignee' => true, 'list' => ['inspection', 'trade', 'location']]],
-    ]],
+    ], ['logic' => SnagListsLogic::class]],
 
     'drawings-document-control' => ['Drawings & document control', 'pencil-ruler', 'Drawing register with revisions and transmittals.', [
         'drawings' => ['Drawing', 'Drawing title', 'preliminary,for_approval,for_construction,as_built,superseded', [
