@@ -5,6 +5,14 @@
  * Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
  */
 
+use App\Blueprints\Logic\CalendarLogic;
+use App\Blueprints\Logic\DocumentsLogic;
+use App\Blueprints\Logic\FormsApprovalsLogic;
+use App\Blueprints\Logic\TeamChatLogic;
+use App\Blueprints\Logic\TimeTrackingLogic;
+use App\Blueprints\Logic\VideoMeetingsLogic;
+use App\Blueprints\Logic\WikiLogic;
+
 return [
     'time-tracking' => ['Time tracking', 'timer', 'Time entries per client and project, ready to invoice.', [
         'entries' => ['Time entry', 'What you worked on', 'unbilled,billed,non_billable', [
@@ -14,7 +22,7 @@ return [
             'start_time:time|Start',
             'end_time:time|End',
         ], ['icon' => 'timer', 'prefix' => 'TE-', 'plural' => 'Time entries', 'contact' => 'Client', 'amount' => 'Value', 'date' => 'Date', 'assignee' => true, 'list' => ['project', 'hours', 'rate']]],
-    ]],
+    ], ['logic' => TimeTrackingLogic::class]],
 
     'documents' => ['Documents & files', 'folder', 'Folders and documents with versions and sharing.', [
         'folders' => ['Folder', 'Folder name', 'active,archived', [
@@ -27,7 +35,7 @@ return [
             'version|Version',
             'tags',
         ], ['icon' => 'file-text', 'prefix' => 'DOC-', 'date' => 'Updated on', 'due' => 'Review date', 'assignee' => true, 'list' => ['folder', 'version']]],
-    ]],
+    ], ['logic' => DocumentsLogic::class]],
 
     'team-chat' => ['Team chat', 'messages-square', 'Channels and messages for internal conversations.', [
         'channels' => ['Channel', 'Channel name', 'active,archived', [
@@ -39,7 +47,7 @@ return [
             'channel:record=channels|Channel*',
             'body:textarea|Message*',
         ], ['icon' => 'message-square', 'prefix' => 'MSG-', 'date' => 'Posted at', 'assignee' => true, 'list' => ['channel']]],
-    ]],
+    ], ['logic' => TeamChatLogic::class]],
 
     'video-meetings' => ['Video meetings', 'video', 'Scheduled video meetings with links, attendees and recordings.', [
         'meetings' => ['Meeting', 'Meeting title', 'scheduled,live,ended,cancelled', [
@@ -50,7 +58,7 @@ return [
             'attendees:textarea',
             'recording_url:url|Recording',
         ], ['icon' => 'video', 'prefix' => 'MTG-', 'contact' => 'Guest', 'date' => 'Date', 'assignee' => true, 'list' => ['start_time', 'platform']]],
-    ]],
+    ], ['logic' => VideoMeetingsLogic::class]],
 
     'calendar' => ['Shared calendars & rooms', 'calendar', 'Shared calendar events and bookings of rooms and resources.', [
         'resources' => ['Room / resource', 'Name', 'available,out_of_service', [
@@ -65,7 +73,7 @@ return [
             'attendees:textarea',
             'all_day:checkbox|All day',
         ], ['icon' => 'calendar', 'prefix' => 'EVT-', 'date' => 'Date', 'assignee' => true, 'list' => ['start_time', 'resource']]],
-    ]],
+    ], ['logic' => CalendarLogic::class]],
 
     'wiki' => ['Knowledge base & wiki', 'book', 'Internal and public help articles organised by category.', [
         'categories' => ['Category', 'Category name', 'active,hidden', [
@@ -77,7 +85,7 @@ return [
             'body:textarea|Content*',
             'tags',
         ], ['icon' => 'book-open-text', 'prefix' => 'KB-', 'date' => 'Updated on', 'assignee' => true, 'list' => ['category', 'visibility']]],
-    ]],
+    ], ['logic' => WikiLogic::class]],
 
     'forms-approvals-workflow' => ['Forms & approvals workflow', 'list-checks', 'Form templates and the submissions routed for approval.', [
         'forms' => ['Form', 'Form name', 'active,draft,retired', [
@@ -90,7 +98,7 @@ return [
             'approver:user|Approver',
             'comments:textarea',
         ], ['icon' => 'file-check', 'prefix' => 'SBM-', 'amount' => 'Amount (if any)', 'date' => 'Submitted on', 'assignee' => true, 'list' => ['form', 'approver']]],
-    ]],
+    ], ['logic' => FormsApprovalsLogic::class]],
 
     'notes-whiteboards' => ['Notes & whiteboards', 'sticky-note', 'Shared notes and whiteboard snapshots.', [
         'notes' => ['Note', 'Title', 'active,archived', [
