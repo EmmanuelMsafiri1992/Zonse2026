@@ -94,7 +94,7 @@
                         @endif
                     </div>
                     @forelse($latestAlerts as $alert)
-                        <a href="{{ route('notifications.open', $alert->id) }}" class="dropdown-item z-alert {{ $alert->read_at ? '' : 'is-unread' }}">
+                        <a href="{{ route('notifications.open', $alert->id) }}" data-no-prefetch class="dropdown-item z-alert {{ $alert->read_at ? '' : 'is-unread' }}">
                             <x-icon :name="$alert->data['icon'] ?? 'bell'" class="zi text-primary flex-shrink-0" />
                             <span class="flex-grow-1 min-w-0">
                                 <span class="d-block text-wrap fs-7 {{ $alert->read_at ? '' : 'fw-600' }}">{{ $alert->data['title'] ?? '' }}</span>

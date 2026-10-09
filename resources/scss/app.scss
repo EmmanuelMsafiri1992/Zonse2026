@@ -329,6 +329,11 @@ $z-color-map: (primary: $z-primary, success: $z-success, info: $z-info, warning:
   &.success { background: $z-success; .zi { color: #fff; } } &.danger { background: $z-danger; .zi { color: #fff; } } &.warning .zi { color: $z-warning; } }
 @keyframes z-toast-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
+// Thin bar along the top while an instant page change is loading (resources/js/navigate.js)
+#z-progress { position: fixed; top: 0; left: 0; height: 3px; width: 0; z-index: 2000; background: var(--bs-primary, $z-primary); box-shadow: 0 0 8px rgba($z-primary, .5); opacity: 0; pointer-events: none;
+  &.is-loading { opacity: 1; width: 85%; transition: width 8s cubic-bezier(.1, .7, .2, 1); }
+  &.is-done { opacity: 0; width: 100%; transition: width .2s ease, opacity .3s ease .15s; } }
+
 // ---------- Utilities ----------
 .bg-soft { background: $z-body-bg; }
 .border-dashed { border-style: dashed !important; }

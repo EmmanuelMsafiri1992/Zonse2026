@@ -28,7 +28,7 @@
                 @foreach($notifications as $alert)
                     <div class="list-group-item d-flex gap-3 align-items-start {{ $alert->read_at ? '' : 'z-unread' }}">
                         <x-icon :name="$alert->data['icon'] ?? 'bell'" class="zi zi-lg text-primary mt-1 flex-shrink-0" />
-                        <a href="{{ route('notifications.open', $alert->id) }}" class="flex-grow-1 min-w-0 text-reset text-decoration-none">
+                        <a href="{{ route('notifications.open', $alert->id) }}" data-no-prefetch class="flex-grow-1 min-w-0 text-reset text-decoration-none">
                             <div class="{{ $alert->read_at ? '' : 'fw-600' }}">{{ $alert->data['title'] ?? '' }}</div>
                             @if(! empty($alert->data['body']))
                                 <div class="fs-7 text-muted">{{ $alert->data['body'] }}</div>

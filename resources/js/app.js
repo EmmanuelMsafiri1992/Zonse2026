@@ -1,11 +1,13 @@
 import * as bootstrap from 'bootstrap';
 import Alpine from 'alpinejs';
 import { passkeyLogin, passkeyRegister } from './passkeys';
+import { startInstantNavigation } from './navigate';
 
 window.bootstrap = bootstrap;
 window.Alpine = Alpine;
 
 // ---- Sidebar state (collapsed on desktop / open on mobile) ----
+// The body element stays the same when instant navigation swaps the page, so these classes persist.
 const body = document.body;
 const SIDEBAR_KEY = 'zonseo.sidebar.collapsed';
 try { if (localStorage.getItem(SIDEBAR_KEY) === '1') body.classList.add('z-sidebar-collapsed'); } catch (e) {}
@@ -111,14 +113,20 @@ Alpine.data('zTour', (allSteps = [], doneUrl = '', autoStart = false) => ({
 
 Alpine.start();
 
-// ---- Enable Bootstrap tooltips / popovers ----
-document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => new bootstrap.Tooltip(el));
+// ---- Run on first load and after every instant page change ----
+function pageReady(root) {
+    // Bootstrap tooltips
+    root.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => bootstrap.Tooltip.getOrCreateInstance(el));
 
-// ---- Flash toasts rendered by the server ----
-document.querySelectorAll('[data-flash]').forEach((el) => {
-    window.zonseo.toast(el.dataset.flash, el.dataset.flashType || 'success');
-    el.remove();
-});
+    // Flash toasts rendered by the server
+    root.querySelectorAll('[data-flash]').forEach((el) => {
+        window.zonseo.toast(el.dataset.flash, el.dataset.flashType || 'success');
+        el.remove();
+    });
+}
+
+pageReady(document);
+startInstantNavigation(pageReady);
 
 // ---- Keyboard: "/" focuses global search ----
 document.addEventListener('keydown', (e) => {
