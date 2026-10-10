@@ -1,5 +1,14 @@
 <?php
 
+use App\Blueprints\Logic\CareerLogic;
+use App\Blueprints\Logic\FitnessTrackerLogic;
+use App\Blueprints\Logic\FreelanceGigsLogic;
+use App\Blueprints\Logic\HouseholdLogic;
+use App\Blueprints\Logic\MyEventPlannerLogic;
+use App\Blueprints\Logic\PersonalMoneyLogic;
+use App\Blueprints\Logic\PersonalTasksLogic;
+use App\Blueprints\Logic\SmallLandlordLogic;
+
 /*
  * Personal & individual apps: money, tasks, household, career and health.
  * Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
@@ -21,7 +30,7 @@ return [
             'monthly_payment:money|Monthly payment',
             'interest_rate:number|Interest rate %',
         ], ['icon' => 'credit-card', 'prefix' => 'DBT-', 'due' => 'Next payment', 'list' => ['balance', 'monthly_payment', 'interest_rate']]],
-    ]],
+    ], ['logic' => PersonalMoneyLogic::class]],
 
     'personal-tasks' => ['Personal tasks & habits', 'list-todo', 'To-dos, lists and daily habits.', [
         'todos' => ['To-do', 'Task', 'to_do,doing,done', [
@@ -34,7 +43,7 @@ return [
             'streak:number|Current streak',
             'best_streak:number|Best streak',
         ], ['icon' => 'repeat', 'prefix' => 'HAB-', 'date' => 'Started on', 'list' => ['frequency', 'streak']]],
-    ]],
+    ], ['logic' => PersonalTasksLogic::class]],
 
     'family-household-management-chores' => ['Family & household', 'house', 'Chores, family calendar and household shopping.', [
         'chores' => ['Chore', 'Chore', 'to_do,done,skipped', [
@@ -51,7 +60,7 @@ return [
             'quantity',
             'shop',
         ], ['icon' => 'shopping-basket', 'prefix' => 'SHP-', 'plural' => 'Shopping list', 'amount' => 'Price', 'list' => ['quantity', 'shop']]],
-    ]],
+    ], ['logic' => HouseholdLogic::class]],
 
     'freelancer-toolkit' => ['Freelancer toolkit', 'laptop', 'Gigs, hours and money owed, for one-person businesses.', [
         'gigs' => ['Gig', 'Gig / project', 'pitched,booked,in_progress,delivered,paid', [
@@ -65,7 +74,7 @@ return [
             'category:select=software,equipment,internet,data,travel,training,other*',
             'receipt_url:url|Receipt',
         ], ['icon' => 'receipt', 'prefix' => 'EXP-', 'amount' => 'Amount', 'date' => 'Date', 'list' => ['category']]],
-    ]],
+    ], ['logic' => FreelanceGigsLogic::class]],
 
     'personal-cv-portfolio-site' => ['CV & portfolio', 'file-user', 'Your experience, portfolio pieces and job applications.', [
         'experience' => ['Experience', 'Role / qualification', 'current,past', [
@@ -84,7 +93,7 @@ return [
             'contact_person|Contact person',
             'salary:money|Salary offered',
         ], ['icon' => 'send', 'prefix' => 'JA-', 'date' => 'Applied on', 'due' => 'Follow up on', 'list' => ['source', 'contact_person']]],
-    ]],
+    ], ['logic' => CareerLogic::class]],
 
     'wedding-event-planner' => ['My wedding / event planner', 'heart', 'Plan your own wedding or party: guests, budget and to-dos.', [
         'guests' => ['Guest', 'Guest name', 'invited,attending,declined,no_reply', [
@@ -103,7 +112,7 @@ return [
         'todos' => ['To-do', 'Task', 'to_do,done', [
             'who|Who is doing it',
         ], ['icon' => 'list-checks', 'prefix' => 'WT-', 'plural' => 'To-dos', 'due' => 'Due date', 'list' => ['who']]],
-    ]],
+    ], ['logic' => MyEventPlannerLogic::class]],
 
     'health-fitness-tracker' => ['Health & fitness tracker', 'heart-pulse', 'Workouts, body measurements and medication reminders.', [
         'workouts' => ['Workout', 'Workout', 'planned,done,skipped', [
@@ -123,7 +132,7 @@ return [
             'times|Times of day',
             'refill_date:date|Refill date',
         ], ['icon' => 'pill', 'prefix' => 'MED-', 'list' => ['dose', 'times', 'refill_date']]],
-    ]],
+    ], ['logic' => FitnessTrackerLogic::class]],
 
     'landlord-with-one-or' => ['Small landlord (one or a few units)', 'key-round', 'Your rental units, tenants, rent received and repairs.', [
         'units' => ['Rental unit', 'Unit / address', 'let,vacant,being_repaired', [
@@ -141,5 +150,5 @@ return [
             'unit:record=units|Unit*',
             'contractor',
         ], ['icon' => 'wrench', 'prefix' => 'FIX-', 'amount' => 'Cost', 'date' => 'Reported on', 'list' => ['unit', 'contractor']]],
-    ]],
+    ], ['logic' => SmallLandlordLogic::class]],
 ];
