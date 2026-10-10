@@ -1,5 +1,13 @@
 <?php
 
+use App\Blueprints\Logic\DeliveryLogic;
+use App\Blueprints\Logic\FreightLogic;
+use App\Blueprints\Logic\InventoryLogic;
+use App\Blueprints\Logic\ManufacturingLogic;
+use App\Blueprints\Logic\OrdersLogic;
+use App\Blueprints\Logic\SuppliersLogic;
+use App\Blueprints\Logic\WarehouseLogic;
+
 /*
  * Operations & logistics apps: stock, warehouses, suppliers, production, orders and dispatch.
  * Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
@@ -29,7 +37,7 @@ return [
             'quantity:number*',
             'reference',
         ], ['icon' => 'arrow-left-right', 'prefix' => 'MOV-', 'amount' => 'Value', 'date' => 'Date', 'list' => ['item', 'type', 'quantity']]],
-    ]],
+    ], ['logic' => InventoryLogic::class]],
 
     'warehouse' => ['Warehouse management', 'warehouse', 'Warehouses, bins, pick lists and stock transfers.', [
         'warehouses' => ['Warehouse', 'Warehouse name', 'active,closed', [
@@ -52,7 +60,7 @@ return [
             'to_warehouse:record=warehouses|To*',
             'items:textarea|Items & quantities*',
         ], ['icon' => 'arrow-right-left', 'prefix' => 'TRF-', 'date' => 'Sent on', 'list' => ['from_warehouse', 'to_warehouse']]],
-    ]],
+    ], ['logic' => WarehouseLogic::class]],
 
     'suppliers' => ['Suppliers & vendors', 'truck', 'Supplier records, price lists and performance ratings.', [
         'suppliers' => ['Supplier', 'Supplier name', 'approved,pending,blocked', [
@@ -68,7 +76,7 @@ return [
             'lead_time:number|Lead time (days)',
             'minimum_order|Minimum order',
         ], ['icon' => 'tags', 'prefix' => 'SPL-', 'due' => 'Valid until', 'list' => ['supplier', 'unit_price', 'lead_time']]],
-    ]],
+    ], ['logic' => SuppliersLogic::class]],
 
     'manufacturing' => ['Manufacturing & production', 'factory', 'Bills of materials, work orders and quality checks.', [
         'boms' => ['Bill of materials', 'Product', 'active,draft,obsolete', [
@@ -89,7 +97,7 @@ return [
             'defects:number',
             'notes:textarea',
         ], ['icon' => 'badge-check', 'prefix' => 'QC-', 'date' => 'Checked on', 'assignee' => true, 'list' => ['work_order', 'defects']]],
-    ]],
+    ], ['logic' => ManufacturingLogic::class]],
 
     'orders' => ['Order management', 'clipboard-list', 'Customer orders, back-orders and drop-ship fulfilment.', [
         'orders' => ['Order', 'Order', 'new,confirmed,picking,part_shipped,shipped,delivered,cancelled', [
@@ -103,7 +111,7 @@ return [
             'order:record=orders|Order*',
             'quantity:number*',
         ], ['icon' => 'hourglass', 'prefix' => 'BO-', 'due' => 'Expected on', 'list' => ['order', 'quantity']]],
-    ]],
+    ], ['logic' => OrdersLogic::class]],
 
     'delivery' => ['Delivery & courier', 'map', 'Parcels, delivery runs and proof of delivery.', [
         'parcels' => ['Parcel', 'Contents', 'booked,collected,in_transit,out_for_delivery,delivered,failed,returned', [
@@ -120,7 +128,7 @@ return [
             'vehicle',
             'stops:number',
         ], ['icon' => 'route', 'prefix' => 'RUN-', 'date' => 'Date', 'list' => ['driver', 'vehicle', 'stops']]],
-    ]],
+    ], ['logic' => DeliveryLogic::class]],
 
     'freight-forwarding' => ['Freight forwarding', 'ship', 'Shipments, containers and customs clearing.', [
         'shipments' => ['Shipment', 'Description', 'booked,in_transit,at_port,clearing,released,delivered', [
@@ -142,7 +150,7 @@ return [
             'hs_codes|HS codes',
             'duty:money',
         ], ['icon' => 'file-check', 'prefix' => 'CE-', 'plural' => 'Customs entries', 'amount' => 'Total duties & taxes', 'date' => 'Lodged on', 'list' => ['shipment', 'entry_number']]],
-    ]],
+    ], ['logic' => FreightLogic::class]],
 
     'wholesale-distribution-consignment-stock' => ['Wholesale distribution & consignment stock', 'boxes', 'Stock placed with dealers on consignment, and settlements for what sold.', [
         'consignments' => ['Consignment', 'Consignment', 'placed,partly_sold,settled,returned', [
