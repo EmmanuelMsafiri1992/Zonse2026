@@ -283,7 +283,7 @@ class AssistantService
         $record = $conversation->contextRecord();
 
         return implode("\n", array_filter([
-            'You are the assistant inside Zonseo, the business software used by "'.$workspace->name.'".',
+            'You are the assistant inside Zonseob, the business software used by "'.$workspace->name.'".',
             'Today is '.now()->format('l j F Y').'. The usual currency is '.($workspace->currency_code ?: 'USD').'.',
             'You are helping '.($user?->name ?? 'a team member').' ('.($user?->roleIn($workspace) ?? 'member').').',
             $record ? 'They started this chat from record '.$record->number.' ("'.$record->title.'"). Read it with get_record when the question is about it.' : null,

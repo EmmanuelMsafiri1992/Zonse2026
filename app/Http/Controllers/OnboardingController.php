@@ -217,7 +217,7 @@ class OnboardingController extends Controller
 
         return redirect()->route('dashboard')->with('flash', [
             'type' => 'success',
-            'message' => 'Welcome to Zonseo! Your workspace is ready.',
+            'message' => 'Welcome to Zonseob! Your workspace is ready.',
         ]);
     }
 

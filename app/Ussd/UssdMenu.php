@@ -45,10 +45,10 @@ class UssdMenu
     {
         $membership = $this->membershipFor($workspace, $phone);
         if (! $membership) {
-            return $this->end('This number is not linked to anyone in '.$workspace->name.'. Add it to your Zonseo profile first.');
+            return $this->end('This number is not linked to anyone in '.$workspace->name.'. Add it to your Zonseob profile first.');
         }
         if (! $membership->ussd_pin) {
-            return $this->end('Set your phone PIN in Zonseo under Phone access first.');
+            return $this->end('Set your phone PIN in Zonseob under Phone access first.');
         }
 
         $inputs = $text === '' ? [] : array_map('trim', explode('*', $text));
@@ -284,7 +284,7 @@ class UssdMenu
 
         $logic = $this->blueprints->get($entity->blueprintKey)?->logic();
         foreach ($logic?->validate($entity, $payload, null) ?? [] as $message) {
-            return $this->end(Str::limit($message, 140).' Please add it in Zonseo instead.');
+            return $this->end(Str::limit($message, 140).' Please add it in Zonseob instead.');
         }
 
         $record = Record::create($payload + ['blueprint' => $entity->blueprintKey, 'entity' => $entity->key, 'created_by' => $membership->user_id]);

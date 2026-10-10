@@ -282,7 +282,7 @@ class Importer
                     $seen[$matchKey] = true;
                 }
                 if ($action === 'skip') {
-                    $warnings = [$existing ? 'Already in Zonseo, so it is skipped.' : 'Repeats an earlier row, so it is skipped.'];
+                    $warnings = [$existing ? 'Already in Zonseob, so it is skipped.' : 'Repeats an earlier row, so it is skipped.'];
                 } elseif ($repeat && $action === 'update' && ! $apply) {
                     $warnings[] = 'Repeats an earlier row, which it will update.';
                 }

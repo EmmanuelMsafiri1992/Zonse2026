@@ -30,7 +30,7 @@ class MonitorCommand extends Command
             return self::SUCCESS;
         }
 
-        Log::critical('Zonseo health check failed', $problems->all());
+        Log::critical('Zonseob health check failed', $problems->all());
 
         // Email once per distinct set of problems, then again only every few hours while they persist.
         $signature = md5($problems->keys()->implode(','));

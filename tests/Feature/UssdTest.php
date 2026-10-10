@@ -113,7 +113,7 @@ class UssdTest extends TestCase
         $this->withPhone($member, $workspace, '0779999999', null);
 
         $this->assertStringStartsWith('END This number is not linked to anyone', $this->dial($workspace, '', '+263770000000'));
-        $this->assertSame('END Set your phone PIN in Zonseo under Phone access first.', $this->dial($workspace, '', '+263779999999'));
+        $this->assertSame('END Set your phone PIN in Zonseob under Phone access first.', $this->dial($workspace, '', '+263779999999'));
     }
 
     public function test_wrong_pins_lock_the_number_after_five_tries(): void

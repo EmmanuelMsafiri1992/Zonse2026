@@ -111,7 +111,7 @@ class DataImportTest extends TestCase
         $this->assertSame(0, Contact::query()->forWorkspace($workspace->id)->where('email', 'tendai@example.com')->count(), 'The preview saves nothing');
 
         $this->actingAs($owner)->get(route('settings.imports.show', $run))->assertOk()
-            ->assertSee('id="preview"', false)->assertSee('Already in Zonseo, so it is skipped.')->assertSee('Repeats an earlier row, so it is skipped.')
+            ->assertSee('id="preview"', false)->assertSee('Already in Zonseob, so it is skipped.')->assertSee('Repeats an earlier row, so it is skipped.')
             ->assertSee('Needs a name or a company name.')->assertSee('Narnia')->assertSee('Import 2 rows');
 
         $this->actingAs($owner)->post(route('settings.imports.run', $run))

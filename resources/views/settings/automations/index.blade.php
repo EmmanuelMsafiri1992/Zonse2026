@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Automations')
 @section('content')
-    <x-page-header title="Automations" sub="Let Zonseo do the routine follow-ups: when something happens, it can alert people, make a task, email or text the customer, or update the record." :crumbs="['Settings' => route('settings.workspace.edit'), 'Automations']">
+    <x-page-header title="Automations" sub="Let Zonseob do the routine follow-ups: when something happens, it can alert people, make a task, email or text the customer, or update the record." :crumbs="['Settings' => route('settings.workspace.edit'), 'Automations']">
         <a href="{{ route('settings.automations.create') }}" class="btn btn-primary"><x-icon name="plus" /> New automation</a>
     </x-page-header>
 

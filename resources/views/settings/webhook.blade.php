@@ -33,7 +33,7 @@
             <div class="card mb-4">
                 <div class="card-header"><h5 class="card-title mb-0">Signing secret</h5></div>
                 <div class="card-body fs-7">
-                    <p class="text-muted">Use this to check that a request really came from Zonseo.</p>
+                    <p class="text-muted">Use this to check that a request really came from Zonseob.</p>
                     <div class="input-group mb-3">
                         <input type="password" class="form-control font-monospace" id="webhook-secret" value="{{ $endpoint->secret }}" readonly>
                         <button type="button" class="btn btn-white" onclick="const f = document.getElementById('webhook-secret'); f.type = f.type === 'password' ? 'text' : 'password'">Show</button>

@@ -132,7 +132,7 @@ class RentalsLogic extends AppLogic
         $old = (float) $lease->amount;
         $new = Money::round($old * (1 + $percent / 100));
         $lease->update(['amount' => $new, 'data' => array_merge((array) $lease->data, ['_escalated_year' => today()->year])]);
-        $lease->addComment('Rent escalated by '.rtrim(rtrim(number_format($percent, 2), '0'), '.').'% from '.$this->money($old).' to '.$this->money($new).'.', null, true, 'Zonseo (automatic)');
+        $lease->addComment('Rent escalated by '.rtrim(rtrim(number_format($percent, 2), '0'), '.').'% from '.$this->money($old).' to '.$this->money($new).'.', null, true, 'Zonseob (automatic)');
 
         return true;
     }

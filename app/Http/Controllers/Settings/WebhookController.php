@@ -68,7 +68,7 @@ class WebhookController extends Controller
     /** Test mode: send a harmless "ping" now and show what came back. */
     public function test(WebhookEndpoint $webhook): RedirectResponse
     {
-        $delivery = Webhooks::record($webhook, 'ping', ['message' => 'Test event from Zonseo. You can ignore it.']);
+        $delivery = Webhooks::record($webhook, 'ping', ['message' => 'Test event from Zonseob. You can ignore it.']);
 
         return $this->sendNow($delivery, 'Test event');
     }

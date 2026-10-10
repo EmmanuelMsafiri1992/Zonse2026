@@ -71,10 +71,10 @@
                 @if($run->sourceName())
                     <div class="alert alert-info fs-7">This looks like an export from <b>{{ $run->sourceName() }}</b>. Its columns have been matched for you. Check them below.</div>
                 @endif
-                <p class="fs-7 text-muted">For each field in Zonseo, choose the column in your file that holds it. Leave a field on "Don't import" if your file has no column for it.</p>
+                <p class="fs-7 text-muted">For each field in Zonseob, choose the column in your file that holds it. Leave a field on "Don't import" if your file has no column for it.</p>
                 <div class="z-table-wrap">
                     <table class="table z-table align-middle">
-                        <thead><tr><th>Zonseo field</th><th style="min-width:14rem">Column in your file</th><th>First values</th></tr></thead>
+                        <thead><tr><th>Zonseob field</th><th style="min-width:14rem">Column in your file</th><th>First values</th></tr></thead>
                         <tbody>
                         @foreach($columns as $key => $column)
                             @php $field = str_replace('.', '__', $key); $current = old('mapping.'.$field, $run->mapping[$key] ?? null); @endphp
@@ -103,7 +103,7 @@
 
                 <div class="row g-3 mt-1">
                     <div class="col-md-6">
-                        <x-form.select name="options[duplicates]" label="When a row is already in Zonseo" :options="\App\Support\Import\Importer::DUPLICATE_MODES" :value="$run->options['duplicates'] ?? 'skip'" />
+                        <x-form.select name="options[duplicates]" label="When a row is already in Zonseob" :options="\App\Support\Import\Importer::DUPLICATE_MODES" :value="$run->options['duplicates'] ?? 'skip'" />
                     </div>
                     <div class="col-md-6">
                         <x-form.select name="options[date_order]" label="Dates in the file are written" :options="\App\Support\Import\Importer::DATE_ORDERS" :value="$run->options['date_order'] ?? 'dmy'" />

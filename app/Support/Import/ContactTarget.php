@@ -99,7 +99,7 @@ class ContactTarget extends ImportTarget
         }
         $currency = null;
         if (($currencyText = $text('currency')) !== null && ! ($currency = Values::currency($currencyText))) {
-            $warnings[] = 'Currency "'.$currencyText.'" is not one Zonseo supports, so it is left blank.';
+            $warnings[] = 'Currency "'.$currencyText.'" is not one Zonseob supports, so it is left blank.';
         }
         $active = null;
         if (($activeText = $text('active')) !== null && ($active = Values::boolean($activeText)) === null) {

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Phone access')
 @section('content')
-    <x-page-header title="Phone access" sub="Use Zonseo from any mobile phone by dialling a USSD code, no smartphone or data needed." />
+    <x-page-header title="Phone access" sub="Use Zonseob from any mobile phone by dialling a USSD code, no smartphone or data needed." />
 
     <div class="row g-4">
         <div class="col-lg-7">

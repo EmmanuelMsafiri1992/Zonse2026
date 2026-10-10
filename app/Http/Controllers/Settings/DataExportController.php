@@ -77,7 +77,7 @@ class DataExportController extends Controller
         $zip->addFromString('audit_log.csv', $this->csv($audit));
 
         $zip->addFromString('README.txt', implode("\n", [
-            'Zonseo data export for '.$workspace->name,
+            'Zonseob data export for '.$workspace->name,
             'Created '.now()->toDayDateTimeString().' by '.$request->user()->name,
             '',
             'Each CSV file holds one kind of record. Columns ending in _id point at the "id" column of the related file.',

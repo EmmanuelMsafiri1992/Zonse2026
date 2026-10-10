@@ -59,7 +59,7 @@
                     <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#webhookModal"><x-icon name="plus" /> Add webhook</button>
                 </div>
                 @if($endpoints->isEmpty())
-                    <div class="card-body"><x-empty icon="webhook" title="No webhooks yet" text="Add a URL and Zonseo will POST to it whenever something you pick happens, such as a payment coming in." /></div>
+                    <div class="card-body"><x-empty icon="webhook" title="No webhooks yet" text="Add a URL and Zonseob will POST to it whenever something you pick happens, such as a payment coming in." /></div>
                 @else
                     <div class="list-group list-group-flush">
                         @foreach($endpoints as $endpoint)

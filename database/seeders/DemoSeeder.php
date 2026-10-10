@@ -33,7 +33,7 @@ class DemoSeeder extends Seeder
         }
 
         $admin = User::updateOrCreate(['email' => 'admin@zonseo.test'], [
-            'name' => 'Zonseo Admin', 'password' => 'password', 'is_super_admin' => true, 'email_verified_at' => now(),
+            'name' => 'Zonseob Admin', 'password' => 'password', 'is_super_admin' => true, 'email_verified_at' => now(),
         ]);
 
         $owner = User::updateOrCreate(['email' => 'demo@zonseo.test'], [

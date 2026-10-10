@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
-/** A URL outside Zonseo that is sent a signed POST when chosen events happen in the workspace. */
+/** A URL outside Zonseob that is sent a signed POST when chosen events happen in the workspace. */
 class WebhookEndpoint extends Model
 {
     /** @use HasFactory<WebhookEndpointFactory> */

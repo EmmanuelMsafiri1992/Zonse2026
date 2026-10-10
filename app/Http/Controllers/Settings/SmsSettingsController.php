@@ -73,7 +73,7 @@ class SmsSettingsController extends Controller
             return back()->with('flash', ['type' => 'danger', 'message' => 'Choose a provider and save its credentials first.']);
         }
 
-        $message = $this->sms->send($workspace, $data['to'], SmsService::prefix($workspace).'this is a test message from Zonseo. SMS is working.', ['purpose' => 'test']);
+        $message = $this->sms->send($workspace, $data['to'], SmsService::prefix($workspace).'this is a test message from Zonseob. SMS is working.', ['purpose' => 'test']);
         if (! $message) {
             return back()->withInput()->withErrors(['to' => 'Enter a valid mobile number, e.g. 0771234567 or +263771234567.']);
         }

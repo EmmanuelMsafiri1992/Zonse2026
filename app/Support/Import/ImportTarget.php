@@ -22,7 +22,7 @@ abstract class ImportTarget
 
     /**
      * The columns this target fills. Aliases are other headings that mean the same column, as written by
-     * QuickBooks, Sage, Xero and Zonseo's own exports.
+     * QuickBooks, Sage, Xero and Zonseob's own exports.
      *
      * @return array<string, array{label: string, required?: bool, aliases?: list<string>, example?: string, hint?: string}>
      */

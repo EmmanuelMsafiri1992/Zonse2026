@@ -24,7 +24,7 @@ class WorkspaceInvitationNotification extends Notification
         $inviter = $this->invitation->inviter?->name ?? 'A colleague';
 
         return (new MailMessage)
-            ->subject("You've been invited to {$workspace->name} on Zonseo")
+            ->subject("You've been invited to {$workspace->name} on Zonseob")
             ->greeting('Hello!')
             ->line("{$inviter} has invited you to join the {$workspace->name} workspace as a {$this->invitation->role}.")
             ->action('Accept invitation', $this->invitation->url())

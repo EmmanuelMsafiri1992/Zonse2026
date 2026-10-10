@@ -51,7 +51,7 @@ class WorkspaceAlert extends Notification
             $mail->line($this->body);
         }
         if ($this->url) {
-            $mail->action('Open in Zonseo', $this->url);
+            $mail->action('Open in Zonseob', $this->url);
         }
 
         return $mail->line('You can choose which emails you get under My profile › Notifications.');

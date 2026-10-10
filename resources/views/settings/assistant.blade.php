@@ -71,7 +71,7 @@
                         <li class="mb-2">The assistant looks things up in the apps that are switched on, your contacts and your invoices, and answers from what it finds.</li>
                         <li>It can draft emails and summarise records for you to copy, but it can only read. It never changes, sends or deletes anything.</li>
                     </ol>
-                    <p class="text-muted mb-0">With Anthropic or OpenAI, each question and the data looked up to answer it are sent to that provider. Test mode sends nothing outside Zonseo.</p>
+                    <p class="text-muted mb-0">With Anthropic or OpenAI, each question and the data looked up to answer it are sent to that provider. Test mode sends nothing outside Zonseob.</p>
                 </div>
             </div>
         </div>
