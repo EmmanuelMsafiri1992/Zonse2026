@@ -1,0 +1,84 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  APP_PORT: ${{ secrets.APP_PORT || '3010' }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Build front-end assets
+        run: |
+          npm ci
+          npm run build
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Pull code and install dependencies
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" bash -se <<'EOF'
+          set -e
+          cd "${{ secrets.DEPLOY_PATH }}"
+          php artisan down --retry=30 || true
+          git fetch --depth=1 origin main
+          git reset --hard origin/main
+          composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+          EOF
+
+      - name: Upload built assets
+        run: |
+          rsync -az --delete -e "ssh -i ~/.ssh/deploy_key -p ${{ secrets.SSH_PORT }}" public/build/ "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.DEPLOY_PATH }}/public/build/"
+
+      - name: Migrate, cache and restart the app on its port
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" bash -se <<'EOF'
+          set -e
+          cd "${{ secrets.DEPLOY_PATH }}"
+          php artisan migrate --force
+          php artisan optimize
+          php artisan queue:restart
+
+          pidfile=storage/app/server.pid
+          if [ -f "$pidfile" ] && kill -0 "$(cat "$pidfile")" 2>/dev/null; then
+            kill "$(cat "$pidfile")"
+            sleep 2
+          fi
+          PHP_CLI_SERVER_WORKERS=4 nohup php artisan serve --host=127.0.0.1 --port=${{ env.APP_PORT }} --no-reload > storage/logs/server.log 2>&1 &
+          echo $! > "$pidfile"
+
+          php artisan up
+          for attempt in 1 2 3 4 5; do
+            if curl -fsS -o /dev/null "http://127.0.0.1:${{ env.APP_PORT }}/up"; then
+              echo "App is answering on port ${{ env.APP_PORT }}"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "App did not answer on port ${{ env.APP_PORT }}"; tail -n 50 storage/logs/server.log; exit 1
+          EOF
+
+      - name: Bring the site back up if a step failed
+        if: failure()
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "cd '${{ secrets.DEPLOY_PATH }}' && php artisan up" || true
