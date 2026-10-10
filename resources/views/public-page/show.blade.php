@@ -8,7 +8,7 @@
 
     <div class="d-grid gap-2 mx-auto" style="max-width: 460px">
         @foreach($blocks as $key => $block)
-            <a href="{{ route('public.'.$key, $publicWorkspace) }}" class="btn btn-primary btn-lg d-flex align-items-center justify-content-center gap-2"><x-icon :name="$block['icon']" /> {{ $block['label'] }}</a>
+            <a href="{{ route($block['route'], $publicWorkspace) }}" class="btn btn-primary btn-lg d-flex align-items-center justify-content-center gap-2"><x-icon :name="$block['icon']" /> {{ $block['label'] }}</a>
         @endforeach
         @foreach($settings['links'] as $link)
             <a href="{{ $link['url'] }}" class="btn btn-white btn-lg" target="_blank" rel="noopener nofollow">{{ $link['label'] }}</a>

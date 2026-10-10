@@ -9,8 +9,9 @@
     <div class="card">
         @if($templates->isEmpty())
             <div class="card-body">
+                @php($exampleTag = '{'.'{ contact.name }'.'}')
                 <x-empty icon="file-text" title="No templates yet"
-                         text="Start from a letter, certificate or receipt. Tags like @{{ contact.name }} are filled in when you print." />
+                         text="Start from a letter, certificate or receipt. Tags like {{ $exampleTag }} are filled in when you print." />
             </div>
         @else
             <div class="z-table-wrap">

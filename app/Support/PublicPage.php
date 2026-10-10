@@ -20,9 +20,9 @@ class PublicPage
 {
     /** Blocks the page can show, with the module each one needs. */
     public const BLOCKS = [
-        'booking' => ['label' => 'Book an appointment', 'icon' => 'calendar-check', 'module' => 'appointments'],
-        'ordering' => ['label' => 'Order online', 'icon' => 'shopping-bag', 'module' => 'invoicing'],
-        'payment' => ['label' => 'Make a payment', 'icon' => 'credit-card', 'module' => 'invoicing'],
+        'booking' => ['label' => 'Book an appointment', 'icon' => 'calendar-check', 'module' => 'appointments', 'route' => 'public.booking'],
+        'ordering' => ['label' => 'Order online', 'icon' => 'shopping-bag', 'module' => 'invoicing', 'route' => 'public.order'],
+        'payment' => ['label' => 'Make a payment', 'icon' => 'credit-card', 'module' => 'invoicing', 'route' => 'public.payment'],
     ];
 
     public const MAX_LINKS = 8;
@@ -74,7 +74,7 @@ class PublicPage
      * Blocks the workspace could offer, whatever the owner chose: the app must be on and have
      * something to offer (bookable services, items for sale, a payment method for paying online).
      *
-     * @return array<string, array{label: string, icon: string, module: string}>
+     * @return array<string, array{label: string, icon: string, module: string, route: string}>
      */
     public function availableBlocks(Workspace $workspace): array
     {
@@ -86,7 +86,7 @@ class PublicPage
         }, ARRAY_FILTER_USE_BOTH);
     }
 
-    /** @return array<string, array{label: string, icon: string, module: string}> */
+    /** @return array<string, array{label: string, icon: string, module: string, route: string}> */
     public function blocks(Workspace $workspace): array
     {
         return array_intersect_key($this->availableBlocks($workspace), array_flip($this->settings($workspace)['blocks']));

@@ -234,6 +234,7 @@ class PublicPageTest extends TestCase
         $soldOut = Item::factory()->for($workspace)->create(['type' => 'product', 'name' => 'Pies', 'price' => 3, 'stock_qty' => 0]);
         $foreign = Item::factory()->create(['name' => 'Elsewhere', 'price' => 99]);
 
+        $this->get(route('public.show', $workspace))->assertOk()->assertSee(route('public.order', $workspace));
         $this->get(route('public.order', $workspace))->assertOk()->assertSee('Bread')->assertSee('Cake')->assertDontSee('Pies')->assertDontSee('Elsewhere');
 
         $this->post(route('public.order.store', $workspace), $this->visitor(['quantities' => [$bread->id => 0]]))->assertSessionHasErrors('quantities');

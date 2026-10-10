@@ -62,7 +62,7 @@ class DocumentTemplatesTest extends TestCase
     {
         [$owner] = $this->workspace();
 
-        $this->actingAs($owner)->get(route('settings.document-templates.index'))->assertOk()->assertSee('No templates yet');
+        $this->actingAs($owner)->get(route('settings.document-templates.index'))->assertOk()->assertSee('No templates yet')->assertSee('Tags like {{ contact.name }} are filled in', false)->assertDontSee('<?php', false);
         $this->get(route('settings.document-templates.create'))->assertOk()
             ->assertSee('Certificate')->assertSee('Payment receipt')->assertSee('Payments (receipts)')->assertSee('Patients');
 
