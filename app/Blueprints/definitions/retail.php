@@ -2,16 +2,21 @@
 
 use App\Blueprints\Logic\BookshopLogic;
 use App\Blueprints\Logic\CatalogueLogic;
+use App\Blueprints\Logic\ClassifiedsLogic;
 use App\Blueprints\Logic\DealershipLogic;
 use App\Blueprints\Logic\DeviceImeiLogic;
 use App\Blueprints\Logic\GiftVoucherLogic;
 use App\Blueprints\Logic\GroceryLogic;
 use App\Blueprints\Logic\HardwareStoreLogic;
+use App\Blueprints\Logic\JobBoardLogic;
 use App\Blueprints\Logic\LiquorStoreLogic;
 use App\Blueprints\Logic\MarketplaceLogic;
 use App\Blueprints\Logic\OnlineStoreLogic;
 use App\Blueprints\Logic\RetailPharmacyLogic;
+use App\Blueprints\Logic\ServiceMarketplaceLogic;
 use App\Blueprints\Logic\ShippingLogic;
+use App\Blueprints\Logic\SocialCommerceLogic;
+use App\Blueprints\Logic\ThriftLogic;
 
 /*
  * Retail & commerce apps: online selling, specialised shops and marketplaces.
@@ -223,7 +228,7 @@ return [
             'condition:select=new_with_tags,excellent,good,fair',
             'paid_out:checkbox|Consignor paid',
         ], ['icon' => 'tag', 'prefix' => 'ITM-', 'amount' => 'Sold for', 'date' => 'Received on', 'due' => 'Return by', 'list' => ['consignor', 'price', 'paid_out']]],
-    ]],
+    ], ['logic' => ThriftLogic::class]],
 
     'classifieds-directory-listings' => ['Classifieds & directory listings', 'newspaper', 'Paid listings and ads with moderation and expiry.', [
         'listings' => ['Listing', 'Listing title', 'pending,live,featured,expired,rejected', [
@@ -234,7 +239,7 @@ return [
             'website:url',
             'package:select=free,standard,featured,premium',
         ], ['icon' => 'newspaper', 'prefix' => 'CL-', 'contact' => 'Advertiser', 'amount' => 'Listing fee', 'date' => 'Published on', 'due' => 'Expires on', 'assignee' => true, 'list' => ['category', 'location', 'package']]],
-    ]],
+    ], ['logic' => ClassifiedsLogic::class]],
 
     'job-board-freelance-marketplace' => ['Job board / freelance marketplace', 'briefcase', 'Job and gig postings with applications.', [
         'jobs' => ['Job / gig', 'Title', 'draft,open,closed,filled', [
@@ -251,7 +256,7 @@ return [
             'proposal:textarea|Cover letter / proposal',
             'bid:money|Bid amount',
         ], ['icon' => 'file-user', 'prefix' => 'APP-', 'date' => 'Applied on', 'list' => ['job', 'email', 'bid']]],
-    ]],
+    ], ['logic' => JobBoardLogic::class]],
 
     'service-marketplace-handymen' => ['Service marketplace (handymen)', 'hammer', 'Vetted providers, customer requests and job matching.', [
         'providers' => ['Provider', 'Provider name', 'applied,vetted,active,suspended', [
@@ -267,7 +272,7 @@ return [
             'provider:record=providers|Assigned provider',
             'customer_rating:number|Customer rating',
         ], ['icon' => 'hammer', 'prefix' => 'SR-', 'contact' => 'Customer', 'amount' => 'Job value', 'date' => 'Requested on', 'due' => 'Needed by', 'assignee' => true, 'list' => ['trade', 'provider']]],
-    ]],
+    ], ['logic' => ServiceMarketplaceLogic::class]],
 
     'social-commerce-whatsapp-catalog' => ['Social commerce (WhatsApp catalogue)', 'message-circle', 'Products shared on WhatsApp, Instagram and Facebook, with chat orders.', [
         'products' => ['Catalogue product', 'Product name', 'active,hidden,sold_out', [
@@ -283,5 +288,5 @@ return [
             'proof_of_payment:url|Proof of payment',
             'delivery_address:textarea|Delivery address',
         ], ['icon' => 'message-circle', 'prefix' => 'SCO-', 'contact' => 'Customer', 'amount' => 'Order total', 'date' => 'Ordered on', 'assignee' => true, 'list' => ['channel', 'phone']]],
-    ]],
+    ], ['logic' => SocialCommerceLogic::class]],
 ];
