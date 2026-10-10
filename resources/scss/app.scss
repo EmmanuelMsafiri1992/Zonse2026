@@ -428,16 +428,16 @@ $z-hero-lime: #A6D93B;
   .ico { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; color: #fff; flex-shrink: 0; }
   b { display: block; font-size: .8rem; line-height: 1.2; }
   small { display: block; font-size: .68rem; color: $z-text-muted; white-space: nowrap; } }
-.z-hero-float-1 { left: -2%; top: 12%; }
-.z-hero-float-2 { right: -4%; top: 52%; animation-delay: -2s; }
-.z-hero-float-3 { left: 4%; bottom: 8%; animation-delay: -4s; }
+.z-hero-float-1 { left: -4%; top: 28%; }
+.z-hero-float-2 { right: -6%; top: 62%; animation-delay: -2s; }
+.z-hero-float-3 { left: 6%; top: 66%; animation-delay: -4s; }
 @media (max-width: 575.98px) {
   .z-hero-planet { width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 10px; .zi { width: 17px; height: 17px; } }
   .z-hero-window { left: 6%; width: 88%; top: 22%; }
   .z-hero-side { display: none; }
   .z-hero-float { padding: .45rem .6rem .45rem .45rem; .ico { width: 26px; height: 26px; } b { font-size: .7rem; } small { font-size: .6rem; } }
-  .z-hero-float-1 { left: 0; top: 6%; }
-  .z-hero-float-2 { right: 0; top: auto; bottom: 14%; }
+  .z-hero-float-1 { left: 0; }
+  .z-hero-float-2 { right: 0; }
   .z-hero-float-3 { display: none; }
 }
 
