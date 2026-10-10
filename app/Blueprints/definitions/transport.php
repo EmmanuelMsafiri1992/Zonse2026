@@ -1,10 +1,14 @@
 <?php
 
+use App\Blueprints\Logic\AirportTransferLogic;
 use App\Blueprints\Logic\BodaBodaLogic;
 use App\Blueprints\Logic\CoachOperatorLogic;
+use App\Blueprints\Logic\GpsTrackingLogic;
 use App\Blueprints\Logic\HaulageLogic;
+use App\Blueprints\Logic\LearnerDriverLogic;
 use App\Blueprints\Logic\StaffTransportLogic;
 use App\Blueprints\Logic\TaxiDispatchLogic;
+use App\Blueprints\Logic\TollPlazaLogic;
 
 /*
  * Transport apps: passenger, rider and haulage operations.
@@ -115,7 +119,7 @@ return [
             'driver:user|Driver',
             'name_board|Name board text',
         ], ['icon' => 'plane-landing', 'prefix' => 'TRF-', 'contact' => 'Client', 'amount' => 'Fare', 'date' => 'Date', 'list' => ['type', 'flight_number', 'pickup_time', 'driver']]],
-    ]],
+    ], ['logic' => AirportTransferLogic::class]],
 
     'parking-toll-management' => ['Parking lots & toll plazas', 'parking-meter', 'Lots or plazas, shifts and takings.', [
         'sites' => ['Site', 'Lot / plaza name', 'open,closed', [
@@ -130,7 +134,7 @@ return [
             'card:money',
             'expected:money|Expected takings',
         ], ['icon' => 'coins', 'prefix' => 'SH-', 'amount' => 'Total takings', 'date' => 'Date', 'assignee' => true, 'list' => ['site', 'vehicles', 'expected']]],
-    ]],
+    ], ['logic' => TollPlazaLogic::class]],
 
     'driving-school-16-9' => ['Driving school', 'car-front', 'Learners, packages, lessons and test bookings.', [
         'learners' => ['Learner', 'Learner name', 'enrolled,learning,test_booked,passed,left', [
@@ -152,7 +156,7 @@ return [
             'testing_centre|Testing centre',
             'booking_reference|Booking reference',
         ], ['icon' => 'clipboard-check', 'prefix' => 'DT-', 'amount' => 'Test fee', 'date' => 'Test date', 'list' => ['learner', 'testing_centre']]],
-    ]],
+    ], ['logic' => LearnerDriverLogic::class]],
 
     'gps-tracking' => ['GPS tracking & trip log', 'map-pinned', 'Tracker devices, trips and geofence alerts recorded per vehicle.', [
         'trackers' => ['Tracker', 'Vehicle / asset', 'online,offline,removed', [
@@ -174,5 +178,5 @@ return [
             'type:select=speeding,geofence_exit,geofence_entry,harsh_braking,after_hours,panic,power_cut*',
             'location',
         ], ['icon' => 'siren', 'prefix' => 'ALR-', 'date' => 'Date', 'assignee' => true, 'list' => ['tracker', 'type', 'location']]],
-    ]],
+    ], ['logic' => GpsTrackingLogic::class]],
 ];
