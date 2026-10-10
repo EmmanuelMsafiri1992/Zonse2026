@@ -1,13 +1,19 @@
 <?php
 
+use App\Blueprints\Logic\CarWashLogic;
+use App\Blueprints\Logic\CleaningServicesLogic;
+use App\Blueprints\Logic\ConsultancyLogic;
 use App\Blueprints\Logic\FieldServiceLogic;
 use App\Blueprints\Logic\GarageLogic;
 use App\Blueprints\Logic\GymLogic;
 use App\Blueprints\Logic\LaundryLogic;
 use App\Blueprints\Logic\LegalLogic;
+use App\Blueprints\Logic\PetGroomingLogic;
 use App\Blueprints\Logic\PhotographyLogic;
+use App\Blueprints\Logic\PrintShopLogic;
 use App\Blueprints\Logic\SalonLogic;
 use App\Blueprints\Logic\SecurityCompanyLogic;
+use App\Blueprints\Logic\TailoringLogic;
 
 /*
  * Service-business apps. Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
@@ -155,7 +161,7 @@ return [
             'hours:number',
             'checklist_notes:textarea|Checklist notes',
         ], ['icon' => 'spray-can', 'prefix' => 'HS-', 'amount' => 'Price', 'date' => 'Date', 'assignee' => true, 'list' => ['customer', 'service', 'start_time']]],
-    ]],
+    ], ['logic' => CleaningServicesLogic::class]],
 
     'consultancy-client-portals' => ['Consultancy with client portals', 'briefcase', 'Engagements, deliverables and client sign-off.', [
         'engagements' => ['Engagement', 'Engagement name', 'proposal,active,on_hold,completed', [
@@ -168,7 +174,7 @@ return [
             'file_url:url|File link',
             'client_feedback:textarea|Client feedback',
         ], ['icon' => 'file-check', 'prefix' => 'DLV-', 'due' => 'Due date', 'assignee' => true, 'list' => ['engagement']]],
-    ]],
+    ], ['logic' => ConsultancyLogic::class]],
 
     'car-wash' => ['Car wash', 'droplets', 'Wash packages, cars washed and washer commissions.', [
         'packages' => ['Wash package', 'Package name', 'active,retired', [
@@ -182,7 +188,7 @@ return [
             'customer_phone:phone|Customer phone',
             'payment:select=cash,card,mobile_money,account',
         ], ['icon' => 'droplets', 'prefix' => 'WSH-', 'amount' => 'Amount', 'date' => 'Date', 'list' => ['package', 'washer', 'payment']]],
-    ]],
+    ], ['logic' => CarWashLogic::class]],
 
     'tailoring' => ['Tailoring & alterations', 'scissors', 'Customer measurements, garment orders and fittings.', [
         'measurements' => ['Measurement card', 'Customer name', 'current,outdated', [
@@ -202,7 +208,7 @@ return [
             'deposit:money',
             'fitting_date:date|Fitting date',
         ], ['icon' => 'scissors', 'prefix' => 'TLR-', 'contact' => 'Customer', 'amount' => 'Price', 'date' => 'Received on', 'due' => 'Ready by', 'assignee' => true, 'list' => ['type', 'fabric', 'fitting_date']]],
-    ]],
+    ], ['logic' => TailoringLogic::class]],
 
     'printing' => ['Print shop', 'printer', 'Print jobs with artwork approval and production.', [
         'jobs' => ['Print job', 'Job description', 'quote,artwork,proof_sent,approved,printing,finishing,ready,collected', [
@@ -213,7 +219,7 @@ return [
             'proof_approved:checkbox|Proof approved',
             'deposit:money',
         ], ['icon' => 'printer', 'prefix' => 'PRT-', 'contact' => 'Customer', 'amount' => 'Price', 'date' => 'Received on', 'due' => 'Due date', 'assignee' => true, 'list' => ['product', 'quantity', 'proof_approved']]],
-    ]],
+    ], ['logic' => PrintShopLogic::class]],
 
     'pet-grooming' => ['Pet grooming & boarding', 'paw-print', 'Pets, grooming appointments and boarding stays.', [
         'pets' => ['Pet', 'Pet name', 'active,inactive', [
@@ -228,7 +234,7 @@ return [
             'drop_off:time|Drop-off time',
             'notes:textarea',
         ], ['icon' => 'paw-print', 'prefix' => 'GRM-', 'amount' => 'Price', 'date' => 'Date', 'due' => 'Collect by', 'assignee' => true, 'list' => ['pet', 'type', 'drop_off']]],
-    ]],
+    ], ['logic' => PetGroomingLogic::class]],
 
     'it-services' => ['IT services & MSP', 'server', 'Managed clients, device inventory and service agreements.', [
         'clients' => ['Managed client', 'Client name', 'onboarding,managed,ad_hoc,ended', [
