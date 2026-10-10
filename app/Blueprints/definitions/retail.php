@@ -1,5 +1,12 @@
 <?php
 
+use App\Blueprints\Logic\CatalogueLogic;
+use App\Blueprints\Logic\GiftVoucherLogic;
+use App\Blueprints\Logic\GroceryLogic;
+use App\Blueprints\Logic\MarketplaceLogic;
+use App\Blueprints\Logic\OnlineStoreLogic;
+use App\Blueprints\Logic\ShippingLogic;
+
 /*
  * Retail & commerce apps: online selling, specialised shops and marketplaces.
  * Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
@@ -23,7 +30,7 @@ return [
             'shipping_method:select=courier,post,collection,own_delivery',
             'tracking_number|Tracking number',
         ], ['icon' => 'shopping-cart', 'prefix' => 'WEB-', 'contact' => 'Customer', 'amount' => 'Order total', 'date' => 'Ordered on', 'assignee' => true, 'list' => ['shipping_method', 'tracking_number']]],
-    ]],
+    ], ['logic' => OnlineStoreLogic::class]],
 
     'marketplace' => ['Multi-vendor marketplace', 'store', 'Vendors, their listings and commission payouts.', [
         'vendors' => ['Vendor', 'Shop name', 'applied,approved,suspended,closed', [
@@ -42,7 +49,7 @@ return [
             'gross_sales:money|Gross sales',
             'commission:money',
         ], ['icon' => 'banknote', 'prefix' => 'PAY-', 'amount' => 'Payout', 'date' => 'Paid on', 'list' => ['vendor', 'gross_sales', 'commission']]],
-    ]],
+    ], ['logic' => MarketplaceLogic::class]],
 
     'catalog' => ['Product catalogue & price lists', 'book-open', 'Product catalogue with customer-specific price lists.', [
         'items' => ['Catalogue item', 'Product name', 'active,discontinued', [
@@ -58,7 +65,7 @@ return [
             'discount_percent:number|Discount %',
             'currency',
         ], ['icon' => 'list', 'prefix' => 'PL-', 'date' => 'Valid from', 'due' => 'Valid to', 'list' => ['customer_group', 'discount_percent']]],
-    ]],
+    ], ['logic' => CatalogueLogic::class]],
 
     'shipping' => ['Shipping & courier labels', 'package-check', 'Parcels, couriers, waybills and tracking.', [
         'shipments' => ['Shipment', 'Recipient name', 'ready,collected,in_transit,out_for_delivery,delivered,returned,lost', [
@@ -70,7 +77,7 @@ return [
             'weight:number|Weight (kg)',
             'order_reference|Order reference',
         ], ['icon' => 'package-check', 'prefix' => 'SHP-', 'contact' => 'Customer', 'amount' => 'Shipping cost', 'date' => 'Shipped on', 'due' => 'Expected delivery', 'assignee' => true, 'list' => ['courier', 'waybill', 'parcels']]],
-    ]],
+    ], ['logic' => ShippingLogic::class]],
 
     'gift-cards-vouchers' => ['Gift vouchers', 'gift', 'Issue, sell and redeem shop gift vouchers.', [
         'vouchers' => ['Voucher', 'Voucher code', 'active,partly_used,redeemed,expired,void', [
@@ -82,7 +89,7 @@ return [
             'voucher:record=vouchers|Voucher*',
             'till|Till / branch',
         ], ['icon' => 'receipt', 'prefix' => 'RDM-', 'amount' => 'Amount used', 'date' => 'Date', 'assignee' => true, 'list' => ['voucher', 'till']]],
-    ]],
+    ], ['logic' => GiftVoucherLogic::class]],
 
     'grocery-pos' => ['Supermarket / grocery', 'shopping-basket', 'Fresh produce, expiry tracking, markdowns and shelf price checks.', [
         'products' => ['Grocery item', 'Product name', 'on_shelf,low_stock,out_of_stock,delisted', [
@@ -98,7 +105,7 @@ return [
             'quantity:number*',
             'markdown_price:money|Markdown price',
         ], ['icon' => 'calendar-x', 'prefix' => 'EXP-', 'plural' => 'Expiries & markdowns', 'due' => 'Expiry date', 'assignee' => true, 'list' => ['product', 'quantity', 'markdown_price']]],
-    ]],
+    ], ['logic' => GroceryLogic::class]],
 
     'pharmacy-retail-pos' => ['Retail pharmacy', 'pill', 'Front-shop pharmacy products with scheduled-medicine and batch control.', [
         'products' => ['Pharmacy product', 'Product name', 'in_stock,low_stock,out_of_stock,recalled', [
