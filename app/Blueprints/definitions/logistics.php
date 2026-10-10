@@ -6,11 +6,15 @@ use App\Blueprints\Logic\ConsignmentLogic;
 use App\Blueprints\Logic\DeliveryLogic;
 use App\Blueprints\Logic\EquipmentHireLogic;
 use App\Blueprints\Logic\FreightLogic;
+use App\Blueprints\Logic\FuelStationLogic;
+use App\Blueprints\Logic\GasCylinderLogic;
 use App\Blueprints\Logic\InventoryLogic;
 use App\Blueprints\Logic\ManufacturingLogic;
 use App\Blueprints\Logic\OrdersLogic;
 use App\Blueprints\Logic\QualityLogic;
+use App\Blueprints\Logic\RemovalsLogic;
 use App\Blueprints\Logic\SuppliersLogic;
+use App\Blueprints\Logic\TowingLogic;
 use App\Blueprints\Logic\WarehouseLogic;
 
 /*
@@ -248,7 +252,7 @@ return [
             'tank:record=tanks|Tank*',
             'litres:number*',
         ], ['icon' => 'truck', 'prefix' => 'FD-', 'contact' => 'Supplier', 'amount' => 'Cost', 'date' => 'Delivered on', 'list' => ['tank', 'litres']]],
-    ]],
+    ], ['logic' => FuelStationLogic::class]],
 
     'lpg-gas-cylinder-distribution' => ['LPG / gas cylinder distribution', 'cylinder', 'Cylinder register, refills and exchanges with customers.', [
         'cylinders' => ['Cylinder', 'Serial number', 'full,empty,with_customer,condemned', [
@@ -261,7 +265,7 @@ return [
             'quantity:number',
             'delivered:checkbox',
         ], ['icon' => 'flame', 'prefix' => 'GS-', 'contact' => 'Customer', 'amount' => 'Total', 'date' => 'Date', 'assignee' => true, 'list' => ['type', 'size', 'quantity']]],
-    ]],
+    ], ['logic' => GasCylinderLogic::class]],
 
     'moving-removals-company' => ['Moving / removals company', 'truck', 'Survey, quote and move jobs with inventory of goods.', [
         'moves' => ['Move', 'Move', 'enquiry,surveyed,quoted,booked,in_progress,completed,cancelled', [
@@ -273,7 +277,7 @@ return [
             'inventory:textarea|Goods inventory',
             'insurance:checkbox|Goods in transit insurance',
         ], ['icon' => 'truck', 'prefix' => 'MV-', 'contact' => 'Customer', 'amount' => 'Quote', 'date' => 'Move date', 'assignee' => true, 'list' => ['volume', 'crew_size', 'truck']]],
-    ]],
+    ], ['logic' => RemovalsLogic::class]],
 
     'towing-roadside-assistance-dispatch' => ['Towing & roadside assistance dispatch', 'siren', 'Breakdown call-outs, dispatched trucks and jobs completed.', [
         'callouts' => ['Call-out', 'Vehicle & problem', 'received,dispatched,on_scene,towing,completed,cancelled', [
@@ -284,5 +288,5 @@ return [
             'insurer|Insurer / membership',
             'distance:number|Distance (km)',
         ], ['icon' => 'siren', 'prefix' => 'TOW-', 'contact' => 'Customer', 'amount' => 'Charge', 'date' => 'Received at', 'assignee' => true, 'list' => ['type', 'registration', 'insurer']]],
-    ]],
+    ], ['logic' => TowingLogic::class]],
 ];
