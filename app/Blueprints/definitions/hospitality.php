@@ -1,12 +1,18 @@
 <?php
 
+use App\Blueprints\Logic\BakeryLogic;
 use App\Blueprints\Logic\BarLogic;
 use App\Blueprints\Logic\BusBookingLogic;
+use App\Blueprints\Logic\ButcheryLogic;
 use App\Blueprints\Logic\CarRentalLogic;
+use App\Blueprints\Logic\CateringLogic;
 use App\Blueprints\Logic\FoodDeliveryLogic;
 use App\Blueprints\Logic\HotelLogic;
 use App\Blueprints\Logic\RestaurantLogic;
+use App\Blueprints\Logic\SafariLogic;
 use App\Blueprints\Logic\ToursLogic;
+use App\Blueprints\Logic\TravelAgencyLogic;
+use App\Blueprints\Logic\VenueHireLogic;
 
 /*
  * Hospitality & travel apps: lodging, food and drink, tours, rentals and venues.
@@ -152,7 +158,7 @@ return [
             'dietary:textarea|Dietary requirements',
             'staff_needed:number|Staff needed',
         ], ['icon' => 'cooking-pot', 'prefix' => 'CAT-', 'contact' => 'Client', 'amount' => 'Quote', 'date' => 'Event date', 'assignee' => true, 'list' => ['venue', 'guests', 'service']]],
-    ]],
+    ], ['logic' => CateringLogic::class]],
 
     'venue-hire' => ['Venues & banquets', 'party-popper', 'Halls and rooms for hire, with bookings and packages.', [
         'spaces' => ['Space', 'Space name', 'available,maintenance', [
@@ -168,7 +174,7 @@ return [
             'package|Package / extras',
             'deposit:money',
         ], ['icon' => 'party-popper', 'prefix' => 'VB-', 'contact' => 'Client', 'amount' => 'Total', 'date' => 'Event date', 'assignee' => true, 'list' => ['space', 'guests', 'start_time']]],
-    ]],
+    ], ['logic' => VenueHireLogic::class]],
 
     'travel-agency' => ['Travel agency', 'plane', 'Flight bookings, visa applications, packages and commissions.', [
         'bookings' => ['Travel booking', 'Traveller name', 'quoted,booked,ticketed,travelled,cancelled,refunded', [
@@ -184,7 +190,7 @@ return [
             'passport_number|Passport number',
             'embassy_reference|Embassy reference',
         ], ['icon' => 'stamp', 'prefix' => 'VSA-', 'contact' => 'Customer', 'amount' => 'Fee', 'date' => 'Submitted on', 'due' => 'Travel date', 'assignee' => true, 'list' => ['country', 'visa_type']]],
-    ]],
+    ], ['logic' => TravelAgencyLogic::class]],
 
     'safari-camping-activity-bookings' => ['Safari / camping / activity bookings', 'tent-tree', 'Campsites, activities and guest bookings.', [
         'activities' => ['Activity / site', 'Name', 'available,closed', [
@@ -199,7 +205,7 @@ return [
             'start_time:time|Start time',
             'indemnity_signed:checkbox|Indemnity signed',
         ], ['icon' => 'calendar-check', 'prefix' => 'SB-', 'contact' => 'Guest', 'amount' => 'Total', 'date' => 'Date', 'due' => 'Until', 'list' => ['activity', 'guests', 'indemnity_signed']]],
-    ]],
+    ], ['logic' => SafariLogic::class]],
 
     'bakery-confectionery-orders-custom' => ['Bakery & confectionery orders (custom cakes)', 'cake', 'Custom cake orders and daily bake production.', [
         'orders' => ['Cake order', 'Cake / occasion', 'enquiry,confirmed,baking,decorating,ready,collected,cancelled', [
@@ -215,7 +221,7 @@ return [
             'sold:number',
             'wasted:number',
         ], ['icon' => 'croissant', 'prefix' => 'BAK-', 'plural' => 'Daily production', 'date' => 'Date', 'list' => ['quantity', 'sold', 'wasted']]],
-    ]],
+    ], ['logic' => BakeryLogic::class]],
 
     'butchery-with-scale-integration' => ['Butchery with scale integration', 'beef', 'Carcass intake, cuts sold by weight and meat-pack orders.', [
         'carcasses' => ['Carcass', 'Tag / description', 'hanging,cut,sold_out', [
@@ -228,5 +234,5 @@ return [
             'price_per_kg:money|Price per kg*',
             'scale_ticket|Scale ticket',
         ], ['icon' => 'weight', 'prefix' => 'BS-', 'contact' => 'Customer', 'amount' => 'Total', 'date' => 'Date', 'assignee' => true, 'list' => ['weight', 'price_per_kg']]],
-    ]],
+    ], ['logic' => ButcheryLogic::class]],
 ];
