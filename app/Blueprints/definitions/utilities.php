@@ -1,9 +1,12 @@
 <?php
 
+use App\Blueprints\Logic\AirtimeResellerLogic;
 use App\Blueprints\Logic\IspBillingLogic;
+use App\Blueprints\Logic\PayTvLogic;
 use App\Blueprints\Logic\SolarPaygLogic;
 use App\Blueprints\Logic\UtilityBillingLogic;
 use App\Blueprints\Logic\WasteCollectionLogic;
+use App\Blueprints\Logic\WaterTankerLogic;
 
 /*
  * Utilities & telecoms apps: metered billing, subscriptions and service delivery.
@@ -92,7 +95,7 @@ return [
             'water_quality|Water quality',
             'pump',
         ], ['icon' => 'drill', 'prefix' => 'BH-', 'contact' => 'Client', 'amount' => 'Contract value', 'date' => 'Start date', 'assignee' => true, 'list' => ['depth', 'yield', 'pump']]],
-    ]],
+    ], ['logic' => WaterTankerLogic::class]],
 
     'cable-satellite-tv-subscriptions' => ['Cable / satellite TV subscriptions', 'tv', 'Subscribers, decoders, bouquets and installations.', [
         'subscribers' => ['TV subscriber', 'Subscriber name', 'active,suspended,disconnected', [
@@ -106,7 +109,7 @@ return [
             'dish_size|Dish size',
             'signal_strength:number|Signal strength %',
         ], ['icon' => 'satellite-dish', 'prefix' => 'TVI-', 'amount' => 'Installation fee', 'date' => 'Date', 'assignee' => true, 'list' => ['subscriber', 'signal_strength']]],
-    ]],
+    ], ['logic' => PayTvLogic::class]],
 
     'telecom-airtime-bundle-reseller' => ['Airtime & bundle reseller', 'smartphone', 'Airtime, data bundles and electricity tokens sold, plus agent float.', [
         'sales' => ['Sale', 'Customer phone / meter', 'successful,failed,reversed', [
@@ -119,5 +122,5 @@ return [
             'method:select=bank,cash,mobile_money',
             'reference',
         ], ['icon' => 'wallet', 'prefix' => 'FLT-', 'plural' => 'Float top-ups', 'amount' => 'Amount', 'date' => 'Date', 'list' => ['method', 'reference']]],
-    ]],
+    ], ['logic' => AirtimeResellerLogic::class]],
 ];
