@@ -1,12 +1,18 @@
 <?php
 
 use App\Blueprints\Logic\AffiliateLogic;
+use App\Blueprints\Logic\CallCentreLogic;
 use App\Blueprints\Logic\ContractLogic;
+use App\Blueprints\Logic\CustomerPortalLogic;
 use App\Blueprints\Logic\FeedbackLogic;
+use App\Blueprints\Logic\GiftCardLogic;
 use App\Blueprints\Logic\LiveChatLogic;
 use App\Blueprints\Logic\LoyaltyLogic;
+use App\Blueprints\Logic\MaintenanceContractLogic;
 use App\Blueprints\Logic\ProposalLogic;
 use App\Blueprints\Logic\SalesCommissionLogic;
+use App\Blueprints\Logic\VanSalesLogic;
+use App\Blueprints\Logic\WarrantyLogic;
 
 /*
  * Sales & customer apps: chat, loyalty, feedback, contracts, commissions and after-sales.
@@ -123,7 +129,7 @@ return [
             'list_size:number|Numbers to call',
             'reached:number',
         ], ['icon' => 'list-ordered', 'prefix' => 'CMP-', 'date' => 'Start date', 'due' => 'End date', 'assignee' => true, 'list' => ['list_size', 'reached']]],
-    ]],
+    ], ['logic' => CallCentreLogic::class]],
 
     'field-sales-van-sales' => ['Field sales / van sales & route planning', 'route', 'Sales routes, outlet visits and van stock loads.', [
         'routes' => ['Route', 'Route name', 'active,inactive', [
@@ -144,7 +150,7 @@ return [
             'items_returned:textarea|Items returned',
             'cash_collected:money|Cash collected',
         ], ['icon' => 'truck', 'prefix' => 'LD-', 'amount' => 'Load value', 'date' => 'Date', 'list' => ['route', 'cash_collected']]],
-    ]],
+    ], ['logic' => VanSalesLogic::class]],
 
     'customer-portal' => ['Customer portal', 'globe', 'Portal accounts for customers and the requests they send in.', [
         'accounts' => ['Portal account', 'Customer', 'invited,active,disabled', [
@@ -157,7 +163,7 @@ return [
             'type:select=question,document_request,booking,payment_proof,complaint*',
             'message:textarea*',
         ], ['icon' => 'inbox', 'prefix' => 'CPR-', 'date' => 'Received on', 'assignee' => true, 'list' => ['account', 'type']]],
-    ]],
+    ], ['logic' => CustomerPortalLogic::class]],
 
     'gift-cards' => ['Gift cards', 'gift', 'Gift cards, vouchers and store credit, with every redemption logged.', [
         'cards' => ['Gift card', 'Card code', 'active,redeemed,expired,cancelled', [
@@ -169,7 +175,7 @@ return [
             'card:record=cards|Gift card*',
             'branch_name|Where redeemed',
         ], ['icon' => 'ticket', 'prefix' => 'GCR-', 'amount' => 'Amount', 'date' => 'Date', 'list' => ['card']]],
-    ]],
+    ], ['logic' => GiftCardLogic::class]],
 
     'warranty-returns-rma-management' => ['Warranty & returns (RMA) management', 'undo-2', 'Warranties on sold items and return authorisations.', [
         'warranties' => ['Warranty', 'Product', 'active,expired,void', [
@@ -182,7 +188,7 @@ return [
             'reason:select=faulty,damaged,wrong_item,changed_mind,other*',
             'resolution:textarea',
         ], ['icon' => 'undo-2', 'prefix' => 'RMA-', 'plural' => 'Returns (RMA)', 'contact' => 'Customer', 'amount' => 'Refund amount', 'date' => 'Requested on', 'assignee' => true, 'list' => ['warranty', 'reason']]],
-    ]],
+    ], ['logic' => WarrantyLogic::class]],
 
     'service-contracts-amc-annual' => ['Service contracts & AMC (annual maintenance contracts)', 'file-clock', 'Maintenance contracts, covered equipment and scheduled service visits.', [
         'contracts' => ['Service contract', 'Contract', 'active,expiring,expired,cancelled', [
@@ -195,5 +201,5 @@ return [
             'technician:user|Technician',
             'report:textarea',
         ], ['icon' => 'wrench', 'prefix' => 'SV-', 'date' => 'Visit date', 'list' => ['contract', 'technician']]],
-    ]],
+    ], ['logic' => MaintenanceContractLogic::class]],
 ];
