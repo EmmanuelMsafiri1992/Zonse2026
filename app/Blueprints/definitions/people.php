@@ -1,5 +1,13 @@
 <?php
 
+use App\Blueprints\Logic\AttendanceLogic;
+use App\Blueprints\Logic\DisciplinaryLogic;
+use App\Blueprints\Logic\EmployeeSelfServiceLogic;
+use App\Blueprints\Logic\HrLogic;
+use App\Blueprints\Logic\PerformanceLogic;
+use App\Blueprints\Logic\RostersLogic;
+use App\Blueprints\Logic\TrainingLogic;
+
 /*
  * HR & people apps: employee records, time, rosters, performance and staff welfare.
  * Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
@@ -30,7 +38,7 @@ return [
             'type:select=id,qualification,medical,police_clearance,work_permit,other*',
             'file_url:url|File link',
         ], ['icon' => 'file-badge', 'prefix' => 'HRD-', 'due' => 'Expires on', 'list' => ['employee', 'type']]],
-    ]],
+    ], ['logic' => HrLogic::class]],
 
     'attendance' => ['Attendance & timesheets', 'clock', 'Clock-ins, daily attendance and weekly timesheets.', [
         'clockings' => ['Clock-in', 'Employee', 'present,late,absent,on_leave', [
@@ -45,7 +53,7 @@ return [
             'overtime_hours:number|Overtime hours',
             'notes:textarea',
         ], ['icon' => 'calendar-range', 'prefix' => 'TS-', 'date' => 'Week starting', 'list' => ['employee', 'normal_hours', 'overtime_hours']]],
-    ]],
+    ], ['logic' => AttendanceLogic::class]],
 
     'rosters' => ['Shifts & rosters', 'calendar-days', 'Shift patterns and who works when.', [
         'shifts' => ['Shift', 'Shift', 'planned,confirmed,swapped,completed,no_show', [
@@ -58,7 +66,7 @@ return [
             'shift:record=shifts|Shift*',
             'swap_with:user|Swap with*',
         ], ['icon' => 'repeat', 'prefix' => 'SWP-', 'date' => 'Requested on', 'assignee' => true, 'list' => ['shift', 'swap_with']]],
-    ]],
+    ], ['logic' => RostersLogic::class]],
 
     'performance' => ['Performance & OKRs', 'award', 'Reviews, objectives and 360 feedback.', [
         'reviews' => ['Review', 'Review period', 'scheduled,self_review,manager_review,completed', [
@@ -78,7 +86,7 @@ return [
             'from:user|From',
             'comments:textarea*',
         ], ['icon' => 'messages-square', 'prefix' => 'FBK-', 'plural' => '360 feedback', 'date' => 'Date', 'list' => ['about', 'from']]],
-    ]],
+    ], ['logic' => PerformanceLogic::class]],
 
     'training' => ['Training & certifications', 'graduation-cap', 'Courses, onboarding plans and staff certifications.', [
         'courses' => ['Course', 'Course name', 'planned,running,completed', [
@@ -91,7 +99,7 @@ return [
             'course:record=courses|Course',
             'certificate_number|Certificate number',
         ], ['icon' => 'file-badge', 'prefix' => 'CRT-', 'date' => 'Issued on', 'due' => 'Expires on', 'list' => ['employee', 'course']]],
-    ]],
+    ], ['logic' => TrainingLogic::class]],
 
     'employee-self-service-portal' => ['Employee self-service portal', 'user-cog', 'Staff requests for payslips, letters, detail changes and more.', [
         'requests' => ['Staff request', 'Subject', 'submitted,in_progress,done,declined', [
@@ -104,7 +112,7 @@ return [
             'body:textarea*',
             'audience|Audience',
         ], ['icon' => 'megaphone', 'prefix' => 'ANN-', 'date' => 'Published on', 'list' => ['audience']]],
-    ]],
+    ], ['logic' => EmployeeSelfServiceLogic::class]],
 
     'disciplinary-grievance-case-management' => ['Disciplinary & grievance case management', 'gavel', 'Disciplinary cases, hearings, outcomes and staff grievances.', [
         'cases' => ['Case', 'Allegation / complaint', 'reported,investigating,hearing_scheduled,outcome,appeal,closed', [
@@ -115,7 +123,7 @@ return [
             'outcome:select=no_action,verbal_warning,written_warning,final_warning,suspension,dismissal,upheld,not_upheld',
             'details:textarea',
         ], ['icon' => 'gavel', 'prefix' => 'DC-', 'date' => 'Reported on', 'assignee' => true, 'list' => ['type', 'employee', 'outcome']]],
-    ]],
+    ], ['logic' => DisciplinaryLogic::class]],
 
     'staffing-outsourcing-agency-placements' => ['Staffing / outsourcing agency (placements, client billing, worker payouts)', 'user-plus', 'Workers placed at clients, hours billed and payouts.', [
         'workers' => ['Worker', 'Worker name', 'available,placed,inactive', [
