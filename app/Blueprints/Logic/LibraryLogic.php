@@ -201,11 +201,11 @@ class LibraryLogic extends AppLogic
     {
         $books = $this->records('books')->get()->keyBy('id');
         $loans = $this->dated('loans', $from, $to)->with('contact')->get();
-        $categories = $loans->groupBy(fn (Record $loan) => $books[(int) $loan->value('book')]?->value('category') ?: 'Uncategorised')->sortKeys()->map(fn ($group, $category) => [
+        $categories = $loans->groupBy(fn (Record $loan) => $books->get((int) $loan->value('book'))?->value('category') ?: 'Uncategorised')->sortKeys()->map(fn ($group, $category) => [
             $category, $group->count(), $group->where('status', 'returned')->count(), $group->whereIn('status', self::OPEN)->count(), $group->where('status', 'lost')->count(),
         ])->values()->all();
 
-        $popular = $loans->groupBy(fn (Record $loan) => (int) $loan->value('book'))->map(fn ($group, $id) => [$books[$id]?->title ?? 'Unknown', $books[$id]?->value('author') ?? '—', $group->count()])
+        $popular = $loans->groupBy(fn (Record $loan) => (int) $loan->value('book'))->map(fn ($group, $id) => [$books->get($id)?->title ?? 'Unknown', $books->get($id)?->value('author') ?? '—', $group->count()])
             ->sortByDesc(2)->take(15)->values()->all();
 
         $fines = $loans->filter(fn (Record $loan) => $this->number($loan, 'fine') > 0)->groupBy(fn (Record $loan) => $loan->contact?->name ?? $loan->title)->sortKeys()->map(fn ($group, $borrower) => [

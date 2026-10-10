@@ -165,7 +165,7 @@ class PerformanceLogic extends AppLogic
     {
         $reviews = $this->dated('reviews', $from, $to)->where('status', 'completed')->get();
         $objectives = $this->records('objectives')->get();
-        $names = User::query()->whereIn('id', $reviews->map(fn (Record $review) => $review->value('employee'))->merge($objectives->map(fn (Record $objective) => $objective->value('owner')))->filter()->unique())->pluck('name', 'id');
+        $names = User::query()->whereIn('id', $reviews->toBase()->map(fn (Record $review) => $review->value('employee'))->merge($objectives->map(fn (Record $objective) => $objective->value('owner')))->filter()->unique())->pluck('name', 'id');
 
         return [
             ['title' => 'Ratings by employee', 'columns' => ['Employee', 'Reviews completed', 'Latest rating', 'Average rating'], 'rows' => $reviews

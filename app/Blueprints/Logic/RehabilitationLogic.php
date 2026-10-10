@@ -202,7 +202,7 @@ class RehabilitationLogic extends AppLogic
         $sessions = $this->dated('sessions', $from, $to)->get();
         $cases = $this->records('cases')->get()->keyBy('id');
 
-        $byFunder = $sessions->groupBy(fn (Record $session) => (string) ($cases[$session->value('case')]?->value('funder') ?: 'Private'))->sortKeys()
+        $byFunder = $sessions->groupBy(fn (Record $session) => (string) ($cases->get((int) $session->value('case'))?->value('funder') ?: 'Private'))->sortKeys()
             ->map(fn (Collection $group, string $funder) => [$funder, $group->pluck('data.case')->unique()->count(), $group->where('status', 'attended')->count(), $group->where('status', 'missed')->count(), $this->money($group->where('status', 'attended')->sum('amount'))])->values()->all();
 
         $therapists = User::query()->whereIn('id', $sessions->pluck('assignee_id')->filter()->unique())->pluck('name', 'id');
