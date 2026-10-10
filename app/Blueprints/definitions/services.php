@@ -1,6 +1,13 @@
 <?php
 
+use App\Blueprints\Logic\FieldServiceLogic;
+use App\Blueprints\Logic\GarageLogic;
+use App\Blueprints\Logic\GymLogic;
+use App\Blueprints\Logic\LaundryLogic;
+use App\Blueprints\Logic\LegalLogic;
+use App\Blueprints\Logic\PhotographyLogic;
 use App\Blueprints\Logic\SalonLogic;
+use App\Blueprints\Logic\SecurityCompanyLogic;
 
 /*
  * Service-business apps. Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
@@ -46,7 +53,7 @@ return [
             'start_time:time|Start time',
             'notes:textarea',
         ], ['icon' => 'dumbbell', 'prefix' => 'PT-', 'plural' => 'PT sessions', 'date' => 'Date', 'amount' => 'Fee', 'assignee' => true, 'list' => ['member', 'start_time']]],
-    ]],
+    ], ['logic' => GymLogic::class]],
 
     'field-service' => ['Field service & job cards', 'wrench', 'Call-outs, job cards and technician visits for trades and installers.', [
         'jobs' => ['Job card', 'Job description', 'new,scheduled,in_progress,on_hold,completed,invoiced,cancelled', [
@@ -59,7 +66,7 @@ return [
             'hours:number|Labour hours',
             'customer_signed:checkbox|Customer signed off',
         ], ['icon' => 'clipboard-list', 'prefix' => 'JC-', 'contact' => 'Customer', 'amount' => 'Job value', 'date' => 'Scheduled for', 'due' => 'Complete by', 'assignee' => true, 'list' => ['category', 'priority']]],
-    ]],
+    ], ['logic' => FieldServiceLogic::class]],
 
     'legal' => ['Legal practice', 'scale', 'Matters, court dates and billable time for law firms.', [
         'matters' => ['Matter', 'Matter name', 'open,on_hold,closed', [
@@ -81,7 +88,7 @@ return [
             'hours:number|Hours*',
             'rate:money|Hourly rate',
         ], ['icon' => 'timer', 'prefix' => 'TE-', 'plural' => 'Time entries', 'date' => 'Date', 'amount' => 'Value', 'assignee' => true, 'list' => ['matter', 'hours']]],
-    ]],
+    ], ['logic' => LegalLogic::class]],
 
     'garage' => ['Garage & workshop', 'car', 'Vehicles, workshop job cards and service history.', [
         'vehicles' => ['Vehicle', 'Registration', 'active,sold,scrapped', [
@@ -98,7 +105,7 @@ return [
             'parts_used:textarea|Parts used',
             'labour_hours:number|Labour hours',
         ], ['icon' => 'wrench', 'prefix' => 'GJ-', 'contact' => 'Customer', 'amount' => 'Job total', 'date' => 'Booked in', 'due' => 'Promised by', 'assignee' => true, 'list' => ['vehicle', 'odometer_in']]],
-    ]],
+    ], ['logic' => GarageLogic::class]],
 
     'laundry' => ['Laundry & dry-cleaning', 'shirt', 'Drop-off tickets from intake to collection.', [
         'orders' => ['Order', 'Items', 'received,washing,ready,collected,cancelled', [
@@ -108,7 +115,7 @@ return [
             'paid:checkbox',
             'notes:textarea|Stains / special care',
         ], ['icon' => 'shirt', 'prefix' => 'LDY-', 'contact' => 'Customer', 'amount' => 'Price', 'date' => 'Received on', 'due' => 'Ready by', 'list' => ['pieces', 'service', 'paid']]],
-    ]],
+    ], ['logic' => LaundryLogic::class]],
 
     'security-company' => ['Security company', 'shield-check', 'Client sites, guard posts and occurrence-book entries.', [
         'sites' => ['Site', 'Site name', 'active,suspended,ended', [
@@ -123,7 +130,7 @@ return [
             'type:select=patrol,incident,visitor,alarm,handover,other',
             'details:textarea*',
         ], ['icon' => 'notebook-pen', 'prefix' => 'OB-', 'date' => 'Date', 'assignee' => true, 'list' => ['site', 'type', 'time']]],
-    ]],
+    ], ['logic' => SecurityCompanyLogic::class]],
 
     'photography' => ['Photography studio', 'camera', 'Shoots, galleries and delivery deadlines.', [
         'shoots' => ['Shoot', 'Shoot name', 'enquiry,booked,shot,editing,delivered,cancelled', [
@@ -132,7 +139,7 @@ return [
             'deposit_paid:money|Deposit paid',
             'gallery_link:url|Gallery link',
         ], ['icon' => 'camera', 'prefix' => 'SH-', 'contact' => 'Client', 'amount' => 'Package price', 'date' => 'Shoot date', 'due' => 'Deliver by', 'assignee' => true, 'list' => ['type', 'location']]],
-    ]],
+    ], ['logic' => PhotographyLogic::class]],
 
     'cleaning-home-services' => ['Cleaning & home services', 'spray-can', 'Recurring home-service jobs, cleaners and customer sites.', [
         'customers' => ['Service address', 'Customer name', 'active,paused,ended', [
