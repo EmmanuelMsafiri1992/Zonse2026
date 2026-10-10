@@ -1,10 +1,15 @@
 <?php
 
+use App\Blueprints\Logic\AssetTrackingLogic;
+use App\Blueprints\Logic\BulkDispatchLogic;
+use App\Blueprints\Logic\ConsignmentLogic;
 use App\Blueprints\Logic\DeliveryLogic;
+use App\Blueprints\Logic\EquipmentHireLogic;
 use App\Blueprints\Logic\FreightLogic;
 use App\Blueprints\Logic\InventoryLogic;
 use App\Blueprints\Logic\ManufacturingLogic;
 use App\Blueprints\Logic\OrdersLogic;
+use App\Blueprints\Logic\QualityLogic;
 use App\Blueprints\Logic\SuppliersLogic;
 use App\Blueprints\Logic\WarehouseLogic;
 
@@ -162,7 +167,7 @@ return [
             'consignment:record=consignments|Consignment*',
             'units_sold:number',
         ], ['icon' => 'hand-coins', 'prefix' => 'STL-', 'amount' => 'Amount due', 'date' => 'Date', 'list' => ['consignment', 'units_sold']]],
-    ]],
+    ], ['logic' => ConsignmentLogic::class]],
 
     'equipment-tool-hire-tents' => ['Equipment & tool hire (tents, chairs, machinery, scaffolding)', 'tent', 'Hire items and hire bookings with deposits and returns.', [
         'items' => ['Hire item', 'Item', 'available,on_hire,maintenance,retired', [
@@ -176,7 +181,7 @@ return [
             'delivery_address|Delivery address',
             'damages:textarea|Damages / missing',
         ], ['icon' => 'calendar-check', 'prefix' => 'HB-', 'contact' => 'Customer', 'amount' => 'Hire total', 'date' => 'Out on', 'due' => 'Return by', 'assignee' => true, 'list' => ['deposit']]],
-    ]],
+    ], ['logic' => EquipmentHireLogic::class]],
 
     'weighbridge-bulk-dispatch-quarry' => ['Weighbridge & bulk dispatch (quarry, grain, mining)', 'weight', 'Weighbridge tickets for trucks in and out, with net mass and dispatch notes.', [
         'tickets' => ['Weighbridge ticket', 'Truck registration', 'first_weigh,completed,void', [
@@ -188,7 +193,7 @@ return [
             'driver',
             'order_reference|Order / delivery note',
         ], ['icon' => 'weight', 'prefix' => 'WB-', 'contact' => 'Customer / supplier', 'amount' => 'Value', 'date' => 'Weighed at', 'assignee' => true, 'list' => ['direction', 'product', 'net_mass']]],
-    ]],
+    ], ['logic' => BulkDispatchLogic::class]],
 
     'quality-management-iso' => ['Quality management (ISO, NCRs, CAPA)', 'badge-check', 'Non-conformances, corrective actions and internal audits.', [
         'ncrs' => ['Non-conformance', 'Description', 'open,investigating,closed', [
@@ -205,7 +210,7 @@ return [
             'standard:select=iso_9001,iso_14001,iso_45001,iso_22000,iso_27001,other',
             'findings:textarea',
         ], ['icon' => 'clipboard-check', 'prefix' => 'IA-', 'date' => 'Audit date', 'assignee' => true, 'list' => ['standard']]],
-    ]],
+    ], ['logic' => QualityLogic::class]],
 
     'asset-tracking-with-qr' => ['Asset tracking with QR/RFID', 'scan-qr-code', 'Tagged assets and who has checked them out.', [
         'assets' => ['Asset', 'Asset name', 'available,checked_out,in_repair,lost,disposed', [
@@ -219,7 +224,7 @@ return [
             'holder:user|Checked out to*',
             'condition_on_return|Condition on return',
         ], ['icon' => 'log-out', 'prefix' => 'CHK-', 'date' => 'Checked out', 'due' => 'Due back', 'list' => ['asset', 'holder']]],
-    ]],
+    ], ['logic' => AssetTrackingLogic::class]],
 
     'fuel-station-management-pumps' => ['Fuel station management (pumps, shifts, tank dips)', 'fuel', 'Tanks, daily dips, pump shifts and fuel deliveries.', [
         'tanks' => ['Tank', 'Tank', 'active,out_of_service', [
