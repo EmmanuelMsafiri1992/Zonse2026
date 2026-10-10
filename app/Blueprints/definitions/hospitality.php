@@ -1,5 +1,13 @@
 <?php
 
+use App\Blueprints\Logic\BarLogic;
+use App\Blueprints\Logic\BusBookingLogic;
+use App\Blueprints\Logic\CarRentalLogic;
+use App\Blueprints\Logic\FoodDeliveryLogic;
+use App\Blueprints\Logic\HotelLogic;
+use App\Blueprints\Logic\RestaurantLogic;
+use App\Blueprints\Logic\ToursLogic;
+
 /*
  * Hospitality & travel apps: lodging, food and drink, tours, rentals and venues.
  * Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
@@ -25,7 +33,7 @@ return [
             'type:select=checkout_clean,stayover_clean,deep_clean,turndown,maintenance*',
             'notes:textarea',
         ], ['icon' => 'sparkles', 'prefix' => 'HK-', 'date' => 'Date', 'assignee' => true, 'list' => ['room', 'type']]],
-    ]],
+    ], ['logic' => HotelLogic::class]],
 
     'restaurant' => ['Restaurant & kitchen', 'utensils', 'Menu, tables, orders for the kitchen and reservations.', [
         'menu' => ['Menu item', 'Dish', 'available,sold_out,hidden', [
@@ -51,7 +59,7 @@ return [
             'table:record=tables|Table',
             'phone:phone',
         ], ['icon' => 'calendar-check', 'prefix' => 'RSV-', 'contact' => 'Guest', 'date' => 'Date', 'list' => ['time', 'party_size', 'table']]],
-    ]],
+    ], ['logic' => RestaurantLogic::class]],
 
     'food-delivery' => ['Food ordering & delivery', 'bike', 'Online food orders, riders and delivery status.', [
         'orders' => ['Delivery order', 'Customer name', 'received,preparing,ready,out_for_delivery,delivered,cancelled', [
@@ -63,7 +71,7 @@ return [
             'delivery_fee:money|Delivery fee',
             'payment:select=paid_online,cash_on_delivery,card_on_delivery',
         ], ['icon' => 'bike', 'prefix' => 'FD-', 'contact' => 'Customer', 'amount' => 'Order total', 'date' => 'Ordered at', 'list' => ['channel', 'rider', 'payment']]],
-    ]],
+    ], ['logic' => FoodDeliveryLogic::class]],
 
     'tours' => ['Tours & travel', 'compass', 'Tour packages, departures, bookings and guides.', [
         'tours' => ['Tour', 'Tour name', 'active,seasonal,retired', [
@@ -84,7 +92,7 @@ return [
             'pickup|Pick-up point',
             'passport_details:textarea|Passport / ID details',
         ], ['icon' => 'ticket', 'prefix' => 'TB-', 'contact' => 'Customer', 'amount' => 'Total', 'date' => 'Booked on', 'list' => ['departure', 'travellers']]],
-    ]],
+    ], ['logic' => ToursLogic::class]],
 
     'car-rental' => ['Car rental', 'key-round', 'Rental fleet, bookings, handovers and returns.', [
         'cars' => ['Rental car', 'Make & model', 'available,rented,reserved,maintenance', [
@@ -102,7 +110,7 @@ return [
             'fuel_out:select=full,3_4,1_2,1_4,empty|Fuel out',
             'damage_notes:textarea|Damage notes',
         ], ['icon' => 'key-round', 'prefix' => 'RNT-', 'contact' => 'Customer', 'amount' => 'Rental total', 'date' => 'Pick-up', 'due' => 'Return', 'assignee' => true, 'list' => ['car', 'deposit']]],
-    ]],
+    ], ['logic' => CarRentalLogic::class]],
 
     'bus-booking' => ['Bus & coach seats', 'bus', 'Routes, scheduled trips and seat bookings.', [
         'trips' => ['Trip', 'Route', 'scheduled,boarding,departed,arrived,cancelled', [
@@ -119,7 +127,7 @@ return [
             'id_number|ID / passport',
             'luggage:number|Bags',
         ], ['icon' => 'ticket', 'prefix' => 'TKT-', 'contact' => 'Passenger', 'amount' => 'Fare', 'date' => 'Booked on', 'list' => ['trip', 'seat_number']]],
-    ]],
+    ], ['logic' => BusBookingLogic::class]],
 
     'bar' => ['Bar', 'wine', 'Bar tabs, bottle service and table bookings.', [
         'tabs' => ['Tab', 'Customer / table', 'open,closed,unpaid', [
@@ -133,7 +141,7 @@ return [
             'bottle_package|Bottle package',
             'minimum_spend:money|Minimum spend',
         ], ['icon' => 'wine', 'prefix' => 'VIP-', 'contact' => 'Guest', 'amount' => 'Deposit', 'date' => 'Date', 'list' => ['section', 'party_size', 'minimum_spend']]],
-    ]],
+    ], ['logic' => BarLogic::class]],
 
     'catering-event-food-orders' => ['Catering & event food orders', 'cooking-pot', 'Catering quotes, event menus and kitchen production.', [
         'events' => ['Catering job', 'Event', 'enquiry,quoted,confirmed,delivered,invoiced,cancelled', [
