@@ -6,6 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <title>Verify {{ $document->fiscal_number }} · {{ config('app.name') }}</title>
     @include('partials.fonts')
+    @include('partials.favicon')
     @vite(['resources/scss/app.scss'])
 </head>
 <body class="bg-body-tertiary">

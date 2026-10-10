@@ -6,6 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <title>Sign {{ $signatureRequest->title }} · {{ $signatureRequest->workspace->name }}</title>
     @include('partials.fonts')
+    @include('partials.favicon')
     <style>
         :root { --ink: #323338; --muted: #676879; --line: #d0d4e4; --brand: #0073ea; --soft: #e6f1fd; }
         * { box-sizing: border-box; }

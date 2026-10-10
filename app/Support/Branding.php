@@ -24,7 +24,7 @@ class Branding
     public function __construct(protected WorkspaceContext $context) {}
 
     /**
-     * @return array{name: string, color: string, logo_url: ?string, mark: string, hide_powered_by: bool, custom: bool}
+     * @return array{name: string, color: string, logo_url: ?string, mark: string, mark_url: ?string, hide_powered_by: bool, custom: bool}
      */
     public function current(): array
     {
@@ -36,7 +36,7 @@ class Branding
     }
 
     /**
-     * @return array{name: string, color: string, logo_url: ?string, mark: string, hide_powered_by: bool, custom: bool}
+     * @return array{name: string, color: string, logo_url: ?string, mark: string, mark_url: ?string, hide_powered_by: bool, custom: bool}
      */
     public function for(?Workspace $workspace): array
     {
@@ -49,14 +49,16 @@ class Branding
         $color = $this->ownSetting($workspace, 'color') ?? $this->ownSetting($partner, 'color');
         $logo = ($name || $color) ? ($workspace?->logo_url ?? $partner?->logo_url) : $partner?->logo_url;
         $name ??= config('app.name');
+        $custom = $name !== config('app.name') || $color !== null || $logo !== null;
 
         return [
             'name' => $name,
             'color' => $color ?? self::DEFAULT_COLOR,
             'logo_url' => $logo,
             'mark' => Str::upper(Str::substr($name, 0, 1)),
+            'mark_url' => $custom || $partner ? null : asset('images/logo-mark.png'),
             'hide_powered_by' => $partner !== null,
-            'custom' => $name !== config('app.name') || $color !== null || $logo !== null,
+            'custom' => $custom,
         ];
     }
 

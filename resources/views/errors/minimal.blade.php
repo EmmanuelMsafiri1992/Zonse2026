@@ -7,6 +7,7 @@
     <meta name="robots" content="noindex">
     <title>@yield('title') · {{ config('app.name') }}</title>
     @include('partials.fonts')
+    @include('partials.favicon')
     <style>
         :root { --bg: #eceff8; --card: #fff; --text: #323338; --muted: #676879; --primary: #0073ea; --border: #d0d4e4; }
         @media (prefers-color-scheme: dark) { :root { --bg: #181b34; --card: #292f4c; --text: #d5d8df; --muted: #9699a6; --primary: #579bfc; --border: #4b4e69; } }
@@ -26,7 +27,7 @@
 </head>
 <body>
 <main class="box">
-    <a class="brand" href="{{ url('/') }}"><span class="mark">Z</span>{{ config('app.name') }}</a>
+    <a class="brand" href="{{ url('/') }}"><img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }}" style="height:36px;width:auto"></a>
     <div class="code">@yield('code')</div>
     <h1>@yield('message')</h1>
     <p>@yield('hint', 'Something went wrong on our side. Please try again in a moment.')</p>

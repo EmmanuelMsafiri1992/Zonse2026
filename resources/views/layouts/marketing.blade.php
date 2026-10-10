@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'One platform for every profession') · {{ config('app.name') }}</title>
     @include('partials.fonts')
+    @include('partials.favicon')
     @vite(['resources/scss/app.scss', 'resources/js/app.js'])
 </head>
 <body>
 <nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
     <div class="container">
-        <a class="navbar-brand d-inline-flex align-items-center gap-2 font-heading fw-600" href="{{ route('home') }}">
-            <span class="rounded-3 bg-primary text-white fw-bold" style="width:34px;height:34px;display:grid;place-items:center">Z</span>
-            {{ config('app.name') }}
+        <a class="navbar-brand d-inline-flex align-items-center" href="{{ route('home') }}">
+            <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }}" style="height:40px;width:auto">
         </a>
         <div class="d-flex align-items-center gap-2">
             <a href="{{ route('pricing') }}" class="btn btn-link text-decoration-none d-none d-sm-inline-flex">Pricing</a>

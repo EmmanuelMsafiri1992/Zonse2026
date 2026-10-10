@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Set up') · {{ $brand['name'] }}</title>
     @include('partials.fonts')
+    @include('partials.favicon')
     @vite(['resources/scss/app.scss', 'resources/js/app.js'])
     @if($brandCss = app(\App\Support\Branding::class)->css($brand['color']))<style>{!! $brandCss !!}</style>@endif
 </head>

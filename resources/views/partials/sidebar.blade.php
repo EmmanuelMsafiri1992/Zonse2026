@@ -3,6 +3,8 @@
     <a href="{{ route('dashboard') }}" class="z-brand">
         @if($brand['logo_url'])
             <img src="{{ $brand['logo_url'] }}" alt="" class="rounded-2" style="height:32px;max-width:120px;object-fit:contain">
+        @elseif($brand['mark_url'])
+            <img src="{{ $brand['mark_url'] }}" alt="" class="rounded-2 bg-white" style="width:32px;height:32px;padding:2px;object-fit:contain">
         @else
             <span class="z-brand-mark">{{ $brand['mark'] }}</span>
         @endif

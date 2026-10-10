@@ -39,6 +39,18 @@ class BrandingTest extends TestCase
             ->assertSee('One platform, every profession.');
     }
 
+    public function test_the_platform_logo_shows_until_a_workspace_brands_itself(): void
+    {
+        [$owner, $workspace] = $this->ownerWithWorkspace();
+
+        $this->get(route('home'))->assertOk()->assertSee('images/logo.png', false)->assertSee('favicon.ico', false);
+        $this->get(route('login'))->assertOk()->assertSee('images/logo-mark.png', false);
+        $this->actingAs($owner)->get(route('dashboard'))->assertOk()->assertSee('images/logo-mark.png', false);
+
+        $workspace->putSetting('branding.name', 'Moyo Health');
+        $this->actingAs($owner)->get(route('dashboard'))->assertOk()->assertDontSee('images/logo-mark.png', false);
+    }
+
     public function test_light_colours_get_dark_text_on_buttons(): void
     {
         [$owner, $workspace] = $this->ownerWithWorkspace();
