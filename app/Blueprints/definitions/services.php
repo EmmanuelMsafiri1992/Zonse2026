@@ -6,14 +6,20 @@ use App\Blueprints\Logic\ConsultancyLogic;
 use App\Blueprints\Logic\FieldServiceLogic;
 use App\Blueprints\Logic\GarageLogic;
 use App\Blueprints\Logic\GymLogic;
+use App\Blueprints\Logic\HostingBillingLogic;
 use App\Blueprints\Logic\LaundryLogic;
 use App\Blueprints\Logic\LegalLogic;
+use App\Blueprints\Logic\ManagedItLogic;
+use App\Blueprints\Logic\MusicStudioLogic;
 use App\Blueprints\Logic\PetGroomingLogic;
 use App\Blueprints\Logic\PhotographyLogic;
 use App\Blueprints\Logic\PrintShopLogic;
+use App\Blueprints\Logic\RecruitmentAgencyLogic;
 use App\Blueprints\Logic\SalonLogic;
 use App\Blueprints\Logic\SecurityCompanyLogic;
 use App\Blueprints\Logic\TailoringLogic;
+use App\Blueprints\Logic\TattooLogic;
+use App\Blueprints\Logic\TranslationLogic;
 
 /*
  * Service-business apps. Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
@@ -256,7 +262,7 @@ return [
             'username',
             'location|Where the password is kept',
         ], ['icon' => 'key-round', 'prefix' => 'CRD-', 'plural' => 'Credential notes', 'list' => ['client', 'username']]],
-    ]],
+    ], ['logic' => ManagedItLogic::class]],
 
     'hosting-billing' => ['Hosting & domain billing', 'globe', 'Hosting accounts, domains and renewals.', [
         'domains' => ['Domain', 'Domain name', 'active,pending_transfer,expired,cancelled', [
@@ -270,7 +276,7 @@ return [
             'username|Control panel username',
             'disk_quota:number|Disk quota (GB)',
         ], ['icon' => 'server', 'prefix' => 'HST-', 'contact' => 'Customer', 'amount' => 'Monthly price', 'date' => 'Created on', 'due' => 'Next due', 'list' => ['plan', 'server']]],
-    ]],
+    ], ['logic' => HostingBillingLogic::class]],
 
     'translation' => ['Translation & interpreting', 'languages', 'Translation jobs and interpreting bookings.', [
         'jobs' => ['Translation job', 'Document / job', 'quoted,assigned,translating,proofreading,delivered', [
@@ -281,7 +287,7 @@ return [
             'rate:money|Rate',
             'translator:user|Translator',
         ], ['icon' => 'languages', 'prefix' => 'TRN-', 'contact' => 'Client', 'amount' => 'Price', 'date' => 'Received on', 'due' => 'Due date', 'list' => ['type', 'source_language', 'target_language']]],
-    ]],
+    ], ['logic' => TranslationLogic::class]],
 
     'recruitment-agency' => ['Recruitment agency', 'user-search', 'Vacancies, candidates and placements with fees.', [
         'vacancies' => ['Vacancy', 'Job title', 'open,shortlisting,interviewing,filled,cancelled', [
@@ -298,7 +304,7 @@ return [
             'expected_salary:money|Expected salary',
             'cv_url:url|CV link',
         ], ['icon' => 'user-search', 'prefix' => 'CAN-', 'amount' => 'Placement fee', 'date' => 'Added on', 'assignee' => true, 'list' => ['vacancy', 'current_role', 'expected_salary']]],
-    ]],
+    ], ['logic' => RecruitmentAgencyLogic::class]],
 
     'music-studio' => ['Music & recording studio', 'music', 'Studio sessions, projects and music lessons.', [
         'sessions' => ['Studio session', 'Artist / band', 'booked,in_session,completed,cancelled', [
@@ -312,7 +318,7 @@ return [
             'tracks:number',
             'files_url:url|Files link',
         ], ['icon' => 'disc-3', 'prefix' => 'MP-', 'contact' => 'Client', 'amount' => 'Budget', 'due' => 'Release date', 'assignee' => true, 'list' => ['tracks']]],
-    ]],
+    ], ['logic' => MusicStudioLogic::class]],
 
     'tattoo' => ['Tattoo & piercing studio', 'pen-tool', 'Bookings, consent forms and aftercare.', [
         'bookings' => ['Booking', 'Client name', 'consultation,booked,in_progress,healed,touch_up,cancelled', [
@@ -324,5 +330,5 @@ return [
             'consent_signed:checkbox|Consent signed',
             'over_18_verified:checkbox|Age verified',
         ], ['icon' => 'pen-tool', 'prefix' => 'TAT-', 'contact' => 'Client', 'amount' => 'Price', 'date' => 'Appointment', 'list' => ['type', 'artist', 'consent_signed']]],
-    ]],
+    ], ['logic' => TattooLogic::class]],
 ];
