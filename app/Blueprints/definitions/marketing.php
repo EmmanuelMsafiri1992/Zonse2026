@@ -1,5 +1,12 @@
 <?php
 
+use App\Blueprints\Logic\EmailMarketingLogic;
+use App\Blueprints\Logic\PromoCodeLogic;
+use App\Blueprints\Logic\SeoLogic;
+use App\Blueprints\Logic\SmsMarketingLogic;
+use App\Blueprints\Logic\SocialMediaLogic;
+use App\Blueprints\Logic\WebsiteBuilderLogic;
+
 /*
  * Marketing apps: campaigns, channels, content and media.
  * Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
@@ -23,7 +30,7 @@ return [
             'trigger:select=signed_up,purchased,birthday,inactive_30_days,tag_added*',
             'steps:textarea|Emails & delays*',
         ], ['icon' => 'workflow', 'prefix' => 'SEQ-', 'list' => ['trigger']]],
-    ]],
+    ], ['logic' => EmailMarketingLogic::class]],
 
     'sms-marketing' => ['SMS & WhatsApp campaigns', 'message-square', 'Bulk SMS and WhatsApp messages, templates and delivery results.', [
         'templates' => ['Template', 'Template name', 'draft,approved,rejected', [
@@ -39,7 +46,7 @@ return [
             'delivered:number',
             'cost:money',
         ], ['icon' => 'send', 'prefix' => 'SMS-', 'date' => 'Send at', 'assignee' => true, 'list' => ['channel', 'recipients', 'delivered']]],
-    ]],
+    ], ['logic' => SmsMarketingLogic::class]],
 
     'social-media-scheduling-inbox' => ['Social media scheduling & inbox', 'share-2', 'A content calendar for posts and an inbox for comments and DMs.', [
         'posts' => ['Post', 'Post caption', 'idea,draft,scheduled,published', [
@@ -54,7 +61,7 @@ return [
             'type:select=comment,direct_message,mention,review',
             'reply:textarea',
         ], ['icon' => 'inbox', 'prefix' => 'MSG-', 'date' => 'Received at', 'assignee' => true, 'list' => ['network', 'from_handle', 'type']]],
-    ]],
+    ], ['logic' => SocialMediaLogic::class]],
 
     'website-builder' => ['Website & landing pages', 'layout', 'Website pages, landing pages and blog posts, plus the leads they capture.', [
         'pages' => ['Page', 'Page title', 'draft,published,unpublished', [
@@ -70,7 +77,7 @@ return [
             'phone:phone',
             'message:textarea',
         ], ['icon' => 'inbox', 'prefix' => 'SUB-', 'contact' => 'Contact', 'date' => 'Submitted at', 'assignee' => true, 'list' => ['page', 'email', 'phone']]],
-    ]],
+    ], ['logic' => WebsiteBuilderLogic::class]],
 
     'event-marketing-promo-codes' => ['Event marketing & promo codes', 'badge-percent', 'Promotions and discount codes, with usage tracking.', [
         'promotions' => ['Promotion', 'Promotion name', 'planned,live,ended', [
@@ -85,7 +92,7 @@ return [
             'max_uses:number|Max uses',
             'times_used:number|Times used',
         ], ['icon' => 'badge-percent', 'prefix' => 'PC-', 'due' => 'Expires on', 'list' => ['promotion', 'discount_type', 'times_used']]],
-    ]],
+    ], ['logic' => PromoCodeLogic::class]],
 
     'seo-analytics-dashboard' => ['SEO & analytics dashboard', 'line-chart', 'Keyword rankings, short links and QR codes with click counts.', [
         'keywords' => ['Keyword', 'Keyword', 'tracking,paused', [
@@ -100,7 +107,7 @@ return [
             'qr_code:checkbox|Print as QR code',
             'clicks:number',
         ], ['icon' => 'qr-code', 'prefix' => 'LNK-', 'plural' => 'Short links & QR codes', 'list' => ['short_code', 'clicks']]],
-    ]],
+    ], ['logic' => SeoLogic::class]],
 
     'ads-manager-meta-google' => ['Ads manager (Meta/Google reporting)', 'bar-chart-3', 'Ad campaigns across Meta and Google with spend and results.', [
         'campaigns' => ['Ad campaign', 'Campaign name', 'draft,active,paused,ended', [
