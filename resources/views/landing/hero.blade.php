@@ -48,15 +48,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="z-hero-float z-hero-float-1">
-                        <span class="ico" style="background:#7AAE1A"><x-icon name="check" class="zi zi-sm" /></span>
-                        <div><b>Invoice paid</b><small>MWK 450,000 · just now</small></div>
-                    </div>
-                    <div class="z-hero-float z-hero-float-2">
-                        <span class="ico" style="background:#007C8A"><x-icon name="calendar-check" class="zi zi-sm" /></span>
-                        <div><b>10:30 appointment</b><small>Patient checked in</small></div>
-                    </div>
                 </div>
             </div>
         </div>
