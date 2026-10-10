@@ -1,6 +1,13 @@
 <?php
 
+use App\Blueprints\Logic\EstateLevyLogic;
+use App\Blueprints\Logic\HomeLoanLogic;
+use App\Blueprints\Logic\PlotSalesLogic;
+use App\Blueprints\Logic\PropertyListingsLogic;
 use App\Blueprints\Logic\RentalsLogic;
+use App\Blueprints\Logic\RentCollectionLogic;
+use App\Blueprints\Logic\RepairRequestsLogic;
+use App\Blueprints\Logic\ShortStayLogic;
 
 /*
  * Property apps. Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
@@ -34,7 +41,7 @@ return [
             'details:textarea',
             'contractor|Contractor',
         ], ['icon' => 'hammer', 'prefix' => 'MR-', 'contact' => 'Reported by', 'amount' => 'Cost', 'date' => 'Reported on', 'due' => 'Fix by', 'assignee' => true, 'list' => ['location', 'category', 'urgency']]],
-    ]],
+    ], ['logic' => RepairRequestsLogic::class]],
 
     'property-listings' => ['Property listings & agents', 'building-2', 'Listings, mandates and viewings for estate agents.', [
         'listings' => ['Listing', 'Listing title', 'draft,on_market,under_offer,sold,let,withdrawn', [
@@ -51,7 +58,7 @@ return [
             'time:time',
             'feedback:textarea',
         ], ['icon' => 'eye', 'prefix' => 'VW-', 'contact' => 'Prospect', 'date' => 'Date', 'assignee' => true, 'list' => ['listing', 'time']]],
-    ]],
+    ], ['logic' => PropertyListingsLogic::class]],
 
     'rent-collection' => ['Rent collection', 'coins', 'Rent charges, payments received, arrears and utility recharges.', [
         'charges' => ['Rent charge', 'Tenant & period', 'due,part_paid,paid,in_arrears,written_off', [
@@ -65,7 +72,7 @@ return [
             'charge:record=charges|Rent charge*',
             'method:select=bank,cash,mobile_money,debit_order,card*',
         ], ['icon' => 'coins', 'prefix' => 'RP-', 'contact' => 'Tenant', 'amount' => 'Amount', 'date' => 'Received on', 'list' => ['charge', 'method']]],
-    ]],
+    ], ['logic' => RentCollectionLogic::class]],
 
     'estate-management' => ['Estates, HOAs & levies', 'fence', 'Owners, levies, estate rules and committee matters.', [
         'owners' => ['Owner / unit', 'Owner name', 'current,in_arrears,sold', [
@@ -83,7 +90,7 @@ return [
             'raised_by|Raised by',
             'resolution:textarea',
         ], ['icon' => 'gavel', 'prefix' => 'EM-', 'date' => 'Raised on', 'assignee' => true, 'list' => ['type', 'raised_by']]],
-    ]],
+    ], ['logic' => EstateLevyLogic::class]],
 
     'short-stay-rental-airbnb-style' => ['Short-stay rental (Airbnb-style)', 'house', 'Listings, guest stays, cleaning turnovers and owner payouts.', [
         'listings' => ['Listing', 'Listing name', 'active,blocked,unlisted', [
@@ -100,7 +107,7 @@ return [
             'access_code|Door / key code',
             'cleaning_done:checkbox|Turnover clean done',
         ], ['icon' => 'calendar-check', 'prefix' => 'STY-', 'contact' => 'Guest', 'amount' => 'Payout', 'date' => 'Check-in', 'due' => 'Check-out', 'assignee' => true, 'list' => ['listing', 'channel', 'cleaning_done']]],
-    ]],
+    ], ['logic' => ShortStayLogic::class]],
 
     'land-plot-sales' => ['Land & plot sales', 'map', 'Subdivided plots, buyers and instalment sales.', [
         'plots' => ['Plot', 'Plot / stand number', 'available,reserved,sold,transferred', [
@@ -115,7 +122,7 @@ return [
             'instalment:money|Monthly instalment',
             'paid_to_date:money|Paid to date',
         ], ['icon' => 'file-signature', 'prefix' => 'PS-', 'contact' => 'Buyer', 'amount' => 'Sale price', 'date' => 'Sale date', 'due' => 'Final payment', 'assignee' => true, 'list' => ['plot', 'instalment', 'paid_to_date']]],
-    ]],
+    ], ['logic' => PlotSalesLogic::class]],
 
     'mortgage-home-loan-origination' => ['Mortgage / home-loan origination', 'landmark', 'Home-loan applications from enquiry to registration.', [
         'applications' => ['Home-loan application', 'Applicant name', 'enquiry,documents,submitted,valuation,approved,declined,registered', [
@@ -127,7 +134,7 @@ return [
             'interest_rate:number|Interest rate %',
             'term_years:number|Term (years)',
         ], ['icon' => 'landmark', 'prefix' => 'HL-', 'contact' => 'Applicant', 'amount' => 'Loan amount', 'date' => 'Applied on', 'assignee' => true, 'list' => ['lender', 'purchase_price', 'interest_rate']]],
-    ]],
+    ], ['logic' => HomeLoanLogic::class]],
 
     'property-valuation' => ['Property valuation', 'ruler', 'Valuation instructions, inspections and reports.', [
         'valuations' => ['Valuation', 'Property address', 'instructed,inspected,report_draft,issued,cancelled', [
