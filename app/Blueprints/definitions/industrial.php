@@ -1,5 +1,12 @@
 <?php
 
+use App\Blueprints\Logic\ContractorAccessLogic;
+use App\Blueprints\Logic\LabLogic;
+use App\Blueprints\Logic\MesLogic;
+use App\Blueprints\Logic\MineLogic;
+use App\Blueprints\Logic\PermitLogic;
+use App\Blueprints\Logic\WeighbridgeLogic;
+
 /*
  * Industrial apps: mining, weighing, production floor, labs and site safety.
  * Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
@@ -28,7 +35,7 @@ return [
             'tonnes:number|Tonnes on hand',
             'location',
         ], ['icon' => 'mountain', 'prefix' => 'STK-', 'date' => 'Surveyed on', 'list' => ['product', 'tonnes']]],
-    ]],
+    ], ['logic' => MineLogic::class]],
 
     'weighbridge' => ['Weighbridge', 'weight', 'Weighbridge tickets with gross, tare and net mass.', [
         'tickets' => ['Weighbridge ticket', 'Vehicle registration', 'first_weigh,completed,void', [
@@ -40,7 +47,7 @@ return [
             'driver',
             'order_reference|Order / delivery note',
         ], ['icon' => 'weight', 'prefix' => 'WB-', 'contact' => 'Customer / supplier', 'amount' => 'Value', 'date' => 'Date', 'assignee' => true, 'list' => ['direction', 'product', 'net']]],
-    ]],
+    ], ['logic' => WeighbridgeLogic::class]],
 
     'manufacturing-execution' => ['Shop-floor execution (MES)', 'factory', 'Machines, production runs, output, scrap and downtime.', [
         'machines' => ['Machine / line', 'Machine name', 'running,idle,down,maintenance', [
@@ -56,7 +63,7 @@ return [
             'downtime_minutes:number|Downtime (min)',
             'downtime_reason|Downtime reason',
         ], ['icon' => 'factory', 'prefix' => 'RUN-', 'date' => 'Date', 'assignee' => true, 'list' => ['machine', 'good_quantity', 'scrap']]],
-    ]],
+    ], ['logic' => MesLogic::class]],
 
     'lab-testing-certificates-of' => ['Lab testing & certificates of analysis', 'flask-conical', 'Samples received, test results and certificates of analysis.', [
         'samples' => ['Sample', 'Sample description', 'received,testing,results_ready,certificate_issued,rejected', [
@@ -74,7 +81,7 @@ return [
             'specification|Specification limit',
             'analyst:user|Analyst',
         ], ['icon' => 'flask-conical', 'prefix' => 'RES-', 'date' => 'Tested on', 'list' => ['sample', 'value', 'specification']]],
-    ]],
+    ], ['logic' => LabLogic::class]],
 
     'permit-to-work-safety' => ['Permit to work', 'file-lock', 'Hot-work, confined-space and isolation permits with sign-offs.', [
         'permits' => ['Work permit', 'Work description', 'requested,approved,active,suspended,closed,cancelled', [
@@ -88,7 +95,7 @@ return [
             'start_time:time|Valid from',
             'end_time:time|Valid to',
         ], ['icon' => 'file-lock', 'prefix' => 'PTW-', 'date' => 'Date', 'assignee' => true, 'list' => ['type', 'location', 'contractor']]],
-    ]],
+    ], ['logic' => PermitLogic::class]],
 
     'contractor-site-access-management' => ['Contractor & site access', 'badge-check', 'Contractor companies, worker inductions and site sign-ins.', [
         'workers' => ['Contractor worker', 'Worker name', 'pending,inducted,blocked,expired', [
@@ -106,5 +113,5 @@ return [
             'area|Work area',
             'host|Host / supervisor',
         ], ['icon' => 'log-in', 'prefix' => 'SI-', 'date' => 'Date', 'list' => ['worker', 'time_in', 'time_out']]],
-    ]],
+    ], ['logic' => ContractorAccessLogic::class]],
 ];
