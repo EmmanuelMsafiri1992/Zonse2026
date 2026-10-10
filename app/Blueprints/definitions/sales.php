@@ -1,5 +1,13 @@
 <?php
 
+use App\Blueprints\Logic\AffiliateLogic;
+use App\Blueprints\Logic\ContractLogic;
+use App\Blueprints\Logic\FeedbackLogic;
+use App\Blueprints\Logic\LiveChatLogic;
+use App\Blueprints\Logic\LoyaltyLogic;
+use App\Blueprints\Logic\ProposalLogic;
+use App\Blueprints\Logic\SalesCommissionLogic;
+
 /*
  * Sales & customer apps: chat, loyalty, feedback, contracts, commissions and after-sales.
  * Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
@@ -18,7 +26,7 @@ return [
             'answer:textarea|Reply*',
             'hand_over:checkbox|Hand over to a person afterwards',
         ], ['icon' => 'bot', 'prefix' => 'BOT-', 'plural' => 'Bot replies', 'list' => ['keywords', 'hand_over']]],
-    ]],
+    ], ['logic' => LiveChatLogic::class]],
 
     'loyalty' => ['Loyalty & rewards', 'gift', 'Loyalty members, points earned and rewards redeemed.', [
         'members' => ['Loyalty member', 'Member name', 'active,inactive', [
@@ -33,7 +41,7 @@ return [
             'points:number*',
             'reward|Reward redeemed',
         ], ['icon' => 'sparkles', 'prefix' => 'PTS-', 'amount' => 'Spend', 'date' => 'Date', 'list' => ['member', 'type', 'points']]],
-    ]],
+    ], ['logic' => LoyaltyLogic::class]],
 
     'feedback' => ['Feedback, surveys & reviews', 'star', 'Surveys, NPS scores and customer reviews in one place.', [
         'surveys' => ['Survey', 'Survey title', 'draft,live,closed', [
@@ -48,7 +56,7 @@ return [
             'comment:textarea',
             'reply:textarea|Our reply',
         ], ['icon' => 'star', 'prefix' => 'FB-', 'plural' => 'Responses & reviews', 'contact' => 'Customer', 'date' => 'Received on', 'assignee' => true, 'list' => ['source', 'score']]],
-    ]],
+    ], ['logic' => FeedbackLogic::class]],
 
     'contracts' => ['Contracts & e-signature', 'pen-tool', 'Contracts, signatories and renewal dates.', [
         'contracts' => ['Contract', 'Contract title', 'draft,sent,signed,active,expired,terminated', [
@@ -62,7 +70,7 @@ return [
             'contract:record=contracts|Contract*',
             'owner:select=us,them*',
         ], ['icon' => 'list-checks', 'prefix' => 'OBL-', 'due' => 'Due date', 'assignee' => true, 'list' => ['contract', 'owner']]],
-    ]],
+    ], ['logic' => ContractLogic::class]],
 
     'affiliate-referral-management' => ['Affiliate & referral management', 'share-2', 'Affiliates, referral codes, referred sales and commissions owed.', [
         'affiliates' => ['Affiliate', 'Affiliate name', 'active,paused,terminated', [
@@ -74,7 +82,7 @@ return [
             'affiliate:record=affiliates|Affiliate*',
             'sale_value:money|Sale value',
         ], ['icon' => 'user-plus', 'prefix' => 'REF-', 'amount' => 'Commission', 'date' => 'Referred on', 'list' => ['affiliate', 'sale_value']]],
-    ]],
+    ], ['logic' => AffiliateLogic::class]],
 
     'proposals-sales-documents-builder' => ['Proposals & sales documents builder', 'file-text', 'Proposals with sections, pricing and acceptance tracking.', [
         'proposals' => ['Proposal', 'Proposal title', 'draft,sent,viewed,accepted,declined,expired', [
@@ -87,7 +95,7 @@ return [
             'industry',
             'body:textarea|Template text*',
         ], ['icon' => 'copy', 'prefix' => 'TPL-', 'list' => ['industry']]],
-    ]],
+    ], ['logic' => ProposalLogic::class]],
 
     'sales-commissions-targets' => ['Sales commissions & targets', 'target', 'Sales targets per rep and the commissions they earn.', [
         'targets' => ['Target', 'Period', 'active,achieved,missed', [
@@ -99,7 +107,7 @@ return [
             'sale_value:money|Sale value*',
             'rate:number|Rate %',
         ], ['icon' => 'hand-coins', 'prefix' => 'COM-', 'amount' => 'Commission', 'date' => 'Date', 'list' => ['rep', 'sale_value', 'rate']]],
-    ]],
+    ], ['logic' => SalesCommissionLogic::class]],
 
     'call-centre' => ['Call centre', 'phone', 'Call logs, call lists for outbound campaigns and dispositions.', [
         'calls' => ['Call', 'Summary', 'answered,missed,voicemail,callback', [
