@@ -1,5 +1,11 @@
 <?php
 
+use App\Blueprints\Logic\BodaBodaLogic;
+use App\Blueprints\Logic\CoachOperatorLogic;
+use App\Blueprints\Logic\HaulageLogic;
+use App\Blueprints\Logic\StaffTransportLogic;
+use App\Blueprints\Logic\TaxiDispatchLogic;
+
 /*
  * Transport apps: passenger, rider and haulage operations.
  * Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
@@ -21,7 +27,7 @@ return [
             'distance:number|Distance (km)',
             'payment:select=cash,card,mobile_money,account',
         ], ['icon' => 'car-taxi-front', 'prefix' => 'RIDE-', 'contact' => 'Passenger', 'amount' => 'Fare', 'date' => 'Date', 'list' => ['driver', 'pickup', 'dropoff']]],
-    ]],
+    ], ['logic' => TaxiDispatchLogic::class]],
 
     'motorbike-boda-boda-delivery-rider' => ['Motorbike / boda-boda riders', 'bike', 'Riders, bikes, daily remittances and delivery jobs.', [
         'riders' => ['Rider', 'Rider name', 'active,suspended,left', [
@@ -41,7 +47,7 @@ return [
             'dropoff|Drop-off*',
             'recipient_phone:phone|Recipient phone',
         ], ['icon' => 'bike', 'prefix' => 'BDJ-', 'contact' => 'Customer', 'amount' => 'Fee', 'date' => 'Date', 'list' => ['rider', 'pickup', 'dropoff']]],
-    ]],
+    ], ['logic' => BodaBodaLogic::class]],
 
     'bus-coach-booking' => ['Bus & coach operator', 'bus-front', 'Coach fleet, charters and crew assignments.', [
         'coaches' => ['Coach', 'Fleet number', 'available,on_trip,maintenance', [
@@ -56,7 +62,7 @@ return [
             'driver:user|Driver',
             'departure_time:time|Departure time',
         ], ['icon' => 'route', 'prefix' => 'CHT-', 'contact' => 'Client', 'amount' => 'Price', 'date' => 'Departs on', 'due' => 'Returns on', 'list' => ['coach', 'route', 'driver']]],
-    ]],
+    ], ['logic' => CoachOperatorLogic::class]],
 
     'school-bus-staff-transport' => ['School bus & staff transport', 'bus', 'Routes, passengers on each route and daily trip logs.', [
         'routes' => ['Route', 'Route name', 'active,suspended', [
@@ -78,7 +84,7 @@ return [
             'odometer:number',
             'incidents:textarea',
         ], ['icon' => 'clipboard-list', 'prefix' => 'TL-', 'date' => 'Date', 'assignee' => true, 'list' => ['route', 'run', 'passengers_carried']]],
-    ]],
+    ], ['logic' => StaffTransportLogic::class]],
 
     'haulage' => ['Haulage & trucking', 'truck', 'Loads, trips, rates and proof of delivery.', [
         'loads' => ['Load', 'Load reference', 'quoted,booked,loading,in_transit,delivered,invoiced', [
@@ -95,7 +101,7 @@ return [
             'load:record=loads|Load*',
             'type:select=fuel,tolls,border_fees,meals,repairs,other*',
         ], ['icon' => 'receipt', 'prefix' => 'TE-', 'amount' => 'Amount', 'date' => 'Date', 'list' => ['load', 'type']]],
-    ]],
+    ], ['logic' => HaulageLogic::class]],
 
     'airport-shuttles-chauffeur-services' => ['Airport shuttles & chauffeur services', 'plane-landing', 'Transfers with flight details, drivers and meet-and-greet.', [
         'transfers' => ['Transfer', 'Passenger name', 'booked,assigned,on_route,completed,no_show,cancelled', [
