@@ -1,5 +1,10 @@
 <?php
 
+use App\Blueprints\Logic\IspBillingLogic;
+use App\Blueprints\Logic\SolarPaygLogic;
+use App\Blueprints\Logic\UtilityBillingLogic;
+use App\Blueprints\Logic\WasteCollectionLogic;
+
 /*
  * Utilities & telecoms apps: metered billing, subscriptions and service delivery.
  * Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
@@ -21,7 +26,7 @@ return [
             'consumption:number',
             'photo_url:url|Meter photo',
         ], ['icon' => 'scan', 'prefix' => 'RDG-', 'amount' => 'Bill amount', 'date' => 'Read on', 'due' => 'Due date', 'assignee' => true, 'list' => ['meter', 'current', 'consumption']]],
-    ]],
+    ], ['logic' => UtilityBillingLogic::class]],
 
     'isp-billing' => ['ISP / WISP billing', 'wifi', 'Internet subscribers, packages, installations and service status.', [
         'subscribers' => ['Subscriber', 'Subscriber name', 'pending_install,active,suspended,cancelled', [
@@ -37,7 +42,7 @@ return [
             'type:select=no_connection,slow,intermittent,equipment,billing*',
             'notes:textarea',
         ], ['icon' => 'router', 'prefix' => 'FLT-', 'date' => 'Logged on', 'assignee' => true, 'list' => ['subscriber', 'type']]],
-    ]],
+    ], ['logic' => IspBillingLogic::class]],
 
     'solar-energy-systems-monitoring' => ['Solar energy & PAYG systems', 'sun', 'Installed solar systems, pay-as-you-go accounts and generation readings.', [
         'systems' => ['Solar system', 'Customer / site', 'active,locked,repossessed,paid_off', [
@@ -54,7 +59,7 @@ return [
             'battery_health:number|Battery health %',
             'alerts|Alerts',
         ], ['icon' => 'zap', 'prefix' => 'GEN-', 'date' => 'Date', 'list' => ['system', 'kwh', 'battery_health']]],
-    ]],
+    ], ['logic' => SolarPaygLogic::class]],
 
     'waste-management-refuse-collection' => ['Waste management & refuse collection', 'trash-2', 'Customers, collection routes and collections done.', [
         'customers' => ['Collection point', 'Customer / address', 'active,suspended,cancelled', [
@@ -71,7 +76,7 @@ return [
             'landfill_ticket|Landfill / weighbridge ticket',
             'missed_stops:textarea|Missed stops',
         ], ['icon' => 'recycle', 'prefix' => 'COL-', 'date' => 'Date', 'assignee' => true, 'list' => ['truck', 'stops_done', 'tonnage']]],
-    ]],
+    ], ['logic' => WasteCollectionLogic::class]],
 
     'borehole-water-delivery-tanker' => ['Borehole & water tanker delivery', 'droplet', 'Water orders delivered by tanker, plus borehole drilling jobs.', [
         'deliveries' => ['Water delivery', 'Customer name', 'ordered,dispatched,delivered,paid,cancelled', [
