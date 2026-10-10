@@ -5,12 +5,19 @@
     @if($professions->isNotEmpty())
         <section class="py-5 bg-white border-top border-bottom">
             <div class="container">
-                <h4 class="text-center mb-4">Built for people like you</h4>
-                <div class="d-flex flex-wrap justify-content-center gap-2">
-                    @foreach($professions as $p)
-                        <span class="z-chip"><x-icon :name="$p->icon ?: 'briefcase'" class="zi zi-sm text-primary" /> {{ $p->name }}</span>
-                    @endforeach
-                    <span class="z-chip">…and many more</span>
+                <div class="row g-4 align-items-start">
+                    <div class="col-lg-4">
+                        <h3 class="mb-2">Built for people like you</h3>
+                        <p class="text-muted mb-0">Pick your profession when you sign up and we suggest the apps that fit how you work.</p>
+                    </div>
+                    <div class="col-lg-8">
+                        <ul class="z-profession-list">
+                            @foreach($professions as $p)
+                                <li>{{ $p->name }}</li>
+                            @endforeach
+                            <li class="text-muted">and many more</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </section>

@@ -414,3 +414,7 @@ $z-hero-lime: #A6D93B;
 @media (max-width: 575.98px) {
   .z-hero-side { display: none; }
 }
+.z-profession-list { list-style: none; margin: 0; padding: 0; columns: 2; column-gap: 2rem; font-size: 1rem;
+  li { padding: .55rem 0; border-bottom: 1px solid $z-border; break-inside: avoid; }
+  @media (min-width: 768px) { columns: 3; }
+}
