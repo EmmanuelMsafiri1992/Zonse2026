@@ -1,13 +1,19 @@
 <?php
 
+use App\Blueprints\Logic\CleaningScheduleLogic;
+use App\Blueprints\Logic\CoworkingLogic;
 use App\Blueprints\Logic\EstateLevyLogic;
 use App\Blueprints\Logic\HomeLoanLogic;
+use App\Blueprints\Logic\ParkingLogic;
 use App\Blueprints\Logic\PlotSalesLogic;
 use App\Blueprints\Logic\PropertyListingsLogic;
+use App\Blueprints\Logic\PropertyValuationLogic;
 use App\Blueprints\Logic\RentalsLogic;
 use App\Blueprints\Logic\RentCollectionLogic;
 use App\Blueprints\Logic\RepairRequestsLogic;
+use App\Blueprints\Logic\SelfStorageLogic;
 use App\Blueprints\Logic\ShortStayLogic;
+use App\Blueprints\Logic\TenantPortalLogic;
 
 /*
  * Property apps. Format: see App\Blueprints\Blueprint and App\Blueprints\Entity.
@@ -145,7 +151,7 @@ return [
             'market_value:money|Market value',
             'report_url:url|Report link',
         ], ['icon' => 'ruler', 'prefix' => 'VAL-', 'contact' => 'Client', 'amount' => 'Fee', 'date' => 'Inspected on', 'due' => 'Report due', 'assignee' => true, 'list' => ['purpose', 'property_type', 'market_value']]],
-    ]],
+    ], ['logic' => PropertyValuationLogic::class]],
 
     'facility-management-cleaning-schedules' => ['Facility management & cleaning schedules', 'spray-can', 'Sites, cleaning schedules and checklists done.', [
         'areas' => ['Area', 'Area / site', 'active,closed', [
@@ -159,7 +165,7 @@ return [
             'time:time',
             'issues:textarea',
         ], ['icon' => 'spray-can', 'prefix' => 'CLN-', 'date' => 'Date', 'list' => ['area', 'cleaner', 'time']]],
-    ]],
+    ], ['logic' => CleaningScheduleLogic::class]],
 
     'coworking' => ['Co-working & desk booking', 'armchair', 'Members, desk and room bookings for a co-working space.', [
         'members' => ['Member', 'Member name', 'active,paused,cancelled', [
@@ -172,7 +178,7 @@ return [
             'start_time:time|Start*',
             'end_time:time|End',
         ], ['icon' => 'armchair', 'prefix' => 'DSK-', 'amount' => 'Charge', 'date' => 'Date', 'list' => ['member', 'start_time', 'end_time']]],
-    ]],
+    ], ['logic' => CoworkingLogic::class]],
 
     'self-storage-units' => ['Self-storage units', 'warehouse', 'Storage units, rentals and gate access.', [
         'units' => ['Storage unit', 'Unit number', 'vacant,occupied,reserved,overlocked', [
@@ -186,7 +192,7 @@ return [
             'insurance:checkbox|Contents insured',
             'deposit:money',
         ], ['icon' => 'key', 'prefix' => 'SR-', 'contact' => 'Customer', 'amount' => 'Monthly rent', 'date' => 'Move-in', 'due' => 'Paid until', 'list' => ['unit', 'gate_code']]],
-    ]],
+    ], ['logic' => SelfStorageLogic::class]],
 
     'parking-management' => ['Parking management', 'square-parking', 'Parking bays, permits and sessions with fees.', [
         'permits' => ['Permit', 'Holder name', 'active,expired,cancelled', [
@@ -199,7 +205,7 @@ return [
             'exit_time:time|Exit',
             'zone',
         ], ['icon' => 'square-parking', 'prefix' => 'PK-', 'amount' => 'Fee', 'date' => 'Date', 'assignee' => true, 'list' => ['entry_time', 'exit_time', 'zone']]],
-    ]],
+    ], ['logic' => ParkingLogic::class]],
 
     'tenant-portal' => ['Tenant portal', 'door-open', 'Tenant portal accounts and the requests tenants send.', [
         'accounts' => ['Portal account', 'Tenant name', 'invited,active,disabled', [
@@ -213,5 +219,5 @@ return [
             'message:textarea*',
             'reply:textarea',
         ], ['icon' => 'inbox', 'prefix' => 'TPR-', 'date' => 'Received on', 'assignee' => true, 'list' => ['account', 'type']]],
-    ]],
+    ], ['logic' => TenantPortalLogic::class]],
 ];
