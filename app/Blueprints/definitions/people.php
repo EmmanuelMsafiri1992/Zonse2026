@@ -3,9 +3,14 @@
 use App\Blueprints\Logic\AttendanceLogic;
 use App\Blueprints\Logic\DisciplinaryLogic;
 use App\Blueprints\Logic\EmployeeSelfServiceLogic;
+use App\Blueprints\Logic\ExitLogic;
+use App\Blueprints\Logic\HealthSafetyLogic;
 use App\Blueprints\Logic\HrLogic;
+use App\Blueprints\Logic\OrgChartLogic;
+use App\Blueprints\Logic\OvertimeLogic;
 use App\Blueprints\Logic\PerformanceLogic;
 use App\Blueprints\Logic\RostersLogic;
+use App\Blueprints\Logic\StaffingLogic;
 use App\Blueprints\Logic\TrainingLogic;
 
 /*
@@ -141,7 +146,7 @@ return [
             'hours:number*',
             'payout:money|Worker payout',
         ], ['icon' => 'clock', 'prefix' => 'WTS-', 'amount' => 'Client billing', 'date' => 'Week starting', 'list' => ['placement', 'hours', 'payout']]],
-    ]],
+    ], ['logic' => StaffingLogic::class]],
 
     'overtime' => ['Overtime', 'clock-plus', 'Overtime claims, allowances and staff loans and advances.', [
         'claims' => ['Overtime claim', 'Reason', 'submitted,approved,rejected,paid', [
@@ -158,7 +163,7 @@ return [
             'instalment:money|Monthly deduction',
             'balance:money',
         ], ['icon' => 'hand-coins', 'prefix' => 'ADV-', 'plural' => 'Loans & advances', 'amount' => 'Amount', 'date' => 'Issued on', 'list' => ['employee', 'instalment', 'balance']]],
-    ]],
+    ], ['logic' => OvertimeLogic::class]],
 
     'exit-offboarding-clearance' => ['Exit / offboarding & clearance', 'log-out', 'Resignations, clearance checklists and exit interviews.', [
         'exits' => ['Exit', 'Employee', 'notice_given,clearing,cleared,final_pay_done', [
@@ -169,7 +174,7 @@ return [
             'finance_cleared:checkbox|Finance cleared',
             'exit_interview:textarea|Exit interview notes',
         ], ['icon' => 'log-out', 'prefix' => 'EX-', 'amount' => 'Final pay', 'date' => 'Notice date', 'assignee' => true, 'list' => ['reason', 'last_day']]],
-    ]],
+    ], ['logic' => ExitLogic::class]],
 
     'org-chart-succession-planning' => ['Org chart & succession planning', 'network', 'Positions, reporting lines and successors for key roles.', [
         'positions' => ['Position', 'Position title', 'filled,vacant,frozen', [
@@ -182,7 +187,7 @@ return [
             'position:record=positions|Position*',
             'development_plan:textarea|Development plan',
         ], ['icon' => 'user-check', 'prefix' => 'SUC-', 'list' => ['position']]],
-    ]],
+    ], ['logic' => OrgChartLogic::class]],
 
     'health-safety' => ['Health & safety', 'hard-hat', 'Incidents, PPE issued and toolbox talks.', [
         'incidents' => ['Incident', 'What happened', 'reported,investigating,closed', [
@@ -201,5 +206,5 @@ return [
             'presenter:user|Presenter',
             'attendees:textarea',
         ], ['icon' => 'presentation', 'prefix' => 'TBT-', 'date' => 'Date', 'list' => ['presenter']]],
-    ]],
+    ], ['logic' => HealthSafetyLogic::class]],
 ];
