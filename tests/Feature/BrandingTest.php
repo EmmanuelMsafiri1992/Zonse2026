@@ -63,7 +63,7 @@ class BrandingTest extends TestCase
     {
         [$owner, $workspace] = $this->ownerWithWorkspace();
 
-        $this->actingAs($owner)->put(route('settings.branding.update'), ['brand_name' => '', 'brand_color' => '#0073ea'])->assertSessionHasNoErrors();
+        $this->actingAs($owner)->put(route('settings.branding.update'), ['brand_name' => '', 'brand_color' => '#007c8a'])->assertSessionHasNoErrors();
         $this->assertNull($workspace->refresh()->setting('branding.color'));
         $this->actingAs($owner)->get(route('dashboard'))->assertDontSee('--bs-primary:', false)->assertSee('· '.config('app.name').'</title>', false);
 

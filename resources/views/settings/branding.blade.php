@@ -18,7 +18,7 @@
                     <div class="d-flex gap-2 align-items-start mb-1">
                         <input type="color" class="form-control form-control-color" x-model="color" aria-label="Pick a colour">
                         <input type="text" name="brand_color" id="f_brand_color" x-model="color" maxlength="7"
-                               class="form-control @error('brand_color') is-invalid @enderror" style="max-width:9rem" placeholder="#0073EA">
+                               class="form-control @error('brand_color') is-invalid @enderror" style="max-width:9rem" placeholder="#007C8A">
                     </div>
                     @error('brand_color')<div class="text-danger fs-8 mb-2">{{ $message }}</div>@enderror
                     <div class="form-text mb-3">Used for buttons, links and highlights. The logo comes from <a href="{{ route('settings.workspace.edit') }}">General settings</a>.</div>

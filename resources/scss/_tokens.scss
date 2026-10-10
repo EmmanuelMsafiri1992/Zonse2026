@@ -6,13 +6,14 @@
 // =====================================================================
 
 // Brand palette
-$z-primary:        #0073EA;
-$z-primary-dark:   #0060B9;
-$z-primary-soft:   #CCE5FF;
-$z-success:        #00C875;
-$z-success-soft:   #BBDBC9;
-$z-info:           #579BFC;
-$z-info-soft:      #D7E7FE;
+// Taken from the Zonseob logo: teal (deepened so white text reads), navy and lime.
+$z-primary:        #007C8A;
+$z-primary-dark:   #00636E;
+$z-primary-soft:   #CCEDF1;
+$z-success:        #7AAE1A;
+$z-success-soft:   #E4F0C8;
+$z-info:           #039FB0;
+$z-info-soft:      #D3F0F3;
 $z-warning:        #FDAB3D;
 $z-warning-soft:   #FEEBCE;
 $z-danger:         #DF2F4A;
@@ -20,7 +21,7 @@ $z-danger-soft:    #F9D5DB;
 $z-purple:         #A25DDC;
 $z-purple-soft:    #EDDCF8;
 $z-navy:           #323338;   // primary text / dark surfaces
-$z-navy-2:         #181B34;   // deepest surface (auth side, toasts)
+$z-navy-2:         #002F59;   // logo navy: deepest surface (auth side, workspace avatar)
 
 // Neutrals
 $z-shell-bg:       #ECEFF8;   // app frame behind sidebar, topbar and content panel

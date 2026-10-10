@@ -6,7 +6,7 @@
     <style>
         @page { margin: 32px 36px; }
         body { font-family: "DejaVu Sans", sans-serif; font-size: 10px; color: #323338; }
-        h1 { font-size: 18px; margin: 0 0 2px; } h2 { font-size: 12px; margin: 18px 0 6px; color: #0073ea; text-transform: uppercase; letter-spacing: .5px; }
+        h1 { font-size: 18px; margin: 0 0 2px; } h2 { font-size: 12px; margin: 18px 0 6px; color: #007c8a; text-transform: uppercase; letter-spacing: .5px; }
         .muted { color: #676879; }
         table { width: 100%; border-collapse: collapse; }
         .facts td { padding: 4px 6px; border-bottom: 1px solid #e6e9ef; vertical-align: top; }

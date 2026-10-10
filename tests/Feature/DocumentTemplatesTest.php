@@ -145,7 +145,7 @@ class DocumentTemplatesTest extends TestCase
             'heading' => 'Notice for {{ contact.name }}', 'body' => "**Important** <script>alert(1)</script>\n\n# {{ contact.city }}", 'color' => 'not-a-colour',
         ])->assertOk()
             ->assertSee('Notice for [Name]')->assertSee('<strong>Important</strong>', false)->assertSee('<h1>[City]</h1>', false)
-            ->assertDontSee('<script>alert(1)</script>', false)->assertSee('#0073ea', false);
+            ->assertDontSee('<script>alert(1)</script>', false)->assertSee('#007c8a', false);
 
         $this->assertSame('Welcome', $template->fresh()->heading);
         $this->assertPdf($this->get(route('settings.document-templates.sample', $template)));

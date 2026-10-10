@@ -8,7 +8,7 @@
     @include('partials.fonts')
     @include('partials.favicon')
     <style>
-        :root { --ink: #323338; --muted: #676879; --line: #d0d4e4; --brand: #0073ea; --soft: #e6f1fd; }
+        :root { --ink: #323338; --muted: #676879; --line: #d0d4e4; --brand: #007c8a; --soft: #e0f3f5; }
         * { box-sizing: border-box; }
         body { margin: 0; background: #eceff8; color: var(--ink); font: 14px/1.5 "Figtree", -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         .wrap { max-width: 860px; margin: 0 auto; padding: 20px 16px 40px; }

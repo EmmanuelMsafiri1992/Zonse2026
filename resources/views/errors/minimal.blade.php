@@ -9,8 +9,8 @@
     @include('partials.fonts')
     @include('partials.favicon')
     <style>
-        :root { --bg: #eceff8; --card: #fff; --text: #323338; --muted: #676879; --primary: #0073ea; --border: #d0d4e4; }
-        @media (prefers-color-scheme: dark) { :root { --bg: #181b34; --card: #292f4c; --text: #d5d8df; --muted: #9699a6; --primary: #579bfc; --border: #4b4e69; } }
+        :root { --bg: #eceff8; --card: #fff; --text: #323338; --muted: #676879; --primary: #007c8a; --border: #d0d4e4; }
+        @media (prefers-color-scheme: dark) { :root { --bg: #001d38; --card: #002f59; --text: #d5d8df; --muted: #9fb1c4; --primary: #3fa9b8; --border: #1e4a72; } }
         * { box-sizing: border-box; }
         body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px; background: var(--bg); color: var(--text);
             font-family: "Figtree", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 14px; line-height: 1.5; }

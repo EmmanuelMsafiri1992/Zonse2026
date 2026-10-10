@@ -24,7 +24,7 @@ class DocumentTemplate extends Model
     /** @var array<string, mixed> */
     protected $attributes = [
         'paper' => 'a4', 'orientation' => 'portrait', 'font' => 'sans', 'align' => 'left', 'border' => 'none',
-        'color' => '#0073ea', 'show_logo' => true, 'signatures' => '[]', 'is_active' => true, 'generated_count' => 0,
+        'color' => '#007c8a', 'show_logo' => true, 'signatures' => '[]', 'is_active' => true, 'generated_count' => 0,
     ];
 
     protected $fillable = [

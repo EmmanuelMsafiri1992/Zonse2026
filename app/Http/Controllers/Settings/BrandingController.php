@@ -42,7 +42,7 @@ class BrandingController extends Controller
         $data = $request->validate([
             'brand_name' => ['nullable', 'string', 'max:40'],
             'brand_color' => ['nullable', 'regex:'.Branding::COLOR_PATTERN],
-        ], ['brand_color.regex' => 'Pick a colour like #0073EA.']);
+        ], ['brand_color.regex' => 'Pick a colour like #007C8A.']);
 
         $settings = $workspace->settings ?? [];
         data_set($settings, 'branding.name', filled($data['brand_name'] ?? null) ? trim($data['brand_name']) : null);

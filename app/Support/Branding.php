@@ -14,7 +14,7 @@ use Illuminate\Support\Str;
  */
 class Branding
 {
-    public const DEFAULT_COLOR = '#0073EA';
+    public const DEFAULT_COLOR = '#007C8A';
 
     public const COLOR_PATTERN = '/^#[0-9a-fA-F]{6}$/';
 
