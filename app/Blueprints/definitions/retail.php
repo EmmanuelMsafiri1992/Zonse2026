@@ -1,10 +1,16 @@
 <?php
 
+use App\Blueprints\Logic\BookshopLogic;
 use App\Blueprints\Logic\CatalogueLogic;
+use App\Blueprints\Logic\DealershipLogic;
+use App\Blueprints\Logic\DeviceImeiLogic;
 use App\Blueprints\Logic\GiftVoucherLogic;
 use App\Blueprints\Logic\GroceryLogic;
+use App\Blueprints\Logic\HardwareStoreLogic;
+use App\Blueprints\Logic\LiquorStoreLogic;
 use App\Blueprints\Logic\MarketplaceLogic;
 use App\Blueprints\Logic\OnlineStoreLogic;
+use App\Blueprints\Logic\RetailPharmacyLogic;
 use App\Blueprints\Logic\ShippingLogic;
 
 /*
@@ -123,7 +129,7 @@ return [
             'prescription_number|Prescription number',
             'pharmacist:user|Pharmacist*',
         ], ['icon' => 'clipboard-list', 'prefix' => 'SCH-', 'plural' => 'Scheduled-medicine register', 'date' => 'Date', 'list' => ['product', 'quantity', 'pharmacist']]],
-    ]],
+    ], ['logic' => RetailPharmacyLogic::class]],
 
     'hardware-building-supplies-store' => ['Hardware & building supplies', 'hammer', 'Building-material quotes, yard stock and deliveries to site.', [
         'quotes' => ['Material quote', 'Customer / project', 'draft,sent,accepted,expired', [
@@ -137,7 +143,7 @@ return [
             'driver',
             'delivery_note|Delivery note number',
         ], ['icon' => 'truck', 'prefix' => 'HDL-', 'date' => 'Delivery date', 'assignee' => true, 'list' => ['quote', 'vehicle', 'driver']]],
-    ]],
+    ], ['logic' => HardwareStoreLogic::class]],
 
     'liquor-store-bottle-store' => ['Liquor / bottle store', 'wine', 'Liquor stock, empties deposits and licence compliance.', [
         'products' => ['Liquor product', 'Product name', 'in_stock,low_stock,out_of_stock', [
@@ -151,7 +157,7 @@ return [
             'crates:number',
             'bottles:number',
         ], ['icon' => 'recycle', 'prefix' => 'EMP-', 'plural' => 'Empties returns', 'amount' => 'Deposit refunded', 'date' => 'Date', 'assignee' => true, 'list' => ['crates', 'bottles']]],
-    ]],
+    ], ['logic' => LiquorStoreLogic::class]],
 
     'mobile-phones-electronics-imei' => ['Mobile phones & electronics (IMEI)', 'smartphone', 'Serialised devices by IMEI, sales and phone repairs.', [
         'devices' => ['Device', 'Make & model', 'in_stock,sold,in_repair,returned', [
@@ -168,7 +174,7 @@ return [
             'passcode|Passcode (if given)',
             'technician:user|Technician',
         ], ['icon' => 'wrench', 'prefix' => 'REP-', 'contact' => 'Customer', 'amount' => 'Repair price', 'date' => 'Booked in', 'due' => 'Promised by', 'list' => ['imei', 'technician']]],
-    ]],
+    ], ['logic' => DeviceImeiLogic::class]],
 
     'vehicle-dealership' => ['Vehicle dealership', 'car-front', 'Vehicle stock, test drives, deals and finance applications.', [
         'vehicles' => ['Vehicle', 'Make & model', 'in_stock,reserved,sold,in_prep', [
@@ -187,7 +193,7 @@ return [
             'finance_bank|Finance bank',
             'deposit:money',
         ], ['icon' => 'handshake', 'prefix' => 'DL-', 'contact' => 'Customer', 'amount' => 'Deal value', 'date' => 'Date', 'assignee' => true, 'list' => ['vehicle', 'finance_bank', 'trade_in_value']]],
-    ]],
+    ], ['logic' => DealershipLogic::class]],
 
     'bookshop-stationery' => ['Bookshop & stationery', 'book-open-text', 'Books by ISBN, stationery lists and special orders.', [
         'titles' => ['Title', 'Title', 'in_stock,low_stock,out_of_stock,on_order', [
@@ -203,7 +209,7 @@ return [
             'school|School',
             'deposit:money',
         ], ['icon' => 'clipboard-list', 'prefix' => 'SPO-', 'contact' => 'Customer', 'amount' => 'Total', 'date' => 'Ordered on', 'due' => 'Expected', 'list' => ['school', 'deposit']]],
-    ]],
+    ], ['logic' => BookshopLogic::class]],
 
     'second-hand-consignment-thrift' => ['Second-hand / consignment / thrift', 'shirt', 'Consignors, consigned items and their payouts.', [
         'consignors' => ['Consignor', 'Consignor name', 'active,inactive', [
