@@ -201,8 +201,11 @@ class HotelLogic extends AppLogic
         switch ($action) {
             case 'confirm':
                 $deposit = $request->validate(['deposit' => ['nullable', 'numeric', 'min:0']])['deposit'] ?? $record->value('deposit');
-                if ($record->value('room') && ($clash = $this->clash($this->parent($record, 'room'), $record->occurs_on, $record->due_on, $record->id))) {
-                    throw ValidationException::withMessages(['room' => 'The room is booked for '.$clash->title.' on these nights.']);
+                if ($record->value('room')) {
+                    $room = $this->parent($record, 'room') ?? throw ValidationException::withMessages(['room' => 'The room on this reservation no longer exists; edit it to choose another.']);
+                    if ($clash = $this->clash($room, $record->occurs_on, $record->due_on, $record->id)) {
+                        throw ValidationException::withMessages(['room' => 'The room is booked for '.$clash->title.' on these nights.']);
+                    }
                 }
                 $record->update(['status' => 'confirmed', 'data' => [...$record->data, 'deposit' => $deposit]]);
 

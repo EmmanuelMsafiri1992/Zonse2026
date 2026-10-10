@@ -58,6 +58,9 @@ class HospitalityAppsTest extends TestCase
         Artisan::call('zonseo:run-app-schedules', ['--app' => $app]);
         $this->assertSame('no_show', $late->fresh()->status);
 
+        $roomGone = $this->record($workspace, $app, 'reservations', 'Room gone', 'enquiry', ['guests' => 1, 'room' => 999999], ['occurs_on' => today()->addDays(3), 'due_on' => today()->addDays(4)]);
+        $this->actingAs($owner)->post($roomGone->url().'/actions/confirm')->assertSessionHasErrors(['room' => 'The room on this reservation no longer exists; edit it to choose another.']);
+
         $this->actingAs($owner)->get(route('apps.reports', $app))->assertOk()->assertSee('Occupancy by month')->assertSee('Cancellations and no-shows')->assertSee('Late guest');
     }
 
