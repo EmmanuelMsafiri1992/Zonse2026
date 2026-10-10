@@ -1,8 +1,14 @@
 <?php
 
+use App\Blueprints\Logic\AdsLogic;
+use App\Blueprints\Logic\AgencyLogic;
+use App\Blueprints\Logic\BrandAssetLogic;
 use App\Blueprints\Logic\EmailMarketingLogic;
+use App\Blueprints\Logic\MembershipLogic;
+use App\Blueprints\Logic\PodcastLogic;
 use App\Blueprints\Logic\PromoCodeLogic;
 use App\Blueprints\Logic\SeoLogic;
+use App\Blueprints\Logic\SignageLogic;
 use App\Blueprints\Logic\SmsMarketingLogic;
 use App\Blueprints\Logic\SocialMediaLogic;
 use App\Blueprints\Logic\WebsiteBuilderLogic;
@@ -118,7 +124,7 @@ return [
             'conversions:number',
             'spend:money',
         ], ['icon' => 'bar-chart-3', 'prefix' => 'AD-', 'amount' => 'Budget', 'date' => 'Start date', 'due' => 'End date', 'assignee' => true, 'list' => ['platform', 'clicks', 'spend']]],
-    ]],
+    ], ['logic' => AdsLogic::class]],
 
     'digital-signage-tv-display' => ['Digital signage / TV display (menus, queues, adverts)', 'tv', 'Screens and the playlists of menus, queues and adverts shown on them.', [
         'screens' => ['Screen', 'Screen name', 'online,offline', [
@@ -130,7 +136,7 @@ return [
             'slides:textarea|Slides (image URLs or text, one per line)*',
             'seconds_per_slide:number|Seconds per slide',
         ], ['icon' => 'list-video', 'prefix' => 'PLY-', 'list' => ['seconds_per_slide']]],
-    ]],
+    ], ['logic' => SignageLogic::class]],
 
     'membership-site-paywall' => ['Membership site & paywall', 'lock', 'Members-only content, digital downloads and membership tiers.', [
         'tiers' => ['Membership tier', 'Tier name', 'active,retired', [
@@ -148,7 +154,7 @@ return [
             'url:url|File / page link',
             'price:money|One-off price',
         ], ['icon' => 'file-lock', 'prefix' => 'CNT-', 'plural' => 'Content', 'date' => 'Published on', 'list' => ['type', 'min_tier']]],
-    ]],
+    ], ['logic' => MembershipLogic::class]],
 
     'podcast-media-hosting' => ['Podcast / media hosting', 'mic', 'Shows, episodes and download statistics.', [
         'shows' => ['Show', 'Show name', 'active,on_hold,ended', [
@@ -164,7 +170,7 @@ return [
             'duration:number|Duration (minutes)',
             'downloads:number',
         ], ['icon' => 'mic', 'prefix' => 'EP-', 'date' => 'Release date', 'assignee' => true, 'list' => ['show', 'episode_number', 'downloads']]],
-    ]],
+    ], ['logic' => PodcastLogic::class]],
 
     'advertising-agency-job-bags' => ['Advertising agency job bags & media booking', 'briefcase', 'Client job bags and the media space booked for them.', [
         'jobs' => ['Job bag', 'Job title', 'brief,in_progress,client_review,approved,delivered,billed', [
@@ -177,7 +183,7 @@ return [
             'vendor|Media owner',
             'insertions:number',
         ], ['icon' => 'radio-tower', 'prefix' => 'MB-', 'amount' => 'Cost', 'date' => 'Run date', 'list' => ['job', 'media', 'vendor']]],
-    ]],
+    ], ['logic' => AgencyLogic::class]],
 
     'brand-asset-library' => ['Brand asset library', 'palette', 'Logos, brand guidelines, templates and approved imagery.', [
         'assets' => ['Brand asset', 'Asset name', 'approved,draft,retired', [
@@ -185,5 +191,5 @@ return [
             'file_url:url|File link*',
             'usage_notes:textarea|Usage notes',
         ], ['icon' => 'palette', 'prefix' => 'BA-', 'list' => ['type', 'file_url']]],
-    ]],
+    ], ['logic' => BrandAssetLogic::class]],
 ];
