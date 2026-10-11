@@ -17,6 +17,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 use Modules\Contacts\Models\Contact;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -149,6 +150,13 @@ class RecordController extends Controller
         $this->authorize('update', $record);
 
         $validated = $request->validate(['status' => ['required', 'in:'.implode(',', array_keys($def->statuses))]]);
+
+        // The app's own rules apply here as they do on the form (a load can't start loading without a truck).
+        $problems = $app->logic()->validate($def, $this->currentPayload($record, $validated['status']), $record);
+        if ($problems) {
+            throw ValidationException::withMessages(['status' => array_values(array_unique($problems))]);
+        }
+
         $record->update(['status' => $validated['status']]);
 
         return back()->with('flash', ['type' => 'success', 'message' => $def->label.' marked '.strtolower($record->statusLabel()).'.']);
@@ -261,6 +269,27 @@ class RecordController extends Controller
     protected function find(Blueprint $app, Entity $def, int $id): Record
     {
         return Record::query()->ofEntity($app->key, $def->key)->findOrFail($id);
+    }
+
+    /**
+     * The record as the form would send it, with a new status, for the app's own rules.
+     *
+     * @return array<string, mixed>
+     */
+    protected function currentPayload(Record $record, string $status): array
+    {
+        return [
+            'title' => $record->title,
+            'status' => $status,
+            'branch_id' => $record->branch_id,
+            'contact_id' => $record->contact_id,
+            'assignee_id' => $record->assignee_id,
+            'amount' => $record->amount,
+            'currency' => $record->currency,
+            'occurs_on' => $record->occurs_on?->toDateString(),
+            'due_on' => $record->due_on?->toDateString(),
+            'data' => (array) $record->data,
+        ];
     }
 
     /** @return array<string, mixed> */

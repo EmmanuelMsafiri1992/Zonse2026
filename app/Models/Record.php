@@ -286,7 +286,8 @@ class Record extends Model
         return match ($field->type) {
             'checkbox' => $value ? 'Yes' : 'No',
             'money' => number_format((float) $value, 2),
-            'number' => rtrim(rtrim(number_format((float) $value, 2, '.', ','), '0'), '.'),
+            // Years read as "2018", not "2,018".
+            'number' => rtrim(rtrim(number_format((float) $value, 2, '.', $field->isYear() ? '' : ','), '0'), '.'),
             'select' => $field->options[$value] ?? (string) $value,
             'record' => $this->related($field->key)?->title ?? '',
             'user' => User::query()->find($value)?->name ?? '',

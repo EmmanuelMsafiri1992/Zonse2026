@@ -71,6 +71,12 @@ class Field
         );
     }
 
+    /** A calendar year such as a vehicle's "year" or a "graduation_year". */
+    public function isYear(): bool
+    {
+        return $this->type === 'number' && ($this->key === 'year' || str_ends_with($this->key, '_year'));
+    }
+
     public function isTextual(): bool
     {
         return in_array($this->type, ['text', 'textarea', 'email', 'phone', 'url', 'select'], true);

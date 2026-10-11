@@ -108,6 +108,35 @@ class BlueprintAppsTest extends TestCase
             ->assertSee('m²');
     }
 
+    public function test_years_show_without_a_thousands_separator(): void
+    {
+        [$owner, $workspace] = $this->ownerWithWorkspace();
+        $workspace->enableModules(['fleet', 'contacts'], $owner);
+        $vehicle = Record::factory()->ofEntity('fleet', 'vehicles', ['make_model' => 'Toyota Hiace', 'year' => 2018, 'odometer' => 120000])
+            ->create(['workspace_id' => $workspace->id, 'title' => 'ABC-1234']);
+
+        $this->assertSame('2018', $vehicle->displayValue($vehicle->definition()->field('year')));
+        $this->assertSame('120,000', $vehicle->displayValue($vehicle->definition()->field('odometer')));
+
+        $this->actingAs($owner)->get(route('apps.records.show', ['fleet', 'vehicles', $vehicle]))
+            ->assertOk()
+            ->assertSee('2018')
+            ->assertDontSee('2,018');
+    }
+
+    public function test_money_details_show_the_currency(): void
+    {
+        [$owner, $workspace] = $this->ownerWithWorkspace();
+        $workspace->enableModules(['kombi-collections', 'contacts'], $owner);
+        $collection = Record::factory()->ofEntity('kombi-collections', 'collections', ['vehicle' => 'ABC-1234', 'expected' => 100, 'fuel' => 20])
+            ->create(['workspace_id' => $workspace->id, 'title' => 'Driver Tendai', 'currency' => 'USD']);
+
+        $this->actingAs($owner)->get(route('apps.records.show', ['kombi-collections', 'collections', $collection]))
+            ->assertOk()
+            ->assertSee('$100.00')
+            ->assertSee('$20.00');
+    }
+
     public function test_app_routes_require_the_app_to_be_enabled(): void
     {
         [$owner] = $this->ownerWithWorkspace();

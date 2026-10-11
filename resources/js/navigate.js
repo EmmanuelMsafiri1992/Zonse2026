@@ -310,7 +310,18 @@ async function send(url, body) {
             document.close();
             return;
         }
-        open(page, url, { record: true });
+        if (page.kind === 'page' && isAppPage(page.html)) {
+            if (!render(page.html, page.url, { record: true, replace: page.url === current })) {
+                // The app was updated since this page opened. Show the answer itself: loading the page
+                // again would drop the form's errors and everything that was typed.
+                document.open();
+                document.write(page.html);
+                document.close();
+                return;
+            }
+        } else {
+            open(page, url, { record: true });
+        }
     } catch (error) {
         window.zonseo.toast("Couldn't reach the server. Check your connection and try again.", 'danger', 6000);
     } finally {
@@ -420,9 +431,13 @@ function escapeHtml(text) {
 
 // ---- Swapping the page ----
 
+// Only the app's own built files count: browser extensions (spell checkers, dark mode, password
+// managers) add their own tags to the head, and those must not look like a new release.
 function headSignature(doc) {
-    return [...doc.head.querySelectorAll('link[rel="stylesheet"], link[rel="modulepreload"], script[src], style')]
-        .map((el) => el.outerHTML).join('');
+    return [...doc.head.querySelectorAll('link[rel="stylesheet"][href], link[rel="modulepreload"][href], script[src]')]
+        .map((el) => el.getAttribute('href') || el.getAttribute('src'))
+        .filter((url) => url.includes('/build/'))
+        .join(' ');
 }
 
 function render(html, url, { scroll = 0, record = true, replace = false, quiet = false } = {}) {

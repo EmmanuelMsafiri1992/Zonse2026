@@ -98,6 +98,8 @@ class ServicesAppsTest extends TestCase
         $this->assertEquals(1000, $research->amount);
         $drafting = $this->record($workspace, $app, 'time_entries', 'Drafting', 'unbilled', ['matter' => $matter->id, 'hours' => 1.5, 'rate' => 500]);
         $this->actingAs($owner)->post($matter->url().'/actions/close')->assertSessionHasErrors(['status' => 'Banda v Phiri still has 3.5 hours unbilled; bill or write it off first.']);
+        $this->actingAs($owner)->post($matter->url().'/status', ['status' => 'closed'])->assertSessionHasErrors(['status' => 'Banda v Phiri still has 3.5 hours unbilled; bill or write it off first.']);
+        $this->assertSame('open', $matter->fresh()->status);
         $this->actingAs($owner)->post($drafting->url().'/actions/write_off')->assertSessionHas('flash.message', '1.5 hours on Drafting written off.');
         $this->actingAs($owner)->get($matter->url())->assertOk()->assertSee('Unbilled')->assertSee('2 hours');
         $this->actingAs($owner)->post($matter->url().'/actions/bill')->assertSessionHas('flash.message', 'Billed 2 hours ('.$this->money(1000).') on Banda v Phiri.');

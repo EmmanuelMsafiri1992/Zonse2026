@@ -114,6 +114,8 @@
                                         <a href="{{ $related[$field->key]->url() }}">{{ $related[$field->key]->title }}</a> <span class="text-muted">{{ $related[$field->key]->number }}</span>
                                     @elseif($field->type === 'url' && $record->value($field->key))
                                         <a href="{{ $record->value($field->key) }}" target="_blank" rel="noopener">{{ $record->value($field->key) }}</a>
+                                    @elseif($field->type === 'money' && is_numeric($record->value($field->key)))
+                                        {{ \App\Support\Money::format($record->value($field->key), $record->currency) }}
                                     @else
                                         {{ $record->displayValue($field) ?: '—' }}
                                     @endif

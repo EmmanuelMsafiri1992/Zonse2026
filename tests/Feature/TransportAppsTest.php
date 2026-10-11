@@ -163,6 +163,25 @@ class TransportAppsTest extends TestCase
         $this->actingAs($owner)->get(route('apps.reports', $app).'?from='.today()->subMonth()->toDateString().'&to='.today()->toDateString())->assertOk()->assertSee('Lanes')->assertSee('Lusaka → Durban')->assertSee($this->money(700));
     }
 
+    public function test_moving_a_load_by_status_follows_the_same_rules_as_the_form(): void
+    {
+        $app = 'haulage';
+        [$owner, $workspace] = $this->appWorkspace($app);
+        $quoted = $this->record($workspace, $app, 'loads', 'L3', 'quoted', ['origin' => 'Harare', 'destination' => 'Lusaka']);
+        $status = $quoted->url().'/status';
+
+        $this->actingAs($owner)->post($status, ['status' => 'loading'])
+            ->assertSessionHasErrors(['status' => 'Give the truck.']);
+        $this->assertSame('quoted', $quoted->fresh()->status);
+
+        $this->actingAs($owner)->post($status, ['status' => 'booked'])->assertSessionHasNoErrors();
+        $this->assertSame('booked', $quoted->fresh()->status);
+
+        $quoted->update(['data' => [...$quoted->data, 'truck' => 'ABC 123', 'driver' => 'Joe']]);
+        $this->actingAs($owner)->post($status, ['status' => 'loading'])->assertSessionHasNoErrors();
+        $this->assertSame('loading', $quoted->fresh()->status);
+    }
+
     private function money(float $amount): string
     {
         return Money::format($amount);
