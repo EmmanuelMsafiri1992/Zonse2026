@@ -44,6 +44,7 @@ cp .env.example .env   # then edit it (section 2)
 php artisan key:generate
 php artisan migrate --force
 php artisan db:seed --force
+php artisan zonseo:sync-modules   # marks built apps available; the seeder adds them as "coming soon"
 php artisan storage:link
 php artisan optimize
 chown -R www-data:www-data storage bootstrap/cache
