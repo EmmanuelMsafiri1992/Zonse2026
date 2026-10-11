@@ -80,6 +80,29 @@ class OnboardingWizardTest extends TestCase
         $this->actingAs($user)->get('/onboarding/1')->assertRedirect(route('dashboard'));
     }
 
+    public function test_core_apps_are_not_counted_as_picked_apps(): void
+    {
+        $user = User::factory()->create();
+        $doctor = Profession::where('name', 'like', 'Doctor%')->firstOrFail();
+        $this->assertContains('contacts', $doctor->recommendedModules()->pluck('key')->all());
+
+        $this->actingAs($user)->post('/onboarding/1', [
+            'name' => 'Sunrise Clinic', 'type' => 'company', 'country_code' => 'ZW',
+            'currency_code' => 'USD', 'timezone' => 'Africa/Harare',
+        ]);
+        $this->actingAs($user)->post('/onboarding/2', ['profession_id' => $doctor->id]);
+
+        $response = $this->actingAs($user)->get('/onboarding/3')->assertOk();
+        $selected = $response->viewData('selected');
+        $this->assertNotContains('contacts', $selected);
+        $this->assertNotContains('contacts', $response->viewData('recommended'));
+
+        $this->actingAs($user)->post('/onboarding/3', ['modules' => $selected]);
+
+        $this->actingAs($user)->get('/onboarding/4')
+            ->assertSee('You picked '.count($selected).' apps');
+    }
+
     public function test_the_free_plan_activates_without_a_trial(): void
     {
         $user = User::factory()->create();

@@ -12,7 +12,8 @@
                 <h3 class="mb-1">Pick the apps you need</h3>
                 <p class="text-muted mb-0">
                     @if($recommended)We've pre-selected a bundle for <strong>{{ $workspace->profession->name }}</strong>. @endif
-                    Tick anything else that fits. Apps marked "coming soon" can be enabled now and will light up when released.
+                    Tick anything else that fits.
+                    @if($suites->flatMap->modules->contains(fn ($module) => ! $module->isAvailable()))Apps marked "coming soon" can be enabled now and will light up when released.@endif
                 </p>
             </div>
             <div class="d-flex gap-2 align-items-center">

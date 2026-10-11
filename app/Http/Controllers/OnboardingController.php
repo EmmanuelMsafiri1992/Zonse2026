@@ -77,7 +77,7 @@ class OnboardingController extends Controller
                 'suites' => Suite::with(['modules' => fn ($q) => $q->where('is_core', false)->orderBy('sort_order')])
                     ->orderBy('sort_order')->get()->filter(fn ($s) => $s->modules->isNotEmpty()),
                 'selected' => $this->preselectedModules($workspace),
-                'recommended' => $workspace->profession?->recommendedModules()->pluck('key')->all() ?? [],
+                'recommended' => $this->withoutCoreModules($workspace->profession?->recommendedModules()->pluck('key')->all() ?? []),
             ]),
             4 => $this->showPlans($workspace, $data),
         };
@@ -247,17 +247,30 @@ class OnboardingController extends Controller
     /** @return array<int, string> */
     protected function preselectedModules(Workspace $workspace): array
     {
-        $enabled = $workspace->enabledModuleKeys();
+        $enabled = $this->withoutCoreModules($workspace->enabledModuleKeys());
         if ($enabled) {
             return $enabled;
         }
         if ($workspace->profession) {
-            $keys = $workspace->profession->recommendedModules()->pluck('key')->all();
+            $keys = $this->withoutCoreModules($workspace->profession->recommendedModules()->pluck('key')->all());
             if ($keys) {
                 return $keys;
             }
         }
 
-        return Module::expandDependencies(self::DEFAULT_MODULES);
+        return $this->withoutCoreModules(Module::expandDependencies(self::DEFAULT_MODULES));
+    }
+
+    /**
+     * Core apps have no card on the pick-apps step and are always included, so they must not count as selected.
+     *
+     * @param  array<int, string>  $keys
+     * @return array<int, string>
+     */
+    protected function withoutCoreModules(array $keys): array
+    {
+        $core = Module::byKey()->filter(fn (Module $module) => $module->is_core)->keys()->all();
+
+        return array_values(array_diff($keys, $core));
     }
 }
