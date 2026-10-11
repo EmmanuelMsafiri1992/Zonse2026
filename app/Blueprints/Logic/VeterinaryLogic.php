@@ -85,7 +85,13 @@ class VeterinaryLogic extends AppLogic
 
         if ($record->status === 'given') {
             $record->occurs_on ??= today();
-        } elseif ($record->due_on) {
+
+            return;
+        }
+
+        // A dose still to come has no "given on" date (the form fills in today by default).
+        $record->occurs_on = null;
+        if ($record->due_on) {
             $record->status = $record->due_on->lt(today()) ? 'overdue' : 'due';
         }
     }

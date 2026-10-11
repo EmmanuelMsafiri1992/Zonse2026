@@ -76,6 +76,11 @@ class LivestockLogic extends AppLogic
             $this->put($record, ['_daily_gain' => $gain]);
         }
 
+        // A scheduled treatment has not been given yet (the form fills in today by default).
+        if ($record->entity === 'treatments' && $record->status === 'scheduled') {
+            $record->occurs_on = null;
+        }
+
         if ($record->entity === 'animals' && $record->exists) {
             $latest = $this->linked('weighings', 'animal', $record)->orderByDesc('occurs_on')->orderByDesc('id')->first();
             $this->put($record, ['_weight' => $latest ? $this->number($latest, 'weight_kg') : null, '_daily_gain' => $latest?->value('_daily_gain'), '_withdrawal_until' => $this->withdrawalUntil($record)?->toDateString()]);

@@ -92,7 +92,8 @@ class AgricultureAppsTest extends TestCase
         ])->assertSessionHasNoErrors();
 
         $this->record($workspace, 'livestock', 'treatments', 'Antibiotic', 'given', ['animal' => $cow->id, 'withdrawal_days' => 10], ['occurs_on' => today()->subDays(2), 'amount' => 15]);
-        $this->record($workspace, 'livestock', 'treatments', 'Dip', 'scheduled', ['animal' => $cow->id], ['due_on' => today()->addDays(3)]);
+        $dip = $this->record($workspace, 'livestock', 'treatments', 'Dip', 'scheduled', ['animal' => $cow->id], ['occurs_on' => today(), 'due_on' => today()->addDays(3)]);
+        $this->assertNull($dip->occurs_on);
         $this->assertSame(today()->addDays(8)->toDateString(), $cow->fresh()->value('_withdrawal_until'));
         $this->actingAs($owner)->put(route('apps.records.update', ['livestock', 'animals', $cow->id]), [
             'title' => 'TAG-1', 'status' => 'sold', 'data' => ['species' => 'cattle', 'sex' => 'female'],

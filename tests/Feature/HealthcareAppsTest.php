@@ -178,6 +178,11 @@ class HealthcareAppsTest extends TestCase
         $parvo = $this->record($workspace, $app, 'vaccinations', 'Parvo', 'due', ['animal' => $rex->id], ['due_on' => today()->addDays(5)]);
         $this->assertSame('due', $parvo->status);
 
+        $this->actingAs($owner)->post(route('apps.records.store', [$app, 'vaccinations']), [
+            'title' => 'Lepto', 'status' => 'due', 'occurs_on' => today()->toDateString(), 'due_on' => today()->addDays(9)->toDateString(), 'data' => ['animal' => $rex->id],
+        ])->assertSessionHasNoErrors();
+        $this->assertNull(Record::query()->where('entity', 'vaccinations')->where('title', 'Lepto')->sole()->occurs_on);
+
         $this->actingAs($owner)->post($rabies->url().'/actions/give', ['batch_number' => 'B12'])
             ->assertSessionHasNoErrors()
             ->assertSessionHas('flash.message', 'Rabies given to Rex; next dose due '.today()->addMonths(12)->format('d M Y').'.');
