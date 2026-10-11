@@ -18,14 +18,14 @@
                 @if($item->hasChildren())
                     <div class="z-nav-group {{ $item->isActive() ? 'open' : '' }}" x-data="{ open: {{ $item->isActive() ? 'true' : 'false' }} }" :class="{ open }">
                         <a href="#" class="z-nav-link {{ $item->isActive() ? 'active' : '' }}" @click.prevent="open = !open">
-                            {!! \App\Support\Icon::svg($item->icon) !!}
+                            {!! \App\Support\Icon::ref($item->icon) !!}
                             <span>{{ $item->label }}</span>
-                            {!! \App\Support\Icon::svg('chevron-right', 'zi zi-sm z-caret') !!}
+                            {!! \App\Support\Icon::ref('chevron-right', 'zi zi-sm z-caret') !!}
                         </a>
                         <div class="z-nav-sub">
                             @foreach($item->children as $child)
                                 <a href="{{ $child->href() }}" class="z-nav-link {{ $child->isActive() ? 'active' : '' }}">
-                                    {!! \App\Support\Icon::svg($child->icon, 'zi zi-sm') !!}
+                                    {!! \App\Support\Icon::ref($child->icon, 'zi zi-sm') !!}
                                     <span>{{ $child->label }}</span>
                                 </a>
                             @endforeach
@@ -33,7 +33,7 @@
                     </div>
                 @else
                     <a href="{{ $item->href() }}" class="z-nav-link {{ $item->isActive() ? 'active' : '' }}">
-                        {!! \App\Support\Icon::svg($item->icon) !!}
+                        {!! \App\Support\Icon::ref($item->icon) !!}
                         <span>{{ $item->label }}</span>
                         @if($item->badge)<span class="z-nav-badge {{ $item->badgeClass }}">{{ $item->badge }}</span>@endif
                     </a>
@@ -41,6 +41,7 @@
             @endforeach
         @endforeach
     </nav>
+    {!! \App\Support\Icon::sprite() !!}
 
     <div class="z-sidebar-foot">
         @if($workspace?->subscription)
