@@ -19,7 +19,7 @@
             <a href="{{ route('apps.records.edit', [$app->key, $def->key, $record->id]) }}" class="btn btn-white"><x-icon name="pencil" /> Edit</a>
         @endcan
         @can('delete', $record)
-            <form method="POST" action="{{ route('apps.records.destroy', [$app->key, $def->key, $record->id]) }}" onsubmit="return confirm('Delete this {{ strtolower($def->label) }}?')">
+            <form method="POST" action="{{ route('apps.records.destroy', [$app->key, $def->key, $record->id]) }}" onsubmit="return confirm('Delete this {{ $def->lowerLabel() }}?')">
                 @csrf @method('DELETE')
                 <button class="btn btn-soft-danger btn-icon" title="Delete"><x-icon name="trash-2" /></button>
             </form>

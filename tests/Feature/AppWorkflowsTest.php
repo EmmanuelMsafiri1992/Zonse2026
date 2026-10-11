@@ -114,6 +114,17 @@ class AppWorkflowsTest extends TestCase
         $this->actingAs($owner)->get(route('apps.reports', 'school'))->assertOk()->assertSee('Term 1');
     }
 
+    public function test_invoicing_a_single_fee_account_keeps_its_due_date(): void
+    {
+        [$owner, $workspace] = $this->appWorkspace('school');
+        $student = $this->record($workspace, 'school', 'students', 'Rudo Banda', 'enrolled', ['guardian_name' => 'Grace Banda']);
+        $fee = $this->record($workspace, 'school', 'fees', 'Term 3 fees', 'unpaid', ['student' => $student->id], ['amount' => 200, 'due_on' => today()->addDays(20)]);
+
+        $this->actingAs($owner)->post(route('apps.records.bill', ['school', 'fees', $fee->id]))->assertSessionHas('flash.type', 'success');
+
+        $this->assertSame(today()->addDays(20)->toDateString(), $fee->openInvoice()->due_date->toDateString());
+    }
+
     public function test_rentals_keep_one_live_lease_per_unit_and_bill_rent_once_a_month(): void
     {
         [$owner, $workspace] = $this->appWorkspace('tenants');

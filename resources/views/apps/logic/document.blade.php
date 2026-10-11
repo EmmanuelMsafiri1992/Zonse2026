@@ -2,7 +2,7 @@
 @extends('invoicing::layouts.print')
 @section('title', $documentTitle.' '.$record->number)
 @section('toolbar')
-    <a href="{{ $record->url() }}" class="btn">Back to {{ strtolower($def->label) }}</a>
+    <a href="{{ $record->url() }}" class="btn">Back to {{ $def->lowerLabel() }}</a>
 @endsection
 @section('content')
     <div class="head">

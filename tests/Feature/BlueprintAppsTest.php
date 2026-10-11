@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Blueprints\BlueprintRegistry;
+use App\Blueprints\Entity;
 use App\Blueprints\Field;
 use App\Models\Record;
 use App\Models\User;
@@ -86,6 +87,25 @@ class BlueprintAppsTest extends TestCase
         $related = Field::parse('patient:record=patients|Patient*');
         $this->assertSame('record', $related->type);
         $this->assertSame('patients', $related->relatedEntity);
+
+        $unit = Field::parse('unit:select=m,m2,kg,hr*');
+        $this->assertSame(['m' => 'm', 'm2' => 'm²', 'kg' => 'kg', 'hr' => 'hr'], $unit->options);
+    }
+
+    public function test_acronyms_in_record_labels_keep_their_capitals(): void
+    {
+        $this->assertSame('BOQ item', Entity::lowerKeepingAcronyms('BOQ item'));
+        $this->assertSame('short link / QR code', Entity::lowerKeepingAcronyms('Short link / QR code'));
+        $this->assertSame('stock movement', Entity::lowerKeepingAcronyms('Stock movement'));
+
+        [$owner, $workspace] = $this->ownerWithWorkspace();
+        $workspace->enableModules(['construction', 'contacts'], $owner);
+
+        $this->actingAs($owner)->get(route('apps.records.create', ['construction', 'boq_items']))
+            ->assertOk()
+            ->assertSee('New BOQ item')
+            ->assertDontSee('New boq item')
+            ->assertSee('m²');
     }
 
     public function test_app_routes_require_the_app_to_be_enabled(): void

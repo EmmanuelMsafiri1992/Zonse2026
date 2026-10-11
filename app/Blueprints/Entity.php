@@ -14,7 +14,8 @@ use Illuminate\Support\Str;
  *
  * `bill` makes records invoiceable through the Invoicing module: true, or a map of
  * invoice status => record status (e.g. ['paid' => 'paid', 'partial' => 'part_paid'])
- * plus `via` (a record field whose record's contact pays, e.g. a visit's patient).
+ * plus `via` (a record field whose record's contact pays, e.g. a visit's patient) and `due_on`
+ * (the record's due date becomes the invoice's due date, e.g. a fee account's).
  */
 class Entity
 {
@@ -90,6 +91,18 @@ class Entity
             description: $extras['description'] ?? null,
             billing: isset($extras['bill']) ? (is_array($extras['bill']) ? $extras['bill'] : []) : null,
         );
+    }
+
+    /** The label for use mid-sentence: "New BOQ item", not "New boq item". */
+    public function lowerLabel(): string
+    {
+        return self::lowerKeepingAcronyms($this->label);
+    }
+
+    /** Lowercase each word except acronyms (words with two or more capitals, like BOQ, QR or PayPal). */
+    public static function lowerKeepingAcronyms(string $text): string
+    {
+        return preg_replace_callback('/[A-Za-z][A-Za-z0-9]*/', fn (array $word) => preg_match('/[A-Z].*[A-Z]/', $word[0]) ? $word[0] : mb_strtolower($word[0]), $text);
     }
 
     public static function statusLabel(string $status): string

@@ -54,7 +54,8 @@ class Field
         $related = null;
         if ($type === 'select') {
             foreach (array_filter(explode(',', (string) $raw)) as $option) {
-                $options[$option] = Entity::statusLabel($option);
+                // Units are symbols ("kg", "m2"), so they keep their case instead of becoming "Kg" or "M2".
+                $options[$option] = $key === 'unit' ? str_replace(['m2', 'm3'], ['m²', 'm³'], $option) : Entity::statusLabel($option);
             }
         } elseif ($type === 'record') {
             $related = $raw;

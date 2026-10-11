@@ -40,15 +40,15 @@ class RecordBilling
             throw ValidationException::withMessages(['billing' => 'Switch on the Invoicing app to bill from here.']);
         }
         if ($period !== null && $record->invoices()->where('period', $period)->exists()) {
-            throw ValidationException::withMessages(['billing' => 'This '.strtolower($record->definition()->label).' has already been billed for '.$period.'.']);
+            throw ValidationException::withMessages(['billing' => 'This '.$record->definition()->lowerLabel().' has already been billed for '.$period.'.']);
         }
 
         if ($period === null && ! empty($record->definition()->billing['periodic'])) {
-            throw ValidationException::withMessages(['billing' => 'A '.strtolower($record->definition()->label).' is billed one period at a time. Use the billing action for the period instead.']);
+            throw ValidationException::withMessages(['billing' => 'A '.$record->definition()->lowerLabel().' is billed one period at a time. Use the billing action for the period instead.']);
         }
 
         if ($period === null && ! empty($record->definition()->billing['once']) && $record->invoices()->where('status', '!=', 'cancelled')->exists()) {
-            throw ValidationException::withMessages(['billing' => 'This '.strtolower($record->definition()->label).' has already been invoiced.']);
+            throw ValidationException::withMessages(['billing' => 'This '.$record->definition()->lowerLabel().' has already been invoiced.']);
         }
 
         if ($period === null && ($open = $record->openInvoice())) {
@@ -65,6 +65,9 @@ class RecordBilling
 
         return DB::transaction(function () use ($record, $lines, $period, $send, $issueDate, $dueDate) {
             $issueDate ??= today();
+            if ($dueDate === null && ! empty($record->definition()->billing['due_on']) && $record->due_on?->gte($issueDate)) {
+                $dueDate = $record->due_on;
+            }
             $invoice = Invoice::create(array_filter([
                 'contact_id' => $this->payingContact($record)->id,
                 'branch_id' => $record->branch_id,

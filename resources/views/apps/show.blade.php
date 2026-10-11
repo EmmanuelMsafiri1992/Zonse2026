@@ -8,7 +8,7 @@
         <a href="{{ route('apps.reports', $app->key) }}" class="btn btn-white"><x-icon name="chart-column" /> Reports</a>
         @can('create', \App\Models\Record::class)
             @php $primary = $app->primaryEntity(); @endphp
-            <a href="{{ route('apps.records.create', [$app->key, $primary->key]) }}" class="btn btn-primary"><x-icon name="plus" /> New {{ strtolower($primary->label) }}</a>
+            <a href="{{ route('apps.records.create', [$app->key, $primary->key]) }}" class="btn btn-primary"><x-icon name="plus" /> New {{ $primary->lowerLabel() }}</a>
         @endcan
     </x-page-header>
 

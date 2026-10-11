@@ -50,7 +50,7 @@ class RecordTarget extends ImportTarget
     public function columns(): array
     {
         $entity = $this->entity;
-        $columns = ['title' => ['label' => $entity->titleLabel, 'required' => true, 'example' => 'Example '.strtolower($entity->label), 'aliases' => ['title', 'name']]];
+        $columns = ['title' => ['label' => $entity->titleLabel, 'required' => true, 'example' => 'Example '.$entity->lowerLabel(), 'aliases' => ['title', 'name']]];
         if (count($entity->statuses) > 1) {
             $columns['status'] = ['label' => 'Status', 'example' => reset($entity->statuses), 'hint' => implode(', ', $entity->statuses).'.', 'aliases' => ['stage', 'state']];
         }

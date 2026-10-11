@@ -1,11 +1,11 @@
 @extends('layouts.app')
-@section('title', ($record->exists ? 'Edit ' : 'New ').strtolower($def->label))
+@section('title', ($record->exists ? 'Edit ' : 'New ').$def->lowerLabel())
 @section('content')
     @php
         $backUrl = $record->exists ? $record->url() : route('apps.records.index', [$app->key, $def->key]);
         $inputTypes = ['number' => 'number', 'money' => 'number', 'date' => 'date', 'datetime' => 'datetime-local', 'time' => 'time', 'email' => 'email', 'phone' => 'tel', 'url' => 'url'];
     @endphp
-    <x-page-header :title="$record->exists ? 'Edit '.$record->number : 'New '.strtolower($def->label)"
+    <x-page-header :title="$record->exists ? 'Edit '.$record->number : 'New '.$def->lowerLabel()"
                    :sub="$record->exists ? $record->title : $app->name"
                    :crumbs="['Apps' => route('apps.index'), $app->name => route('apps.show', $app->key), $def->plural => route('apps.records.index', [$app->key, $def->key]), $record->exists ? 'Edit' : 'New']" />
 
@@ -79,7 +79,7 @@
                     </div>
                     <div class="card-footer d-flex justify-content-between">
                         <a href="{{ $backUrl }}" class="btn btn-white">Cancel</a>
-                        <button class="btn btn-primary"><x-icon name="check" /> {{ $record->exists ? 'Save changes' : 'Save '.strtolower($def->label) }}</button>
+                        <button class="btn btn-primary"><x-icon name="check" /> {{ $record->exists ? 'Save changes' : 'Save '.$def->lowerLabel() }}</button>
                     </div>
                 </div>
             </div>

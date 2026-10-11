@@ -9,7 +9,7 @@
             <a href="{{ route('settings.imports.index', ['target' => 'records.'.$app->key.'.'.$def->key]) }}" class="btn btn-white"><x-icon name="file-up" /> Import</a>
         @endcan
         @can('create', \App\Models\Record::class)
-            <a href="{{ route('apps.records.create', [$app->key, $def->key, 'contact' => $filters['contact']]) }}" class="btn btn-primary"><x-icon name="plus" /> New {{ strtolower($def->label) }}</a>
+            <a href="{{ route('apps.records.create', [$app->key, $def->key, 'contact' => $filters['contact']]) }}" class="btn btn-primary"><x-icon name="plus" /> New {{ $def->lowerLabel() }}</a>
         @endcan
     </x-page-header>
 
@@ -46,15 +46,15 @@
                 @endif
             </form>
             @if($contactName)<span class="z-pill z-pill-primary">{{ $def->contactLabel }}: {{ $contactName }}</span>@endif
-            <span class="fs-8 text-muted">{{ $records->total() }} {{ \Illuminate\Support\Str::plural(strtolower($def->label), $records->total()) }}</span>
+            <span class="fs-8 text-muted">{{ $records->total() }} {{ \Illuminate\Support\Str::plural($def->lowerLabel(), $records->total()) }}</span>
         </div>
 
         @if($records->isEmpty())
             <div class="card-body">
                 <x-empty :icon="$def->icon" :title="$filtered ? 'Nothing matches' : 'No '.strtolower($def->plural).' yet'"
-                         :text="$filtered ? 'Try a different search or status.' : 'Add your first '.strtolower($def->label).' to get started.'">
+                         :text="$filtered ? 'Try a different search or status.' : 'Add your first '.$def->lowerLabel().' to get started.'">
                     @can('create', \App\Models\Record::class)
-                        <a href="{{ route('apps.records.create', [$app->key, $def->key]) }}" class="btn btn-primary"><x-icon name="plus" /> New {{ strtolower($def->label) }}</a>
+                        <a href="{{ route('apps.records.create', [$app->key, $def->key]) }}" class="btn btn-primary"><x-icon name="plus" /> New {{ $def->lowerLabel() }}</a>
                     @endcan
                 </x-empty>
             </div>
