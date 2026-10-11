@@ -57,7 +57,14 @@ class PayablesLogic extends AppLogic
 
     public function saving(Record $record): void
     {
-        if ($record->entity !== 'bills' || ! $record->exists) {
+        if ($record->entity !== 'bills') {
+            return;
+        }
+
+        // A new bill has no payments yet, whatever was typed as already paid.
+        if (! $record->exists) {
+            $this->put($record, ['paid_amount' => 0]);
+
             return;
         }
 
@@ -140,7 +147,7 @@ class PayablesLogic extends AppLogic
         return [
             ['view' => 'apps.logic.stats-card', 'data' => ['title' => 'Payment', 'icon' => 'send', 'stats' => [
                 ['label' => 'Bill total', 'value' => $this->money($record->amount)],
-                ['label' => 'Paid', 'value' => $this->money($record->value('paid_amount'))],
+                ['label' => 'Paid', 'value' => $this->money((float) $record->amount - $outstanding)],
                 ['label' => 'Still owed', 'value' => $this->money($outstanding), 'tone' => $outstanding > 0 && $record->due_on?->isPast() ? 'danger' : null],
             ]]],
             ['view' => 'apps.logic.list-card', 'data' => [

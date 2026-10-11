@@ -260,6 +260,13 @@ class FinanceAppsTest extends TestCase
             'title' => 'Duplicate', 'status' => 'received', 'amount' => 300, 'contact_id' => $supplier->id, 'data' => ['supplier_invoice_number' => 'INV-77'],
         ])->assertSessionHasErrors('data.supplier_invoice_number');
 
+        $this->actingAs($owner)->post(route('apps.records.store', ['payables', 'bills']), [
+            'title' => 'Water', 'status' => 'received', 'amount' => 80, 'contact_id' => $supplier->id, 'data' => ['supplier_invoice_number' => 'W-1', 'paid_amount' => 50],
+        ])->assertSessionHasNoErrors();
+        $water = Record::query()->ofEntity('payables', 'bills')->where('title', 'Water')->firstOrFail();
+        $this->assertSame(0.0, (float) $water->value('paid_amount'), 'Only recorded payments count as paid.');
+        $this->actingAs($owner)->get($water->url())->assertOk()->assertSeeInOrder(['Paid', '0.00', 'Still owed', '80.00']);
+
         $payment = ['title' => 'EFT 1', 'status' => 'paid', 'amount' => 100, 'occurs_on' => today()->toDateString(), 'data' => ['bill' => $bill->id, 'method' => 'bank_transfer']];
         $this->actingAs($owner)->post(route('apps.records.store', ['payables', 'payments']), $payment)->assertSessionHasErrors('data.bill');
 
