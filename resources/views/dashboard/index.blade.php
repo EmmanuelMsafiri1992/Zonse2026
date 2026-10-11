@@ -55,7 +55,7 @@
                                 <div class="col-sm-6 col-xl-4">
                                     @php $entryUrl = app(\App\Registries\ModuleRegistry::class)->entryUrl($m->key); @endphp
                                     <{{ $entryUrl ? 'a' : 'div' }} @if($entryUrl) href="{{ $entryUrl }}" @endif class="d-flex gap-3 p-3 rounded-10 border h-100 text-reset text-decoration-none {{ $m->isAvailable() ? 'hover-raise bg-white' : 'bg-soft' }}">
-                                        <span class="z-avatar z-avatar-soft rounded-3"><x-icon :name="$m->icon ?: ($m->suite?->icon ?? 'box')" /></span>
+                                        <span class="z-avatar z-avatar-soft rounded-3">{!! \App\Support\Icon::ref($m->icon ?: ($m->suite?->icon ?? 'box')) !!}</span>
                                         <div class="mw-0">
                                             <div class="fw-600 text-truncate">{{ $m->name }}</div>
                                             <div class="fs-8 text-muted">{{ $m->suite?->name }}</div>
@@ -65,6 +65,7 @@
                                 </div>
                             @endforeach
                         </div>
+                        {!! \App\Support\Icon::sprite() !!}
                     @endif
                 </div>
             </div>

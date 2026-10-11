@@ -24,10 +24,7 @@
                         </a>
                         <div class="z-nav-sub">
                             @foreach($item->children as $child)
-                                <a href="{{ $child->href() }}" class="z-nav-link {{ $child->isActive() ? 'active' : '' }}">
-                                    {!! \App\Support\Icon::ref($child->icon, 'zi zi-sm') !!}
-                                    <span>{{ $child->label }}</span>
-                                </a>
+                                <a href="{{ $child->href() }}" class="z-nav-link{{ $child->isActive() ? ' active' : '' }}">{!! \App\Support\Icon::ref($child->icon, 'zi zi-sm') !!}<span>{{ $child->label }}</span></a>
                             @endforeach
                         </div>
                     </div>

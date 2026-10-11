@@ -11,9 +11,6 @@ class Icon
     /** @var array<string, string> */
     protected static array $cache = [];
 
-    /** @var array<string, true> Icons referenced through {@see ref()} that the sprite still has to define. */
-    protected static array $referenced = [];
-
     public static function svg(?string $name, string $class = 'zi'): string
     {
         $name = $name ?: 'circle';
@@ -23,25 +20,39 @@ class Icon
 
     /**
      * A small `<use>` reference to an icon drawn once by {@see sprite()}, so a list that repeats
-     * the same icons hundreds of times does not repeat their paths.
+     * the same icons hundreds of times does not repeat their paths. Size, stroke and fill come
+     * from the `.zi` styles.
      */
     public static function ref(?string $name, string $class = 'zi'): string
     {
         $name = $name ?: 'circle';
-        static::$referenced[$name] = true;
+        $referenced = request()->attributes->get('icons.referenced', []);
+        $referenced[$name] = true;
+        request()->attributes->set('icons.referenced', $referenced);
 
-        return '<svg class="'.e($class).'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#zi-'.e($name).'"/></svg>';
+        return '<svg class="'.e($class).'" aria-hidden="true"><use href="#zi-'.e($name).'"/></svg>';
     }
 
-    /** Hidden symbols for every icon referenced so far; render it after the references. */
+    /**
+     * Hidden symbols for the icons referenced so far that no earlier sprite on this page has
+     * drawn yet; render it after the references.
+     */
     public static function sprite(): string
     {
-        $symbols = collect(array_keys(static::$referenced))->map(function (string $name): string {
-            $inner = preg_replace(['/^.*?<svg[^>]*>/s', '/<\/svg>\s*$/s'], '', static::svg($name));
+        $defined = request()->attributes->get('icons.defined', []);
+        $pending = array_diff_key(request()->attributes->get('icons.referenced', []), $defined);
+        request()->attributes->set('icons.defined', $defined + $pending);
+        request()->attributes->set('icons.referenced', []);
+
+        if ($pending === []) {
+            return '';
+        }
+
+        $symbols = collect(array_keys($pending))->map(function (string $name): string {
+            $inner = preg_replace(['/^.*?<svg[^>]*>/s', '/<\/svg>\s*$/s', '/>\s+</'], ['', '', '><'], static::svg($name));
 
             return '<symbol id="zi-'.e($name).'" viewBox="0 0 24 24">'.trim((string) $inner).'</symbol>';
         })->implode('');
-        static::$referenced = [];
 
         return '<svg width="0" height="0" style="position:absolute" aria-hidden="true">'.$symbols.'</svg>';
     }
