@@ -37,6 +37,15 @@ class PayrollLogic extends AppLogic
             $errors['data.run'] = 'Pay run '.$run->number.' is already paid. Add the payslip to a new run.';
         }
 
+        $paidRun = $existing ? $this->parent($existing, 'run') : null;
+        if ($existing && ($existing->status === 'paid' || $paidRun?->status === 'paid')) {
+            $changed = collect([...array_keys(self::EARNINGS), ...array_keys(self::DEDUCTIONS)])
+                ->first(fn (string $key) => abs((float) ($data[$key] ?? 0) - $this->number($existing, $key)) > 0.004);
+            if ($changed) {
+                $errors['data.'.$changed] = 'This payslip has been paid, so its pay is locked.';
+            }
+        }
+
         return $errors;
     }
 
@@ -46,6 +55,12 @@ class PayrollLogic extends AppLogic
             $gross = $this->gross($record);
             $this->put($record, ['_gross' => $gross]);
             $record->amount = round($gross - $this->deductions($record), 2);
+        }
+
+        // A new run has no payslips yet, whatever totals were typed in.
+        if ($record->entity === 'runs' && ! $record->exists) {
+            $this->put($record, ['employee_count' => 0, 'gross_total' => 0, 'deductions_total' => 0]);
+            $record->amount = 0;
         }
 
         if ($record->entity === 'runs' && $record->exists) {

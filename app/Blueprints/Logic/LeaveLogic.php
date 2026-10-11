@@ -52,7 +52,7 @@ class LeaveLogic extends AppLogic
             $errors['occurs_on'] = $payload['title'].' already has leave from '.$clash->occurs_on->format('d M').' to '.($clash->due_on ?? $clash->occurs_on)->format('d M Y').'.';
         }
 
-        if (($data['type'] ?? null) === 'annual' && $days > 0) {
+        if (($data['type'] ?? null) === 'annual' && $days > 0 && ! isset($errors['data.days'])) {
             $used = $this->annualDaysUsed($payload['title'], $from->year, $existing);
             if ($used + $days > self::ANNUAL_DAYS) {
                 $errors['data.days'] = $payload['title'].' has '.max(0, self::ANNUAL_DAYS - $used).' annual days left in '.$from->year.'.';

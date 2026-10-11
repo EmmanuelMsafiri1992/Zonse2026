@@ -91,6 +91,12 @@ class BusinessAppsTest extends TestCase
 
         $this->actingAs($owner)->post(route('apps.records.action', [$app, 'expenses', $claim->id, 'approve']))->assertRedirect();
         $this->assertSame('approved', $claim->fresh()->status);
+        $this->actingAs($owner)->put(route('apps.records.update', [$app, 'expenses', $claim->id]), [
+            'title' => $claim->title, 'status' => 'approved', 'amount' => 800, 'occurs_on' => today()->toDateString(), 'data' => $claim->data,
+        ])->assertSessionHasErrors(['amount' => 'The amount was approved as $80.00. Move the claim back to submitted to change it.']);
+        $this->actingAs($owner)->post(route('apps.records.store', [$app, 'expenses']), [
+            'title' => 'Straight to approved', 'status' => 'approved', 'amount' => 20, 'data' => ['category' => 'meals', 'payment_method' => 'personal'],
+        ])->assertSessionHasErrors(['status' => 'Submit the claim first, then approve it.']);
         $this->actingAs($owner)->get(route('apps.show', $app))->assertOk()->assertSee('To pay back to staff')->assertSee('80.00');
         $this->actingAs($owner)->post(route('apps.records.action', [$app, 'expenses', $claim->id, 'reimburse']))->assertRedirect();
         $this->assertSame('reimbursed', $claim->fresh()->status);
@@ -250,6 +256,8 @@ class BusinessAppsTest extends TestCase
         $annual = [...$request, 'occurs_on' => $later->toDateString(), 'due_on' => $later->copy()->addDays(9)->toDateString(), 'data' => ['type' => 'annual', 'days' => 8]];
         $this->actingAs($owner)->post(route('apps.records.store', [$app, 'requests']), $annual)->assertSessionHasErrors('data.days');
         $this->actingAs($owner)->post(route('apps.records.store', [$app, 'requests']), [...$annual, 'data' => ['type' => 'annual', 'days' => 12]])->assertSessionHasErrors('data.days');
+        $this->actingAs($owner)->post(route('apps.records.store', [$app, 'requests']), [...$annual, 'due_on' => $later->copy()->addDays(2)->toDateString(), 'data' => ['type' => 'annual', 'days' => 9]])
+            ->assertSessionHasErrors(['data.days' => 'The dates only cover 3 days.']);
         $this->actingAs($owner)->post(route('apps.records.store', [$app, 'requests']), [...$annual, 'data' => ['type' => 'annual', 'days' => 6]])->assertSessionHasNoErrors();
 
         $waiting = Record::query()->where('entity', 'requests')->where('status', 'requested')->firstOrFail();

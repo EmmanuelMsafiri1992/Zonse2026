@@ -35,8 +35,8 @@ class BudgetingLogic extends AppLogic
             $record->status = $this->lineStatus($record);
         }
 
-        if ($record->entity === 'budgets' && $record->exists) {
-            $record->amount = round((float) $this->linked('lines', 'budget', $record)->get()->where('data.type', 'expense')->sum('amount'), 2);
+        if ($record->entity === 'budgets') {
+            $record->amount = $record->exists ? round((float) $this->linked('lines', 'budget', $record)->get()->where('data.type', 'expense')->sum('amount'), 2) : 0;
         }
     }
 

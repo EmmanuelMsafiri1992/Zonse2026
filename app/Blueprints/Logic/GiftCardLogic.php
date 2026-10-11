@@ -31,6 +31,8 @@ class GiftCardLogic extends AppLogic
             }
             if ((float) ($payload['amount'] ?? 0) <= 0) {
                 $errors['amount'] = 'Give the face value.';
+            } elseif ($existing && ($used = (float) $this->linked('redemptions', 'card', $existing)->where('status', 'posted')->sum('amount')) - (float) $payload['amount'] > 0.004) {
+                $errors['amount'] = $this->money($used).' has already been taken from this card.';
             }
 
             return $errors;

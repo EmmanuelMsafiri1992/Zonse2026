@@ -55,6 +55,10 @@ class EstateLevyLogic extends AppLogic
                 $record->status = 'overdue';
             }
         }
+        if ($record->entity === 'owners' && ! $record->exists) {
+            $this->put($record, ['balance' => 0]);
+        }
+
         if ($record->entity === 'owners' && $record->exists) {
             $open = $this->linked('levies', 'owner', $record)->whereIn('status', ['billed', 'overdue'])->get();
             $this->put($record, ['balance' => round((float) $open->sum(fn (Record $levy) => (float) $levy->amount), 2)]);

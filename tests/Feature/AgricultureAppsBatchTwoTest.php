@@ -132,7 +132,8 @@ class AgricultureAppsBatchTwoTest extends TestCase
     {
         $app = 'grain-storage';
         [$owner, $workspace] = $this->appWorkspace($app);
-        $silo = $this->record($workspace, $app, 'stores', 'Silo 1', 'empty', ['capacity' => 100, 'commodity' => 'maize']);
+        $silo = $this->record($workspace, $app, 'stores', 'Silo 1', 'empty', ['capacity' => 100, 'commodity' => 'maize', 'current_stock' => 70]);
+        $this->assertSame(0.0, (float) $silo->value('current_stock'), 'Stock comes from receipts only.');
         $shed = $this->record($workspace, $app, 'stores', 'Shed', 'fumigating', ['capacity' => 50]);
 
         $receipt = ['title' => 'Alice Zulu', 'status' => 'issued', 'data' => ['store' => $silo->id, 'commodity' => 'maize', 'weight' => 20, 'moisture' => 15]];

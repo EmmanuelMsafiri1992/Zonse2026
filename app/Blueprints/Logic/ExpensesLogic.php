@@ -31,6 +31,13 @@ class ExpensesLogic extends AppLogic
         } elseif ($status === 'reimbursed' && $existing?->status !== 'approved' && $existing?->status !== 'reimbursed') {
             $errors['status'] = 'Approve the claim before reimbursing it.';
         }
+        if (! $existing && in_array($status, ['approved', 'reimbursed'], true)) {
+            $errors['status'] = 'Submit the claim first, then approve it.';
+        }
+        if (in_array($existing?->status, ['approved', 'reimbursed'], true) && in_array($status, ['approved', 'reimbursed'], true)
+            && abs((float) ($payload['amount'] ?? 0) - (float) $existing->amount) > 0.004) {
+            $errors['amount'] = 'The amount was approved as '.$this->money($existing->amount).'. Move the claim back to submitted to change it.';
+        }
         if ($existing?->status === 'rejected' && $status !== 'rejected' && $status !== 'draft') {
             $errors['status'] = 'A rejected claim goes back to draft before it is submitted again.';
         }

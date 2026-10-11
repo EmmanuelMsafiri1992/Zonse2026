@@ -99,7 +99,8 @@ class PropertyAppsTest extends TestCase
     {
         $app = 'estate-management';
         [$owner, $workspace] = $this->appWorkspace($app);
-        $nkosi = $this->record($workspace, $app, 'owners', 'Nkosi', 'current', ['unit' => 'Stand 1', 'participation_quota' => 60, 'levy' => 1500]);
+        $nkosi = $this->record($workspace, $app, 'owners', 'Nkosi', 'current', ['unit' => 'Stand 1', 'participation_quota' => 60, 'levy' => 1500, 'balance' => 900]);
+        $this->assertSame(0.0, (float) $nkosi->value('balance'), 'The balance comes from open levies only.');
         $this->actingAs($owner)->post(route('apps.records.store', [$app, 'owners']), ['title' => 'Botha', 'status' => 'current', 'data' => ['unit' => 'Stand 2', 'participation_quota' => 50]])
             ->assertSessionHasErrors(['data.participation_quota' => 'Quotas would add up to 110%; only 40% is left.']);
 

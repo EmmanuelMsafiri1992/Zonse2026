@@ -266,7 +266,9 @@ class FinanceAppsBatchThreeTest extends TestCase
         $alice = $this->record($workspace, 'investment-clubs-crowdfunding-of', 'members', 'Alice', 'active');
         $bob = $this->record($workspace, 'investment-clubs-crowdfunding-of', 'members', 'Bob', 'active');
         $gone = $this->record($workspace, 'investment-clubs-crowdfunding-of', 'members', 'Carl', 'exited');
-        $venture = $this->record($workspace, 'investment-clubs-crowdfunding-of', 'ventures', 'Poultry farm', 'raising', ['target' => 1000]);
+        $venture = $this->record($workspace, 'investment-clubs-crowdfunding-of', 'ventures', 'Poultry farm', 'raising', ['target' => 1000, 'raised' => 5000]);
+        $this->assertSame('raising', $venture->status, 'Only received contributions count as raised.');
+        $this->assertSame(0.0, (float) $venture->value('raised'));
 
         $contribute = fn (Record $investor, float $amount) => $this->actingAs($owner)->post(route('apps.records.store', ['investment-clubs-crowdfunding-of', 'contributions']), [
             'title' => 'Contribution', 'status' => 'received', 'amount' => $amount, 'occurs_on' => today()->toDateString(), 'data' => ['investor' => $investor->id, 'venture' => $venture->id],

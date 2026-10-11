@@ -51,14 +51,12 @@ class InvestmentClubsLogic extends AppLogic
 
     public function saving(Record $record): void
     {
-        if ($record->entity === 'members' && $record->exists) {
-            $record->amount = round((float) $this->linked('contributions', 'investor', $record)->where('status', 'received')->sum('amount'), 2);
+        if ($record->entity === 'members') {
+            $record->amount = $record->exists ? round((float) $this->linked('contributions', 'investor', $record)->where('status', 'received')->sum('amount'), 2) : 0;
         }
 
         if ($record->entity === 'ventures') {
-            if ($record->exists) {
-                $this->put($record, ['raised' => $this->raised($record)]);
-            }
+            $this->put($record, ['raised' => $record->exists ? $this->raised($record) : 0]);
             $target = $this->number($record, 'target');
             if ($record->status === 'raising' && $target > 0 && $this->number($record, 'raised') >= $target - 0.004) {
                 $record->status = 'funded';

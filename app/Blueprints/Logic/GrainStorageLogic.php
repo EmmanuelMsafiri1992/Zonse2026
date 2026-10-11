@@ -64,11 +64,11 @@ class GrainStorageLogic extends AppLogic
 
     public function saving(Record $record): void
     {
-        if ($record->entity !== 'stores' || ! $record->exists) {
+        if ($record->entity !== 'stores') {
             return;
         }
 
-        $stock = $this->stock($record);
+        $stock = $record->exists ? $this->stock($record) : 0.0;
         $this->put($record, ['current_stock' => $stock, '_fill' => $this->number($record, 'capacity') > 0 ? round($stock / $this->number($record, 'capacity') * 100, 1) : null]);
         if ($record->status !== 'fumigating') {
             $record->status = $stock > 0 ? 'active' : 'empty';

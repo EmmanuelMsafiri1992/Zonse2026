@@ -25,11 +25,20 @@ class PayablesLogic extends AppLogic
     {
         $data = $payload['data'];
 
-        if ($entity->key === 'bills' && filled($data['supplier_invoice_number'] ?? null) && ! empty($payload['contact_id'])) {
-            $duplicate = $this->records('bills')->where('contact_id', $payload['contact_id'])->where('data->supplier_invoice_number', $data['supplier_invoice_number'])
-                ->when($existing, fn ($query) => $query->whereKeyNot($existing->id))->first();
+        if ($entity->key === 'bills') {
+            $errors = [];
+            if (filled($data['supplier_invoice_number'] ?? null) && ! empty($payload['contact_id'])) {
+                $duplicate = $this->records('bills')->where('contact_id', $payload['contact_id'])->where('data->supplier_invoice_number', $data['supplier_invoice_number'])
+                    ->when($existing, fn ($query) => $query->whereKeyNot($existing->id))->first();
+                if ($duplicate) {
+                    $errors['data.supplier_invoice_number'] = 'This supplier invoice is already captured as '.$duplicate->number.'.';
+                }
+            }
+            if ($existing && ($paid = round((float) $existing->amount - $this->outstanding($existing), 2)) - (float) ($payload['amount'] ?? 0) > 0.004) {
+                $errors['amount'] = $this->money($paid).' has already been paid on this bill.';
+            }
 
-            return $duplicate ? ['data.supplier_invoice_number' => 'This supplier invoice is already captured as '.$duplicate->number.'.'] : [];
+            return $errors;
         }
 
         if ($entity->key !== 'payments' || $payload['status'] === 'cancelled') {

@@ -116,7 +116,9 @@ class FinanceAppsTest extends TestCase
     public function test_payroll_works_out_net_pay_and_rolls_up_the_run(): void
     {
         [$owner, $workspace] = $this->appWorkspace('payroll');
-        $run = $this->record($workspace, 'payroll', 'runs', 'October 2026', 'draft', ['frequency' => 'monthly'], ['occurs_on' => today()]);
+        $run = $this->record($workspace, 'payroll', 'runs', 'October 2026', 'draft', ['frequency' => 'monthly', 'employee_count' => 9, 'gross_total' => 5000], ['occurs_on' => today(), 'amount' => 4000]);
+        $this->assertSame(0, (int) $run->value('employee_count'), 'A new run counts only its payslips.');
+        $this->assertSame(0.0, (float) $run->amount);
 
         $this->actingAs($owner)->post(route('apps.records.store', ['payroll', 'payslips']), [
             'title' => 'Rudo Banda', 'status' => 'draft', 'data' => ['run' => $run->id, 'basic_pay' => 100, 'paye' => 150],
@@ -142,6 +144,12 @@ class FinanceAppsTest extends TestCase
         $run->fresh()->update(['status' => 'approved']);
         $this->assertSame('approved', $first->fresh()->status);
 
+        $run->fresh()->update(['status' => 'paid']);
+        $this->actingAs($owner)->put(route('apps.records.update', ['payroll', 'payslips', $first->id]), [
+            'title' => 'Rudo Banda', 'status' => $first->fresh()->status, 'data' => [...$first->data, 'basic_pay' => 5000],
+        ])->assertSessionHasErrors(['data.basic_pay' => 'This payslip has been paid, so its pay is locked.']);
+        $this->assertSame(1059.5, (float) $first->fresh()->amount);
+
         $this->actingAs($owner)->get(route('apps.records.document', ['payroll', 'payslips', $first->id, 'payslip']))->assertOk()
             ->assertSee('Payslip')->assertSee('October 2026')->assertSee('1,059.50');
         $this->actingAs($owner)->get(route('apps.reports', 'payroll'))->assertOk()->assertSee('Deductions to pay over')->assertSee('150.00');
@@ -154,7 +162,8 @@ class FinanceAppsTest extends TestCase
             'title' => 'Backwards', 'status' => 'draft', 'data' => ['period_start' => '2026-12-31', 'period_end' => '2026-01-01'],
         ])->assertSessionHasErrors('data.period_end');
 
-        $budget = $this->record($workspace, 'budgeting', 'budgets', 'FY2026', 'approved', ['period_start' => '2026-01-01', 'period_end' => '2026-12-31']);
+        $budget = $this->record($workspace, 'budgeting', 'budgets', 'FY2026', 'approved', ['period_start' => '2026-01-01', 'period_end' => '2026-12-31'], ['amount' => 99999]);
+        $this->assertSame(0.0, (float) $budget->amount, 'The total comes from the budget lines only.');
         $fuel = $this->record($workspace, 'budgeting', 'lines', 'Fuel', 'on_track', ['budget' => $budget->id, 'type' => 'expense', 'actual' => 1200], ['amount' => 1000]);
         $wages = $this->record($workspace, 'budgeting', 'lines', 'Wages', 'over_budget', ['budget' => $budget->id, 'type' => 'expense', 'actual' => 500], ['amount' => 3000]);
         $sales = $this->record($workspace, 'budgeting', 'lines', 'Sales', 'on_track', ['budget' => $budget->id, 'type' => 'income', 'actual' => 4000], ['amount' => 9000]);
@@ -279,6 +288,10 @@ class FinanceAppsTest extends TestCase
         $bill->refresh();
         $this->assertSame('part_paid', $bill->status);
         $this->assertSame(100.0, (float) $bill->value('paid_amount'));
+        $this->actingAs($owner)->put(route('apps.records.update', ['payables', 'bills', $bill->id]), [
+            'title' => 'Electricity', 'status' => 'part_paid', 'amount' => 60, 'contact_id' => $supplier->id, 'data' => ['supplier_invoice_number' => 'INV-77'],
+        ])->assertSessionHasErrors('amount');
+        $this->assertSame(300.0, (float) $bill->fresh()->amount);
 
         $this->actingAs($owner)->get(route('apps.show', 'payables'))->assertOk()->assertSee('Bills due in the next 14 days')->assertSee('200.00');
 

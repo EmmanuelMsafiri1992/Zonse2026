@@ -128,6 +128,8 @@ class SalesAppsBatchTwoTest extends TestCase
         $this->actingAs($owner)->post(route('apps.records.store', [$app, 'redemptions']), ['title' => 'Till 1', 'status' => 'posted', 'amount' => 600, 'data' => ['card' => $card->id]])
             ->assertSessionHasErrors(['amount' => 'Card GC-100 only has '.$this->money(500).' left.']);
         $this->actingAs($owner)->post($card->url().'/actions/redeem', ['amount' => 200])->assertSessionHas('flash.message', $this->money(200).' taken from GC-100; '.$this->money(300).' left.');
+        $this->actingAs($owner)->put(route('apps.records.update', [$app, 'cards', $card->id]), ['title' => 'GC-100', 'status' => 'active', 'amount' => 150, 'data' => ['type' => 'gift_card']])
+            ->assertSessionHasErrors(['amount' => $this->money(200).' has already been taken from this card.']);
         $this->actingAs($owner)->post($card->url().'/actions/redeem', ['amount' => 300])->assertSessionHasNoErrors();
         $this->assertSame('redeemed', $card->fresh()->status);
         $last = Record::query()->where('entity', 'redemptions')->where('amount', 300)->firstOrFail();
