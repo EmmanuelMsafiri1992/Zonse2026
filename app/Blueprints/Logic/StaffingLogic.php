@@ -17,6 +17,8 @@ use Illuminate\Support\Collection;
  */
 class StaffingLogic extends AppLogic
 {
+    protected array $computed = ['timesheets' => ['amount']];
+
     public function validate(Entity $entity, array $payload, ?Record $existing): array
     {
         $data = $payload['data'];

@@ -17,6 +17,8 @@ use Modules\Invoicing\Models\Item;
  */
 class InventoryValuationLogic extends AppLogic
 {
+    protected array $computed = ['landed_costs' => ['amount']];
+
     public const COSTS = ['supplier_cost', 'freight', 'duty', 'clearing'];
 
     public function validate(Entity $entity, array $payload, ?Record $existing): array

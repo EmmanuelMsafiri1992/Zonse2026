@@ -19,6 +19,8 @@ use Illuminate\Validation\ValidationException;
  */
 class EquipmentHireLogic extends AppLogic
 {
+    protected array $computed = ['bookings' => ['amount']];
+
     /**
      * Booking steps in order.
      */

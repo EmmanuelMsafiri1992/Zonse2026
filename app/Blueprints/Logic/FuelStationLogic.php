@@ -20,6 +20,8 @@ use Illuminate\Validation\ValidationException;
  */
 class FuelStationLogic extends AppLogic
 {
+    protected array $computed = ['shifts' => ['litres_sold']];
+
     /**
      * Share of capacity below which a tank needs ordering.
      */

@@ -18,6 +18,8 @@ use Illuminate\Validation\ValidationException;
  */
 class TicketingLogic extends AppLogic
 {
+    protected array $computed = ['events' => ['tickets_sold']];
+
     public const LIVE = ['issued', 'checked_in'];
 
     public function validate(Entity $entity, array $payload, ?Record $existing): array

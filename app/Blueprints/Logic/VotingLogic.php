@@ -21,6 +21,8 @@ use Illuminate\Validation\ValidationException;
  */
 class VotingLogic extends AppLogic
 {
+    protected array $computed = ['elections' => ['turnout']];
+
     public const OPEN = ['nominations', 'voting'];
 
     public function validate(Entity $entity, array $payload, ?Record $existing): array

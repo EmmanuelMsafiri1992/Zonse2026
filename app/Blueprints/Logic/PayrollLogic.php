@@ -14,6 +14,8 @@ use Illuminate\Support\Carbon;
  */
 class PayrollLogic extends AppLogic
 {
+    protected array $computed = ['runs' => ['amount', 'employee_count', 'gross_total', 'deductions_total'], 'payslips' => ['amount']];
+
     public const EARNINGS = ['basic_pay' => 'Basic pay', 'allowances' => 'Allowances', 'overtime' => 'Overtime'];
 
     public const DEDUCTIONS = ['paye' => 'PAYE / income tax', 'social_security' => 'Social security', 'other_deductions' => 'Other deductions'];

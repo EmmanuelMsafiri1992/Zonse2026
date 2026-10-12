@@ -20,6 +20,8 @@ use Illuminate\Validation\ValidationException;
  */
 class BarLogic extends AppLogic
 {
+    protected array $computed = ['tabs' => ['amount']];
+
     public function validate(Entity $entity, array $payload, ?Record $existing): array
     {
         $data = $payload['data'];

@@ -17,6 +17,8 @@ use Illuminate\Validation\ValidationException;
  */
 class CanteenLogic extends AppLogic
 {
+    protected array $computed = ['cards' => ['balance']];
+
     public const LOW_BALANCE = 100;
 
     public function validate(Entity $entity, array $payload, ?Record $existing): array

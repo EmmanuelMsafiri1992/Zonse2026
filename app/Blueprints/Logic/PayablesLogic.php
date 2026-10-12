@@ -15,6 +15,8 @@ use Illuminate\Support\Carbon;
  */
 class PayablesLogic extends AppLogic
 {
+    protected array $computed = ['bills' => ['paid_amount']];
+
     /** Bill statuses that may be paid. */
     public const PAYABLE = ['approved', 'part_paid'];
 

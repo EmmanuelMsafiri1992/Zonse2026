@@ -19,6 +19,8 @@ use Illuminate\Validation\ValidationException;
  */
 class BulkDispatchLogic extends AppLogic
 {
+    protected array $computed = ['tickets' => ['net_mass']];
+
     /**
      * Legal gross vehicle mass (kg) before a load is flagged as overloaded.
      */

@@ -16,6 +16,8 @@ use Illuminate\Support\Carbon;
  */
 class SavingsGroupsLogic extends AppLogic
 {
+    protected array $computed = ['meetings' => ['amount']];
+
     /** How many times their savings and shares a member may borrow. */
     public const LOAN_MULTIPLE = 3;
 

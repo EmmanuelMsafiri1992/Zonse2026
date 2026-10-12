@@ -19,6 +19,8 @@ use Illuminate\Validation\ValidationException;
  */
 class BusBookingLogic extends AppLogic
 {
+    protected array $computed = ['trips' => ['seats_sold']];
+
     /**
      * Tickets that hold their seat.
      *

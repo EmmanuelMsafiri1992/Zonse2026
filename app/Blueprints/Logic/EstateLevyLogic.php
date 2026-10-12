@@ -19,6 +19,8 @@ use Illuminate\Validation\ValidationException;
  */
 class EstateLevyLogic extends AppLogic
 {
+    protected array $computed = ['owners' => ['balance']];
+
     public function validate(Entity $entity, array $payload, ?Record $existing): array
     {
         $data = $payload['data'];

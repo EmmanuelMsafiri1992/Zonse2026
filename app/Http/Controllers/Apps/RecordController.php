@@ -311,6 +311,7 @@ class RecordController extends Controller
             'members' => $this->memberOptions(),
             'branches' => Branch::query()->orderBy('name')->pluck('name', 'id'),
             'relatedOptions' => $relatedOptions,
+            'computed' => $app->logic()->computed($def, $record),
         ];
     }
 

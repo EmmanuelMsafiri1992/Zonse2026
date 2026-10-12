@@ -19,6 +19,8 @@ use Illuminate\Validation\ValidationException;
  */
 class RestaurantLogic extends AppLogic
 {
+    protected array $computed = ['orders' => ['amount']];
+
     /**
      * Orders still on the floor.
      *

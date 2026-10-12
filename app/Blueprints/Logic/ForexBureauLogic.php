@@ -16,6 +16,8 @@ use Illuminate\Support\Str;
  */
 class ForexBureauLogic extends AppLogic
 {
+    protected array $computed = ['deals' => ['amount']];
+
     /** Deals at or above this local amount need the customer's ID number. */
     public const ID_THRESHOLD = 1000;
 

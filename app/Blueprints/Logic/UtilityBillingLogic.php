@@ -17,6 +17,8 @@ use Illuminate\Support\Carbon;
  */
 class UtilityBillingLogic extends AppLogic
 {
+    protected array $computed = ['readings' => ['consumption']];
+
     /**
      * Days from reading to the bill's due date.
      */

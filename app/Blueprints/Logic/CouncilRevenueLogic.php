@@ -19,6 +19,8 @@ use Illuminate\Validation\ValidationException;
  */
 class CouncilRevenueLogic extends AppLogic
 {
+    protected array $computed = ['properties' => ['balance']];
+
     public const CHARGES = ['rates', 'refuse', 'water', 'sewer'];
 
     public const UNPAID = ['billed', 'part_paid', 'overdue'];

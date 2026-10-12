@@ -17,6 +17,8 @@ use Illuminate\Validation\ValidationException;
  */
 class MarketplaceLogic extends AppLogic
 {
+    protected array $computed = ['payouts' => ['amount']];
+
     public function validate(Entity $entity, array $payload, ?Record $existing): array
     {
         $data = $payload['data'];

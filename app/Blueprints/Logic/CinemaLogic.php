@@ -17,6 +17,8 @@ use Illuminate\Validation\ValidationException;
  */
 class CinemaLogic extends AppLogic
 {
+    protected array $computed = ['shows' => ['seats_sold']];
+
     public const HELD = ['reserved', 'paid', 'collected'];
 
     public function validate(Entity $entity, array $payload, ?Record $existing): array

@@ -19,6 +19,8 @@ use Illuminate\Validation\ValidationException;
  */
 class LegalLogic extends AppLogic
 {
+    protected array $computed = ['time_entries' => ['amount']];
+
     public function validate(Entity $entity, array $payload, ?Record $existing): array
     {
         $data = $payload['data'];

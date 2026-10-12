@@ -19,6 +19,8 @@ use Illuminate\Validation\ValidationException;
  */
 class WeighbridgeLogic extends AppLogic
 {
+    protected array $computed = ['tickets' => ['net']];
+
     /**
      * Legal gross vehicle mass in kg.
      */

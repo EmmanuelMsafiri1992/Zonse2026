@@ -19,6 +19,8 @@ use Illuminate\Support\Collection;
  */
 class SalesCommissionLogic extends AppLogic
 {
+    protected array $computed = ['targets' => ['achieved'], 'commissions' => ['amount']];
+
     public const DEFAULT_RATE = 5;
 
     public function validate(Entity $entity, array $payload, ?Record $existing): array

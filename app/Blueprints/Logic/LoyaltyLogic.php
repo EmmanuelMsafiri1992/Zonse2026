@@ -33,6 +33,12 @@ class LoyaltyLogic extends AppLogic
      */
     public const SPENDING = ['redeemed', 'expired'];
 
+    /** A new member's points are their opening balance; after that the balance comes from their transactions. */
+    public function computed(Entity $entity, ?Record $record = null): array
+    {
+        return $entity->key === 'members' && $record?->exists ? ['points'] : [];
+    }
+
     public function validate(Entity $entity, array $payload, ?Record $existing): array
     {
         $data = $payload['data'];

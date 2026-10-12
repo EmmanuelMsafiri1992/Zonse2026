@@ -16,6 +16,8 @@ use Throwable;
  */
 class PersonalFinanceLogic extends AppLogic
 {
+    protected array $computed = ['budgets' => ['spent']];
+
     public function validate(Entity $entity, array $payload, ?Record $existing): array
     {
         if ($entity->key === 'budgets' && filled($payload['data']['category'] ?? null) && ! $this->categoryKey((string) $payload['data']['category'])) {

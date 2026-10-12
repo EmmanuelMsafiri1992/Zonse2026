@@ -20,6 +20,8 @@ use Illuminate\Validation\ValidationException;
  */
 class ButcheryLogic extends AppLogic
 {
+    protected array $computed = ['sales' => ['amount']];
+
     /**
      * Set while carcasses are being updated from the sales, so their own saves don't start it again.
      */

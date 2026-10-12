@@ -16,6 +16,8 @@ use Illuminate\Support\Collection;
  */
 class BankingLogic extends AppLogic
 {
+    protected array $computed = ['reconciliations' => ['book_balance']];
+
     public function validate(Entity $entity, array $payload, ?Record $existing): array
     {
         if ($entity->key === 'transactions' && (float) ($payload['amount'] ?? 0) <= 0) {

@@ -18,6 +18,8 @@ use Illuminate\Validation\ValidationException;
  */
 class AffiliateLogic extends AppLogic
 {
+    protected array $computed = ['referrals' => ['amount']];
+
     public function validate(Entity $entity, array $payload, ?Record $existing): array
     {
         $data = $payload['data'];

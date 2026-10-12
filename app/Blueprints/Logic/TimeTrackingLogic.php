@@ -17,6 +17,8 @@ use Illuminate\Support\Carbon;
  */
 class TimeTrackingLogic extends AppLogic
 {
+    protected array $computed = ['entries' => ['amount']];
+
     public const MAX_HOURS_PER_DAY = 24;
 
     public function validate(Entity $entity, array $payload, ?Record $existing): array

@@ -15,6 +15,8 @@ use Illuminate\Support\Carbon;
  */
 class InvestmentClubsLogic extends AppLogic
 {
+    protected array $computed = ['members' => ['amount'], 'ventures' => ['raised']];
+
     public const OPEN = ['proposed', 'raising'];
 
     public function validate(Entity $entity, array $payload, ?Record $existing): array

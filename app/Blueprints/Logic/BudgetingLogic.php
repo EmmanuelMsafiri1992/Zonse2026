@@ -14,6 +14,8 @@ use Illuminate\Support\Carbon;
  */
 class BudgetingLogic extends AppLogic
 {
+    protected array $computed = ['budgets' => ['amount']];
+
     public function validate(Entity $entity, array $payload, ?Record $existing): array
     {
         if ($entity->key !== 'budgets') {

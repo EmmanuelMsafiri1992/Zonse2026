@@ -19,6 +19,8 @@ use Illuminate\Validation\ValidationException;
  */
 class FeedbackLogic extends AppLogic
 {
+    protected array $computed = ['surveys' => ['responses']];
+
     /**
      * NPS group for a 0–10 score.
      */

@@ -16,6 +16,8 @@ use Illuminate\Support\Carbon;
  */
 class RentCollectionLogic extends AppLogic
 {
+    protected array $computed = ['charges' => ['amount', 'paid']];
+
     public function validate(Entity $entity, array $payload, ?Record $existing): array
     {
         $data = $payload['data'];

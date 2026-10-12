@@ -23,6 +23,13 @@ class AppLogic
 {
     protected Blueprint $app;
 
+    /**
+     * Fields each entity works out for itself, by entity key ("amount" is the record's amount).
+     *
+     * @var array<string, list<string>>
+     */
+    protected array $computed = [];
+
     public function forApp(Blueprint $app): static
     {
         $this->app = $app;
@@ -55,6 +62,18 @@ class AppLogic
     public function validate(Entity $entity, array $payload, ?Record $existing): array
     {
         return [];
+    }
+
+    /**
+     * Fields this app works out itself, such as a bill's paid total or a budget's total. The form shows them
+     * without an input, and anything sent for them is ignored. "amount" stands for the record's amount.
+     * The record is the one being edited, or a new unsaved one.
+     *
+     * @return list<string>
+     */
+    public function computed(Entity $entity, ?Record $record = null): array
+    {
+        return $this->computed[$entity->key] ?? [];
     }
 
     // ----- Billing ------------------------------------------------------------------

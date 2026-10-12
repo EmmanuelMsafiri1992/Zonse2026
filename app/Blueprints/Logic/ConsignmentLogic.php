@@ -18,6 +18,8 @@ use Illuminate\Validation\ValidationException;
  */
 class ConsignmentLogic extends AppLogic
 {
+    protected array $computed = ['settlements' => ['amount']];
+
     /**
      * Guards against re-entering the consignment roll-up.
      */

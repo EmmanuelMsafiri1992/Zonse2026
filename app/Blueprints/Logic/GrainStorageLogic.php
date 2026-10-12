@@ -14,6 +14,8 @@ use Illuminate\Support\Carbon;
  */
 class GrainStorageLogic extends AppLogic
 {
+    protected array $computed = ['stores' => ['current_stock']];
+
     public const MAX_MOISTURE = 13.5;
 
     public const HELD = ['issued', 'pledged'];

@@ -42,6 +42,18 @@ class RecordRequest extends FormRequest
         return $this->route('record') ? Record::query()->ofEntity($entity->blueprintKey, $entity->key)->find($this->route('record')) : null;
     }
 
+    /**
+     * Fields the app works out itself, which the form doesn't send.
+     *
+     * @return list<string>
+     */
+    public function computed(): array
+    {
+        $entity = $this->entity();
+
+        return app(BlueprintRegistry::class)->get($entity->blueprintKey)?->logic()->computed($entity, $this->existing() ?? new Record) ?? [];
+    }
+
     /** @return array<string, mixed> */
     public function rules(): array
     {
@@ -60,7 +72,15 @@ class RecordRequest extends FormRequest
             'data' => ['nullable', 'array'],
         ];
 
+        $computed = $this->computed();
+        if (in_array('amount', $computed, true)) {
+            unset($rules['amount']);
+        }
+
         foreach ($entity->fields as $field) {
+            if (in_array($field->key, $computed, true)) {
+                continue;
+            }
             $fieldRules = $field->rules();
             if ($field->type === 'record') {
                 $fieldRules[] = Rule::exists('records', 'id')
@@ -116,10 +136,18 @@ class RecordRequest extends FormRequest
     {
         $entity = $this->entity();
         $validated = $this->validated();
+        $computed = $this->computed();
+        $existing = $computed ? $this->existing() : null;
 
         $data = [];
         foreach ($entity->fields as $field) {
-            $data[$field->key] = $field->cast($validated['data'][$field->key] ?? null);
+            // Worked-out fields keep what the app last worked out; the app's logic fills them on save.
+            $data[$field->key] = in_array($field->key, $computed, true)
+                ? $existing?->value($field->key)
+                : $field->cast($validated['data'][$field->key] ?? null);
+        }
+        if (in_array('amount', $computed, true)) {
+            $validated['amount'] = $existing?->amount;
         }
 
         return [

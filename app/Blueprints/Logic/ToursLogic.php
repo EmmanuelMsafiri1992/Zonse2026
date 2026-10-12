@@ -20,6 +20,8 @@ use Illuminate\Validation\ValidationException;
  */
 class ToursLogic extends AppLogic
 {
+    protected array $computed = ['departures' => ['seats_booked']];
+
     /**
      * Departures that still take bookings.
      *

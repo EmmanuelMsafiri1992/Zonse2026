@@ -15,6 +15,8 @@ use Illuminate\Support\Carbon;
  */
 class ConstructionLogic extends AppLogic
 {
+    protected array $computed = ['boq_items' => ['amount']];
+
     public const CLOSED = ['lost', 'withdrawn'];
 
     public function validate(Entity $entity, array $payload, ?Record $existing): array

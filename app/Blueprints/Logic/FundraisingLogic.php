@@ -18,6 +18,8 @@ use Illuminate\Validation\ValidationException;
  */
 class FundraisingLogic extends AppLogic
 {
+    protected array $computed = ['campaigns' => ['raised']];
+
     public const RECEIVED = ['received', 'receipted'];
 
     public function validate(Entity $entity, array $payload, ?Record $existing): array

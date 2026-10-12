@@ -22,6 +22,9 @@
                             @foreach($def->fields as $field)
                                 @php $name = 'data['.$field->key.']'; $value = $record->value($field->key); @endphp
                                 <div class="{{ $field->type === 'textarea' ? 'col-12' : 'col-md-6' }}">
+                                    @if(in_array($field->key, $computed, true))
+                                        <x-form.worked-out :label="$field->label" :value="$record->displayValue($field)" :saved="$record->exists" />
+                                    @else
                                     @switch($field->type)
                                         @case('textarea')
                                             <x-form.textarea :name="$name" :label="$field->label" :value="$value" :required="$field->required" rows="3" />
@@ -42,6 +45,7 @@
                                             <x-form.input :name="$name" :label="$field->label" :type="$inputTypes[$field->type] ?? 'text'" :value="$value" :required="$field->required"
                                                           :step="in_array($field->type, ['number', 'money'], true) ? ($field->type === 'money' ? '0.01' : 'any') : null" />
                                     @endswitch
+                                    @endif
                                 </div>
                             @endforeach
                         </div>
@@ -64,7 +68,9 @@
                         @if($def->hasAssignee)
                             <x-form.select name="assignee_id" label="Assigned to" :options="$members" :value="$record->assignee_id" placeholder="Unassigned" />
                         @endif
-                        @if($def->hasAmount())
+                        @if($def->hasAmount() && in_array('amount', $computed, true))
+                            <x-form.worked-out :label="$def->amountLabel" :value="$record->amount !== null ? \App\Support\Money::format($record->amount) : null" :saved="$record->exists" />
+                        @elseif($def->hasAmount())
                             <x-form.input name="amount" type="number" step="0.01" min="0" :label="$def->amountLabel" :value="$record->amount" />
                         @endif
                         @if($def->hasDate())

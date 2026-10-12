@@ -20,6 +20,8 @@ use Illuminate\Validation\ValidationException;
  */
 class HospitalLogic extends AppLogic
 {
+    protected array $computed = ['wards' => ['occupied']];
+
     public function validate(Entity $entity, array $payload, ?Record $existing): array
     {
         $data = $payload['data'];

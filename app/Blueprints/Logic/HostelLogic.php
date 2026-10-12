@@ -18,6 +18,8 @@ use Illuminate\Validation\ValidationException;
  */
 class HostelLogic extends AppLogic
 {
+    protected array $computed = ['rooms' => ['occupied']];
+
     public function validate(Entity $entity, array $payload, ?Record $existing): array
     {
         $data = $payload['data'];

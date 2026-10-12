@@ -14,6 +14,8 @@ use Illuminate\Support\Carbon;
  */
 class TreasuryLogic extends AppLogic
 {
+    protected array $computed = ['investments' => ['expected_return']];
+
     public function validate(Entity $entity, array $payload, ?Record $existing): array
     {
         if ($entity->key === 'investments' && ! empty($payload['occurs_on']) && ! empty($payload['due_on'])

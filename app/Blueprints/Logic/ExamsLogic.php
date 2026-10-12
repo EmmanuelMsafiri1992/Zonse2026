@@ -17,6 +17,8 @@ use Illuminate\Validation\ValidationException;
  */
 class ExamsLogic extends AppLogic
 {
+    protected array $computed = ['marks' => ['grade']];
+
     /** Letter grade => minimum percentage. */
     public const GRADES = ['A' => 80, 'B' => 70, 'C' => 60, 'D' => 50, 'E' => 40, 'F' => 0];
 

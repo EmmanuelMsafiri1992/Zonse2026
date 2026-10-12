@@ -19,6 +19,8 @@ use Modules\Invoicing\Models\Invoice;
  */
 class RecurringBillingLogic extends AppLogic
 {
+    protected array $computed = ['subscriptions' => ['amount']];
+
     public const BILLABLE = ['trial', 'active', 'past_due'];
 
     /** Months per interval, for monthly recurring revenue. */
