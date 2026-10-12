@@ -20,10 +20,12 @@ class ApprovalRuleController extends Controller
     public function index(): View
     {
         $workspace = $this->context->getOrFail();
+        $rules = ApprovalRule::query()->with('approverUser')->orderBy('subject')->orderBy('min_amount')->get();
 
         return view('settings.approval-rules.index', [
-            'rules' => ApprovalRule::query()->with('approverUser')->orderBy('subject')->orderBy('min_amount')->get(),
-            'enabled' => collect(ApprovalRule::SUBJECTS)->map(fn (array $subject) => $workspace->hasModule($subject['module'])),
+            'rules' => $rules,
+            'subjects' => $this->subjects($rules->pluck('subject')->all()),
+            'enabled' => collect(ApprovalRule::subjects())->map(fn (array $subject) => $workspace->hasModule($subject['module'])),
         ]);
     }
 
@@ -32,7 +34,7 @@ class ApprovalRuleController extends Controller
         $subject = $request->string('subject')->toString();
 
         return $this->form(new ApprovalRule([
-            'subject' => isset(ApprovalRule::SUBJECTS[$subject]) ? $subject : 'invoice.send',
+            'subject' => ApprovalRule::subject($subject) ? $subject : 'invoice.send',
             'currency_code' => $this->context->getOrFail()->currency_code,
         ]));
     }
@@ -72,10 +74,26 @@ class ApprovalRuleController extends Controller
 
         return view('settings.approval-rules.form', [
             'rule' => $rule,
-            'subjects' => collect(ApprovalRule::SUBJECTS)->map(fn (array $subject) => $subject['label'])->all(),
+            'subjects' => collect($this->subjects(array_filter([$rule->subject])))->map(fn (array $subject) => $subject['label'])->all(),
             'approvers' => ApprovalRule::APPROVERS,
             'people' => $workspace->members()->orderBy('name')->get()->mapWithKeys(fn ($user) => [$user->id => $user->name.' ('.ucfirst($user->pivot->role).')'])->all(),
             'currencies' => Lists::CURRENCIES,
         ]);
+    }
+
+    /**
+     * The steps worth showing: invoices and quotes, approving records in the apps that are on, and any
+     * step a rule already covers.
+     *
+     * @param  list<string>  $keep
+     * @return array<string, array<string, mixed>>
+     */
+    protected function subjects(array $keep = []): array
+    {
+        $workspace = $this->context->getOrFail();
+
+        return collect(ApprovalRule::subjects())
+            ->filter(fn (array $subject, string $key) => ! isset($subject['until']) || $workspace->hasModule($subject['module']) || in_array($key, $keep, true))
+            ->all();
     }
 }

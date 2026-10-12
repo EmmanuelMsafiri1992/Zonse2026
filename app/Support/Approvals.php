@@ -4,18 +4,72 @@ namespace App\Support;
 
 use App\Models\ApprovalRequest;
 use App\Models\ApprovalRule;
+use App\Models\Record;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Sign-off before a step goes ahead. A rule names the step (such as sending an invoice), the amount
  * it starts at and who may say yes; anyone else asks first. A yes holds while the document's total
- * stays within the amount approved.
+ * stays within the amount approved. In the apps, the step is marking a record approved.
  */
 class Approvals
 {
+    /** The figure a rule's limit is measured against: an invoice's total, an app record's amount. */
+    public static function amountOf(Model $model): float
+    {
+        return (float) $model->getAttribute($model instanceof Record ? 'amount' : 'total');
+    }
+
+    public static function currencyOf(Model $model): ?string
+    {
+        return $model->getAttribute($model instanceof Record ? 'currency' : 'currency_code');
+    }
+
+    /** Whether the document is still where the step starts from: a draft for sending, not yet approved for a record. */
+    public static function inStage(Model $model, string $subject): bool
+    {
+        $definition = ApprovalRule::subject($subject) ?? [];
+        $status = $model->getAttribute('status');
+
+        return isset($definition['until']) ? $status !== $definition['until'] : $status === ($definition['while'] ?? null);
+    }
+
+    /**
+     * Stops someone who may not approve from marking an app record approved without a yes covering it.
+     * Only people are held: imports, queued jobs and the client portal act without a signed-in member.
+     *
+     * @throws ValidationException
+     */
+    public static function guardRecord(Record $record): void
+    {
+        $user = auth()->user();
+        if (! $user instanceof User || ! $record->isDirty('status') || $record->status !== ApprovalRule::RECORD_STATUS) {
+            return;
+        }
+
+        $subject = ApprovalRule::recordSubject((string) $record->blueprint, (string) $record->entity);
+        $rule = ApprovalRule::subject($subject) ? self::ruleFor($record, $subject) : null;
+        if (! $rule || $rule->allowsApprovalBy($user) || ($record->exists && self::approval($record, $subject))) {
+            return;
+        }
+
+        throw ValidationException::withMessages(['status' => 'This '.ApprovalRule::subject($subject)['noun'].' needs approval first ("'.$rule->name.'", '
+            .mb_strtolower($rule->approverLabel()).'). '.($record->exists ? 'Use "Ask for approval" on its page.' : 'Save it with another status, then ask for approval on its page.')]);
+    }
+
+    /** Once a record is marked approved, open asks for it are closed. */
+    public static function settleRecord(Record $record): void
+    {
+        $user = auth()->user();
+        if ($user instanceof User && $record->wasChanged('status') && $record->status === ApprovalRule::RECORD_STATUS) {
+            self::settle($record, ApprovalRule::recordSubject((string) $record->blueprint, (string) $record->entity), $user, 'Marked it approved.');
+        }
+    }
+
     /** The subject key for doing $action to this kind of document, such as "invoice.send". */
     public static function subjectFor(Model $model, string $action = 'send'): ?string
     {
@@ -55,8 +109,8 @@ class Approvals
 
         return $latest
             && $latest->status === 'approved'
-            && $latest->currency_code === $model->getAttribute('currency_code')
-            && (float) $model->getAttribute('total') <= (float) $latest->amount + 0.005
+            && $latest->currency_code === self::currencyOf($model)
+            && self::amountOf($model) <= (float) $latest->amount + 0.005
             ? $latest : null;
     }
 
@@ -67,8 +121,7 @@ class Approvals
      */
     public static function blocking(Model $model, string $subject, ?User $user = null): ?ApprovalRule
     {
-        $while = ApprovalRule::SUBJECTS[$subject]['while'] ?? null;
-        if ($while && $model->getAttribute('status') !== $while) {
+        if (! self::inStage($model, $subject)) {
             return null;
         }
 
@@ -90,8 +143,8 @@ class Approvals
             'approvable_type' => $model->getMorphClass(),
             'approvable_id' => $model->getKey(),
             'title' => Str::limit(self::titleOf($model), 190, ''),
-            'amount' => $model->getAttribute('total'),
-            'currency_code' => $model->getAttribute('currency_code'),
+            'amount' => self::amountOf($model),
+            'currency_code' => self::currencyOf($model),
             'requested_by' => $user->id,
             'note' => $note,
         ]);
@@ -117,8 +170,8 @@ class Approvals
             'decided_by' => $user->id,
             'decided_at' => now(),
             'decision_note' => $note,
-            'amount' => $approve && $approvable ? $approvable->getAttribute('total') : $request->amount,
-            'currency_code' => $approve && $approvable ? $approvable->getAttribute('currency_code') : $request->currency_code,
+            'amount' => $approve && $approvable ? self::amountOf($approvable) : $request->amount,
+            'currency_code' => $approve && $approvable ? self::currencyOf($approvable) : $request->currency_code,
         ])->save();
 
         $workspace = $request->workspace;

@@ -37,7 +37,7 @@ class ApprovalRuleRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:120'],
-            'subject' => ['required', Rule::in(array_keys(ApprovalRule::SUBJECTS))],
+            'subject' => ['required', Rule::in(array_keys(ApprovalRule::subjects()))],
             'min_amount' => ['required', 'numeric', 'min:0', 'max:9999999999'],
             'currency_code' => ['nullable', Rule::in(array_keys(Lists::CURRENCIES))],
             'approver' => ['required', Rule::in(array_keys(ApprovalRule::APPROVERS))],

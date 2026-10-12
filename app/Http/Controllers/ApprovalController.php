@@ -52,24 +52,28 @@ class ApprovalController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'subject' => ['required', Rule::in(array_keys(ApprovalRule::SUBJECTS))],
+            'subject' => ['required', Rule::in(array_keys(ApprovalRule::subjects()))],
             'id' => ['required', 'integer'],
             'note' => ['nullable', 'string', 'max:1000'],
         ]);
-        $subject = ApprovalRule::SUBJECTS[$data['subject']];
+        $subject = ApprovalRule::subject($data['subject']);
         abort_unless($this->context->hasModule($subject['module']), 404);
 
-        $model = $subject['model']::query()->findOrFail($data['id']);
+        $model = $subject['model']::query()
+            ->when(isset($subject['blueprint']), fn ($query) => $query->where('blueprint', $subject['blueprint'])->where('entity', $subject['entity']))
+            ->findOrFail($data['id']);
         $this->authorize('update', $model);
 
-        if ($model->getAttribute('status') !== 'draft') {
-            return back()->with('flash', ['type' => 'warning', 'message' => 'Only a draft '.$subject['noun'].' needs approval before it goes out.']);
+        if (! Approvals::inStage($model, $data['subject'])) {
+            return back()->with('flash', ['type' => 'warning', 'message' => isset($subject['until'])
+                ? 'This '.$subject['noun'].' is already approved.'
+                : 'Only a draft '.$subject['noun'].' needs approval before it goes out.']);
         }
         if (Approvals::pending($model, $data['subject'])) {
             return back()->with('flash', ['type' => 'info', 'message' => 'This '.$subject['noun'].' is already waiting for approval.']);
         }
         if (! Approvals::blocking($model, $data['subject'], $request->user())) {
-            return back()->with('flash', ['type' => 'info', 'message' => 'This '.$subject['noun'].' does not need approval. You can send it.']);
+            return back()->with('flash', ['type' => 'info', 'message' => 'This '.$subject['noun'].' does not need approval. You can '.(isset($subject['until']) ? 'mark it approved.' : 'send it.')]);
         }
 
         Approvals::request($model, $data['subject'], $request->user(), $data['note'] ?? null);
@@ -103,7 +107,7 @@ class ApprovalController extends Controller
         $note = $request->validate(['decision_note' => ['nullable', 'string', 'max:1000']])['decision_note'] ?? null;
 
         if ($approve && ! $approval->approvable) {
-            return back()->with('flash', ['type' => 'danger', 'message' => 'The '.(ApprovalRule::SUBJECTS[$approval->subject]['noun'] ?? 'document').' has been deleted, so it can only be turned down.']);
+            return back()->with('flash', ['type' => 'danger', 'message' => 'The '.(ApprovalRule::subject($approval->subject)['noun'] ?? 'document').' has been deleted, so it can only be turned down.']);
         }
 
         Approvals::decide($approval, $request->user(), $approve, $note);

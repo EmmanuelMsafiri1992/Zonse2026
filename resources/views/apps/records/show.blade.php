@@ -98,6 +98,10 @@
         </div>
 
         <div class="col-lg-8">
+            @php $approvalSubject = \App\Models\ApprovalRule::recordSubject($app->key, $def->key); @endphp
+            @if(\App\Models\ApprovalRule::subject($approvalSubject))
+                <x-approvals.panel :model="$record" :subject="$approvalSubject" />
+            @endif
             @foreach($cards as $card)
                 @include($card['view'], $card['data'])
             @endforeach

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Blueprints\BlueprintRegistry;
+use App\Support\Approvals;
 use App\Support\Money;
 use App\Tenancy\BelongsToWorkspace;
 use Database\Factories\ApprovalRuleFactory;
@@ -21,11 +23,65 @@ class ApprovalRule extends Model
     /** @use HasFactory<ApprovalRuleFactory> */
     use BelongsToWorkspace, HasFactory;
 
-    /** @var array<string, array{label: string, noun: string, module: string, model: class-string<Model>, while: string}> */
+    /**
+     * The fixed steps. Marking an app record approved is a step too, for every list with an "approved"
+     * status: see subjects().
+     *
+     * @var array<string, array{label: string, noun: string, module: string, model: class-string<Model>, while: string}>
+     */
     public const SUBJECTS = [
         'invoice.send' => ['label' => 'Sending an invoice', 'noun' => 'invoice', 'module' => 'invoicing', 'model' => Invoice::class, 'while' => 'draft'],
         'quote.send' => ['label' => 'Sending a quote', 'noun' => 'quote', 'module' => 'quotes', 'model' => Quote::class, 'while' => 'draft'],
     ];
+
+    /** The status a rule on an app record guards. */
+    public const RECORD_STATUS = 'approved';
+
+    /** @var array<string, array<string, mixed>>|null */
+    protected static ?array $subjects = null;
+
+    /**
+     * Every step a rule can cover: the fixed ones, then marking a record approved in each app list that
+     * has that status. Record steps carry "until" (the status that ends the wait) instead of "while".
+     *
+     * @return array<string, array{label: string, noun: string, module: string, model: class-string<Model>, while?: string, until?: string, blueprint?: string, entity?: string}>
+     */
+    public static function subjects(): array
+    {
+        if (self::$subjects !== null) {
+            return self::$subjects;
+        }
+
+        $subjects = self::SUBJECTS;
+        foreach (app(BlueprintRegistry::class)->all() as $blueprint) {
+            foreach ($blueprint->entities as $entity) {
+                if (array_key_exists(self::RECORD_STATUS, $entity->statuses)) {
+                    $subjects[self::recordSubject($blueprint->key, $entity->key)] = [
+                        'label' => 'Approving a '.$entity->lowerLabel().' ('.$blueprint->name.')',
+                        'noun' => $entity->lowerLabel(),
+                        'module' => $blueprint->key,
+                        'model' => Record::class,
+                        'until' => self::RECORD_STATUS,
+                        'blueprint' => $blueprint->key,
+                        'entity' => $entity->key,
+                    ];
+                }
+            }
+        }
+
+        return self::$subjects = $subjects;
+    }
+
+    /** @return array{label: string, noun: string, module: string, model: class-string<Model>, while?: string, until?: string, blueprint?: string, entity?: string}|null */
+    public static function subject(string $key): ?array
+    {
+        return self::subjects()[$key] ?? null;
+    }
+
+    public static function recordSubject(string $blueprint, string $entity): string
+    {
+        return $blueprint.'.'.$entity.'.approve';
+    }
 
     /** @var array<string, string> */
     public const APPROVERS = [
@@ -51,7 +107,7 @@ class ApprovalRule extends Model
 
     public function subjectLabel(): string
     {
-        return self::SUBJECTS[$this->subject]['label'] ?? $this->subject;
+        return self::subject($this->subject)['label'] ?? $this->subject;
     }
 
     public function approverLabel(): string
@@ -76,11 +132,11 @@ class ApprovalRule extends Model
         if (! $this->is_active || $model->getAttribute('workspace_id') !== $this->workspace_id) {
             return false;
         }
-        if ($this->currency_code && $this->currency_code !== $model->getAttribute('currency_code')) {
+        if ($this->currency_code && $this->currency_code !== Approvals::currencyOf($model)) {
             return false;
         }
 
-        return (float) $model->getAttribute('total') >= $this->min_amount;
+        return Approvals::amountOf($model) >= $this->min_amount;
     }
 
     /** The owner may always approve, so a rule never gets stuck when its named person leaves. */

@@ -4,11 +4,13 @@ namespace Tests\Feature;
 
 use App\Models\ApprovalRequest;
 use App\Models\ApprovalRule;
+use App\Models\Record;
 use App\Models\User;
 use App\Models\Workspace;
 use App\Sms\SmsService;
 use App\Support\Approvals;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Validation\ValidationException;
 use Modules\Contacts\Models\Contact;
 use Modules\Invoicing\Models\Invoice;
 use Modules\Invoicing\Models\Quote;
@@ -309,5 +311,66 @@ class ApprovalsTest extends TestCase
         $this->actingAs($owner)->get(route('approvals.index'))->assertOk()->assertSee($mine->title)->assertSee($theirs->title);
         $this->get(route('approvals.index', ['tab' => 'all']))->assertOk()->assertSee('All requests')->assertSee($mine->title)->assertSee($theirs->title);
         $this->get(route('approvals.index', ['tab' => 'mine']))->assertOk()->assertSee('No requests yet');
+    }
+
+    public function test_marking_an_app_record_approved_waits_for_a_yes_above_the_limit(): void
+    {
+        [$owner, $workspace, $member] = $this->workspace();
+        $workspace->enableModules(['payables'], $owner);
+        $this->rule($workspace, ['name' => 'Big bills', 'subject' => 'payables.bills.approve', 'min_amount' => 1000]);
+        $bill = fn (float $amount) => Record::factory()->ofEntity('payables', 'bills', ['supplier_invoice_number' => 'INV-'.$amount])
+            ->create(['workspace_id' => $workspace->id, 'title' => 'Bill '.$amount, 'amount' => $amount, 'status' => 'received']);
+        $move = fn (Record $record) => $this->post(route('apps.records.status', ['payables', 'bills', $record->id]), ['status' => 'approved']);
+
+        $this->actingAs($member);
+        $small = $bill(500);
+        $move($small)->assertSessionHasNoErrors();
+        $this->assertSame('approved', $small->fresh()->status);
+
+        $large = $bill(5000);
+        $move($large)->assertSessionHasErrors('status');
+        $this->assertSame('received', $large->fresh()->status);
+        $this->assertThrows(fn () => $bill(2000)->update(['status' => 'approved']), ValidationException::class);
+        $this->assertThrows(fn () => Record::factory()->ofEntity('payables', 'bills')->create(['workspace_id' => $workspace->id, 'amount' => 3000, 'status' => 'approved']), ValidationException::class);
+
+        $page = route('apps.records.show', ['payables', 'bills', $large->id]);
+        $this->get($page)->assertOk()->assertSee('Needs approval before it can be marked approved.')->assertSee('Ask for approval');
+        $this->post(route('approvals.store'), ['subject' => 'payables.bills.approve', 'id' => $large->id, 'note' => 'Generator'])->assertSessionHas('flash.type', 'success');
+        $request = ApprovalRequest::query()->sole();
+        $this->assertSame([5000.0, $large->currency, 'pending'], [(float) $request->amount, $request->currency_code, $request->status]);
+        $this->post(route('approvals.store'), ['subject' => 'payables.bills.approve', 'id' => $small->id])->assertSessionHas('flash.message', 'This bill is already approved.');
+
+        $this->actingAs($owner)->get(route('approvals.index'))->assertSee($request->title)->assertSee('Approving a bill (Payables &amp; bills)', false);
+        $this->post(route('approvals.approve', $request))->assertSessionHas('flash.type', 'success');
+
+        $this->actingAs($member)->get($page)->assertSee('It can be marked approved now.');
+        $move($large)->assertSessionHasNoErrors();
+        $this->assertSame('approved', $large->fresh()->status);
+
+        // An approver marking a bill approved settles what was asked for it.
+        $other = $bill(8000);
+        $asked = Approvals::request($other, 'payables.bills.approve', $member);
+        $this->actingAs($owner);
+        $move($other)->assertSessionHasNoErrors();
+        $this->assertSame('approved', $asked->fresh()->status);
+        $this->assertSame($owner->id, $asked->fresh()->decided_by);
+    }
+
+    public function test_rules_can_cover_approving_records_in_the_apps_that_are_on(): void
+    {
+        [$owner, $workspace] = $this->workspace();
+        $workspace->enableModules(['payables'], $owner);
+
+        $this->actingAs($owner)->get(route('settings.approval-rules.index'))->assertOk()
+            ->assertSee('Approving a bill (Payables &amp; bills)', false)->assertSee('Any bill can be marked approved without approval.')
+            ->assertDontSee('(Expenses)');
+        $this->get(route('settings.approval-rules.create', ['subject' => 'payables.bills.approve']))->assertOk()->assertSee('Approving a bill');
+
+        $this->post(route('settings.approval-rules.store'), [
+            'name' => 'Big bills', 'subject' => 'payables.bills.approve', 'min_amount' => '1000', 'approver' => 'admins', 'is_active' => '1',
+        ])->assertRedirect(route('settings.approval-rules.index'));
+        $this->assertSame('payables.bills.approve', ApprovalRule::query()->sole()->subject);
+
+        $this->post(route('settings.approval-rules.store'), ['name' => 'Bad', 'subject' => 'payables.bills.pay', 'approver' => 'admins'])->assertSessionHasErrors('subject');
     }
 }

@@ -4,8 +4,9 @@
     use App\Support\Approvals;
 
     $user = auth()->user();
-    $meta = ApprovalRule::SUBJECTS[$subject];
-    $rule = $model->getAttribute('status') === ($meta['while'] ?? null) ? Approvals::ruleFor($model, $subject) : null;
+    $meta = ApprovalRule::subject($subject);
+    $forRecord = isset($meta['until']);
+    $rule = $meta && Approvals::inStage($model, $subject) ? Approvals::ruleFor($model, $subject) : null;
     $pending = $rule ? Approvals::pending($model, $subject) : null;
     $approval = $rule && ! $pending ? Approvals::approval($model, $subject) : null;
     $latest = $rule && ! $pending && ! $approval ? Approvals::latest($model, $subject) : null;
@@ -38,21 +39,21 @@
         @elseif($approval)
             <div class="alert alert-success mb-0 d-flex gap-2">
                 <x-icon name="circle-check" />
-                <div class="fs-7"><strong>Approved</strong> by {{ $approval->decider?->name ?? 'an approver' }} {{ $approval->decided_at?->diffForHumans() }}. It can go out now.
+                <div class="fs-7"><strong>Approved</strong> by {{ $approval->decider?->name ?? 'an approver' }} {{ $approval->decided_at?->diffForHumans() }}. {{ $forRecord ? 'It can be marked approved now.' : 'It can go out now.' }}
                     @if($approval->decision_note)<div class="mt-1" style="white-space:pre-line">“{{ $approval->decision_note }}”</div>@endif
                 </div>
             </div>
         @elseif($rule->allowsApprovalBy($user))
             <div class="alert alert-light mb-0 d-flex gap-2 fs-7">
                 <x-icon name="shield-check" />
-                <div>Covered by “{{ $rule->name }}”. You can approve these, so you can send it straight away.</div>
+                <div>Covered by “{{ $rule->name }}”. You can approve these, so you can {{ $forRecord ? 'mark it approved' : 'send it' }} straight away.</div>
             </div>
         @else
             <div class="alert alert-warning mb-0">
                 <div class="d-flex gap-2">
                     <x-icon name="shield-check" />
                     <div class="flex-grow-1">
-                        <strong>Needs approval before it goes out.</strong>
+                        <strong>{{ $forRecord ? 'Needs approval before it can be marked approved.' : 'Needs approval before it goes out.' }}</strong>
                         <span class="fs-7">“{{ $rule->name }}”: {{ mb_strtolower($rule->limitLabel()) }}, approved by {{ mb_strtolower($rule->approverLabel()) }}.</span>
                         @if($latest?->status === 'rejected')
                             <div class="fs-7 mt-1 text-danger">Turned down by {{ $latest->decider?->name ?? 'an approver' }} {{ $latest->decided_at?->diffForHumans() }}@if($latest->decision_note): “{{ $latest->decision_note }}”@endif. Make any changes, then ask again.</div>

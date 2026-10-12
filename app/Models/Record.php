@@ -7,6 +7,7 @@ use App\Blueprints\Blueprint;
 use App\Blueprints\BlueprintRegistry;
 use App\Blueprints\Entity;
 use App\Blueprints\Field;
+use App\Support\Approvals;
 use App\Support\Sequence;
 use App\Tenancy\BelongsToWorkspace;
 use App\Tenancy\HasComments;
@@ -70,11 +71,13 @@ class Record extends Model
 
         static::saving(function (Record $record) {
             $record->appLogic()?->saving($record);
+            Approvals::guardRecord($record);
             $record->search_text = $record->buildSearchText();
         });
 
         static::saved(function (Record $record) {
             $record->appLogic()?->saved($record);
+            Approvals::settleRecord($record);
         });
 
         static::deleted(function (Record $record) {

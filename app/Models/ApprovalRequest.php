@@ -71,7 +71,7 @@ class ApprovalRequest extends Model
 
     public function subjectLabel(): string
     {
-        return ApprovalRule::SUBJECTS[$this->subject]['label'] ?? $this->subject;
+        return ApprovalRule::subject($this->subject)['label'] ?? $this->subject;
     }
 
     public function amountLabel(): ?string

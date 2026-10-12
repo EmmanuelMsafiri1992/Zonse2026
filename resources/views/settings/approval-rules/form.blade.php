@@ -12,7 +12,7 @@
                     <x-form.input name="name" label="Name" :value="$rule->name" maxlength="120" required placeholder="e.g. Large invoices" />
                     <x-form.select name="subject" label="What needs approval" :options="$subjects" :value="$rule->subject" required />
                     <div class="row">
-                        <div class="col-md-6"><x-form.input name="min_amount" type="number" step="0.01" min="0" label="From this total" :value="$rule->min_amount ?? 0" help="0 means every one." /></div>
+                        <div class="col-md-6"><x-form.input name="min_amount" type="number" step="0.01" min="0" label="From this amount" :value="$rule->min_amount ?? 0" help="0 means every one." /></div>
                         <div class="col-md-6"><x-form.select name="currency_code" label="Currency" :options="$currencies" :value="$rule->currency_code" placeholder="Any currency" help="Leave as any to apply the amount whatever the currency." /></div>
                     </div>
                     <x-form.select name="approver" label="Who approves" :options="collect($approvers)->map(fn ($approver) => is_array($approver) ? $approver['label'] : $approver)->all()" :value="$rule->approver ?? 'admins'" required x-model="approver" />
@@ -32,9 +32,9 @@
                 <div class="card-body fs-7">
                     <h6>How it works</h6>
                     <ul class="text-muted mb-0 ps-3">
-                        <li>Someone who can't approve sees a request button on the draft instead of send.</li>
+                        <li>Someone who can't approve sees a request button on the draft, or on the app record, instead of going ahead.</li>
                         <li>Approvers are told straight away, and see it under Approvals.</li>
-                        <li>Approvers sending their own drafts skip the wait.</li>
+                        <li>Approvers sending their own drafts, or marking records approved, skip the wait.</li>
                     </ul>
                 </div>
             </div>
