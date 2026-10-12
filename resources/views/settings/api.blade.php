@@ -104,7 +104,7 @@
                         </tbody>
                     </table>
                     <p class="mb-2">Lists are paged: add <code>?page=2&amp;per_page=50</code> (up to 100). Most lists take <code>q</code> to search and <code>status</code> to filter. Each key may make 120 requests a minute.</p>
-                    <p class="mb-2">App records send their app's own fields in <code>fields</code>, using the field names from the app's CSV export. Figures the app works out itself are listed in <code>worked_out</code> and are ignored when sent.</p>
+                    <p class="mb-2">App records send their app's own fields in <code>fields</code>, using the field names from the app's CSV export. Figures the app works out itself are listed in <code>worked_out</code> and are ignored when sent. App records send the <code>record.created</code> and <code>record.updated</code> webhook events in the same shape.</p>
                     <p class="mb-0">Webhooks are signed. The <code>X-Zonseo-Signature</code> header holds <code>t=&lt;time&gt;,v1=&lt;signature&gt;</code>, where the signature is the HMAC-SHA256 of <code>&lt;time&gt;.&lt;raw body&gt;</code> using the endpoint's signing secret. Failed deliveries are retried for about 9 hours.</p>
                 </div>
             </div>

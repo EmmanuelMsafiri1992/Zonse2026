@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\Models\Record;
 use App\Support\Automations;
 use App\Support\Webhooks;
 use Illuminate\Database\Eloquent\Model;
@@ -26,6 +27,7 @@ class DispatchBusinessEvents
         Ticket::class => 'ticket',
         Invoice::class => 'invoice',
         Appointment::class => 'appointment',
+        Record::class => 'record',
     ];
 
     /** @return array<string, string> */
@@ -48,6 +50,9 @@ class DispatchBusinessEvents
     public function onUpdated(Model $model): void
     {
         $changed = array_diff(array_keys($model->getChanges()), [$model->getUpdatedAtColumn(), 'last_activity_at', 'position']);
+        if ($model instanceof Record) {
+            $changed = $this->recordChanges($model, $changed);
+        }
         if ($changed === []) {
             return;
         }
@@ -71,6 +76,30 @@ class DispatchBusinessEvents
     public function onPaymentCreated(Payment $payment): void
     {
         $this->fire('payment.received', $payment);
+    }
+
+    /**
+     * An app record's changes, with its "data" column opened up into the fields that changed. Keys
+     * starting with "_" and the search index are the app's own bookkeeping, so changing only those is no event.
+     *
+     * @param  array<int, string>  $changed
+     * @return list<string>
+     */
+    protected function recordChanges(Record $record, array $changed): array
+    {
+        $changed = array_diff($changed, ['search_text']);
+        if (! in_array('data', $changed, true)) {
+            return array_values($changed);
+        }
+
+        $before = (array) json_decode((string) $record->getRawOriginal('data'), true);
+        $after = (array) $record->data;
+        $fields = collect(array_keys($before + $after))
+            ->reject(fn ($key) => str_starts_with((string) $key, '_'))
+            ->filter(fn ($key) => ($before[$key] ?? null) != ($after[$key] ?? null))
+            ->values()->all();
+
+        return array_values(array_merge(array_diff($changed, ['data']), $fields));
     }
 
     /** @param list<string> $changed */

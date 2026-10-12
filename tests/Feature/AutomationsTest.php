@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Automation;
 use App\Models\AutomationRun;
+use App\Models\Record;
 use App\Models\User;
 use App\Models\Workspace;
 use App\Notifications\AutomationEmail;
@@ -177,6 +178,46 @@ class AutomationsTest extends TestCase
 
         // Two saves by a person each set off the catch-all rule once; the engine's own change does not.
         $this->assertSame(3, AutomationRun::count());
+    }
+
+    public function test_app_records_set_off_automations_by_app_amount_and_changed_field(): void
+    {
+        [$owner, $workspace] = $this->workspace(['contacts', 'tasks', 'payables']);
+        $this->automation($workspace, [
+            'trigger' => 'record.created',
+            'conditions' => [['field' => 'app', 'operator' => 'equals', 'value' => 'payables'], ['field' => 'amount', 'operator' => 'greater_than', 'value' => '1000']],
+            'actions' => [['type' => 'create_task', 'title' => 'Approve {{number}} {{title}}', 'description' => null, 'assignee' => 'assignee', 'due_in_days' => null, 'priority' => 'high']],
+        ]);
+        $this->automation($workspace, [
+            'trigger' => 'record.updated',
+            'conditions' => [['field' => 'supplier_invoice_number', 'operator' => 'changed', 'value' => null]],
+            'actions' => [['type' => 'notify', 'to' => 'admins', 'message' => 'Invoice number changed on {{title}}']],
+        ]);
+
+        $this->actingAs($owner);
+        $make = fn (string $title, float $amount) => Record::factory()->ofEntity('payables', 'bills', ['supplier_invoice_number' => $title])
+            ->create(['workspace_id' => $workspace->id, 'title' => $title, 'amount' => $amount, 'assignee_id' => $owner->id]);
+        $make('Stationery', 80);
+        $this->assertSame(0, Task::count());
+
+        $bill = $make('Generator', 4500);
+        $task = Task::sole();
+        $this->assertSame('Approve '.$bill->number.' Generator', $task->title);
+        $this->assertSame($owner->id, $task->assignee_id);
+        $this->assertSame($bill->getMorphClass(), $task->taskable_type);
+        $this->assertSame('Generator', AutomationRun::sole()->subject_label);
+
+        $bill->update(['title' => 'Generator repair']);
+        $this->assertSame(1, AutomationRun::count());
+        $bill->update(['data' => [...$bill->data, 'supplier_invoice_number' => 'G-2']]);
+        $this->assertSame(2, AutomationRun::count());
+
+        $this->get(route('settings.automations.create'))->assertOk()->assertSee('Payables &amp; bills', false)->assertDontSee('Patients');
+        $this->post(route('settings.automations.store'), [
+            'name' => 'Big bills', 'trigger' => 'record.created', 'is_active' => '1',
+            'conditions' => [['field' => 'app', 'operator' => 'equals', 'value' => 'payables']],
+            'actions' => [['type' => 'notify', 'to' => 'admins', 'message' => 'New bill {{number}}']],
+        ])->assertRedirect(route('settings.automations.index'));
     }
 
     public function test_tasks_actions_fail_when_the_tasks_app_is_off(): void

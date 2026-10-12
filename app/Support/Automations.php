@@ -2,8 +2,10 @@
 
 namespace App\Support;
 
+use App\Blueprints\BlueprintRegistry;
 use App\Jobs\RunAutomation;
 use App\Models\Automation;
+use App\Models\Record;
 use App\Models\User;
 use App\Models\Workspace;
 use App\Notifications\AutomationEmail;
@@ -43,6 +45,7 @@ class Automations
         'invoice' => Invoice::class,
         'payment' => Payment::class,
         'appointment' => Appointment::class,
+        'record' => Record::class,
     ];
 
     /**
@@ -88,6 +91,14 @@ class Automations
             'status' => ['label' => 'Status', 'type' => 'choice', 'options' => Appointment::STATUSES],
             'price' => ['label' => 'Price', 'type' => 'number'],
             'staff_id' => ['label' => 'Staff member', 'type' => 'person'],
+        ],
+        'record' => [
+            'app' => ['label' => 'App', 'type' => 'choice', 'options' => []],
+            'entity' => ['label' => 'List', 'type' => 'choice', 'options' => []],
+            'title' => ['label' => 'Title', 'type' => 'text'],
+            'status' => ['label' => 'Status', 'type' => 'text'],
+            'amount' => ['label' => 'Amount', 'type' => 'number'],
+            'assignee_id' => ['label' => 'Assigned to', 'type' => 'person'],
         ],
     ];
 
@@ -163,6 +174,31 @@ class Automations
         }
 
         return $queued;
+    }
+
+    /**
+     * The condition fields, with the app and list choices for app records filled from the apps the
+     * workspace has switched on.
+     *
+     * @return array<string, array<string, array{label: string, type: string, options?: array<string, string>}>>
+     */
+    public static function fields(Workspace $workspace): array
+    {
+        $fields = self::FIELDS;
+        foreach (app(BlueprintRegistry::class)->all() as $blueprint) {
+            if (! $workspace->hasModule($blueprint->key)) {
+                continue;
+            }
+
+            $fields['record']['app']['options'][$blueprint->key] = $blueprint->name;
+            foreach ($blueprint->entities as $entity) {
+                $fields['record']['entity']['options'][$entity->key] ??= $entity->plural;
+            }
+        }
+        asort($fields['record']['app']['options']);
+        asort($fields['record']['entity']['options']);
+
+        return $fields;
     }
 
     /** Run a callback with automations held off, for the engine's own changes. */
@@ -272,10 +308,11 @@ class Automations
             'contact' => ['name', 'phone'],
             'invoice', 'payment', 'ticket' => ['number'],
             'appointment' => ['title', 'starts_at'],
+            'record' => ['number', 'title'],
             default => [],
         };
 
-        return array_values(array_unique(array_merge($own, array_diff($fields, ['assignee_id', 'staff_id', 'tags']), $extra)));
+        return array_values(array_unique(array_merge($own, array_diff($fields, ['assignee_id', 'staff_id', 'tags', 'app', 'entity']), $extra)));
     }
 
     /** The customer a record is about, if any. */

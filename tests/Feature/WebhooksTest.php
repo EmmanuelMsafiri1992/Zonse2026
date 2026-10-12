@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Record;
 use App\Models\User;
 use App\Models\WebhookDelivery;
 use App\Models\WebhookEndpoint;
@@ -95,6 +96,34 @@ class WebhooksTest extends TestCase
 
         Http::assertSentCount(1);
         Http::assertSent(fn (Request $request) => $request->header('X-Zonseo-Event')[0] === 'task.completed');
+    }
+
+    public function test_app_records_send_their_own_events_but_not_for_the_apps_bookkeeping(): void
+    {
+        [$owner, $workspace] = $this->workspace();
+        $workspace->enableModules(['payables'], $owner);
+        $this->endpoint($workspace, ['record.created', 'record.updated']);
+        Http::fake(['hooks.example.com/*' => Http::response()]);
+        $this->actingAs($owner);
+
+        $bill = Record::factory()->ofEntity('payables', 'bills', ['supplier_invoice_number' => 'INV-77'])
+            ->create(['workspace_id' => $workspace->id, 'title' => 'Diesel', 'amount' => 500]);
+
+        Http::assertSentCount(1);
+        Http::assertSent(function (Request $request) use ($bill) {
+            $payload = json_decode($request->body(), true);
+
+            return $request->header('X-Zonseo-Event')[0] === 'record.created'
+                && $payload['data']['id'] === $bill->id && $payload['data']['app'] === 'payables' && $payload['data']['entity'] === 'bills'
+                && $payload['data']['fields']['supplier_invoice_number'] === 'INV-77';
+        });
+
+        $bill->update(['data' => [...$bill->data, '_billed' => true]]);
+        Http::assertSentCount(1);
+
+        $bill->update(['data' => [...$bill->data, 'supplier_invoice_number' => 'INV-78']]);
+        Http::assertSentCount(2);
+        Http::assertSent(fn (Request $request) => $request->header('X-Zonseo-Event')[0] === 'record.updated');
     }
 
     public function test_invoice_paid_fires_only_when_the_status_turns_paid(): void

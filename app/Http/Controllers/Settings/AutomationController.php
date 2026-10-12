@@ -119,7 +119,7 @@ class AutomationController extends Controller
             'runs' => $automation->exists ? $automation->runs()->latest('id')->limit(30)->get() : collect(),
             'builder' => [
                 'triggers' => Automations::TRIGGERS,
-                'fields' => Automations::FIELDS,
+                'fields' => Automations::fields($workspace),
                 'operators' => Automations::OPERATORS,
                 'valueless' => Automations::VALUELESS,
                 'actions' => Automations::ACTIONS,
