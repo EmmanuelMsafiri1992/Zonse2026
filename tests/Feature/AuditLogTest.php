@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Module;
+use App\Models\Record;
+use App\Models\Workspace;
 use App\Support\Audit;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -144,6 +146,32 @@ class AuditLogTest extends TestCase
         $zip->close();
 
         $this->assertDatabaseHas('activity_log', ['workspace_id' => $workspace->id, 'event' => 'workspace-exported', 'causer_id' => $owner->id]);
+    }
+
+    public function test_the_export_has_a_readable_file_per_app_list(): void
+    {
+        [$owner, $workspace] = $this->ownerWithWorkspace();
+        $workspace->enableModules(['payables'], $owner);
+        $supplier = Contact::factory()->for($workspace)->create(['name' => 'Harare Hardware']);
+        $bill = fn (Workspace $in, string $number, array $attributes = []) => Record::factory()->ofEntity('payables', 'bills', ['supplier_invoice_number' => $number, 'category' => 'utilities'])
+            ->create(['workspace_id' => $in->id, 'title' => 'Bill '.$number, 'amount' => 1250, 'status' => 'received', ...$attributes]);
+        $bill($workspace, 'HH-101', ['contact_id' => $supplier->id]);
+        $bill($workspace, 'HH-102')->delete();
+        [, $other] = $this->ownerWithWorkspace();
+        $bill($other, 'ELSEWHERE-1');
+
+        $this->actingAs($owner)->get(route('settings.data-export.index'))->assertOk()->assertSee('apps/payables-bills.csv');
+
+        $response = $this->post(route('settings.data-export.store'))->assertOk();
+        $zip = new ZipArchive;
+        $this->assertTrue($zip->open($response->baseResponse->getFile()->getPathname()));
+        $rows = array_map('str_getcsv', array_filter(explode("\n", (string) $zip->getFromName('apps/payables-bills.csv'))));
+        $zip->close();
+
+        $this->assertCount(2, $rows);
+        $line = array_combine($rows[0], $rows[1]);
+        $this->assertSame(['Bill HH-101', 'Received', 'Harare Hardware', '1250.00', 'HH-101', 'Utilities'],
+            [$line['Description'], $line['Status'], $line['Supplier'], $line['Bill total'], $line['Supplier invoice number'], $line['Category']]);
     }
 
     public function test_only_the_owner_can_export_all_data(): void

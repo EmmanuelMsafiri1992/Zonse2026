@@ -8,7 +8,7 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="mb-2">What you get</h5>
-                    <p class="fs-7 text-muted">One CSV file per kind of record, plus your workspace profile, team members and the full audit log. Use it to keep your own copy, move to another system, or answer a customer's data-access request (GDPR, POPIA, Zimbabwe's Cyber and Data Protection Act).</p>
+                    <p class="fs-7 text-muted">One CSV file per kind of record and one per app list, plus your workspace profile, team members and the full audit log. Use it to keep your own copy, move to another system, or answer a customer's data-access request (GDPR, POPIA, Zimbabwe's Cyber and Data Protection Act).</p>
                     <p class="fs-7 text-muted">Passwords, payment gateway keys and SMS keys are never included.</p>
 
                     @if($canExport)
@@ -38,6 +38,14 @@
                         @endforeach
                         <span class="z-chip">audit_log.csv</span>
                     </div>
+                    @if($appFiles)
+                        <p class="text-muted mt-3 mb-2">One easy-to-read file per app list, with a column for each field:</p>
+                        <div class="d-flex flex-wrap gap-1">
+                            @foreach($appFiles as $file)
+                                <span class="z-chip">{{ $file }}</span>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

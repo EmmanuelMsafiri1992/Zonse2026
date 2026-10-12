@@ -2,8 +2,14 @@
 
 namespace App\Http\Controllers\Settings;
 
+use App\Blueprints\Blueprint;
+use App\Blueprints\BlueprintRegistry;
+use App\Blueprints\Entity;
 use App\Http\Controllers\Controller;
+use App\Models\Record;
+use App\Models\Workspace;
 use App\Support\Audit;
+use App\Support\RecordCsv;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -37,6 +43,7 @@ class DataExportController extends Controller
         return view('settings.data-export', [
             'canExport' => $this->canExport($request),
             'tables' => $this->tables(),
+            'appFiles' => array_keys($this->appLists($workspace)),
             'lastExport' => Activity::query()->where('workspace_id', $workspace->id)
                 ->where('log_name', 'data')->where('event', 'workspace-exported')->with('causer')->latest('id')->first(),
         ]);
@@ -71,6 +78,16 @@ class DataExportController extends Controller
             $zip->addFromString($table.'.csv', $this->csv($rows));
         }
 
+        foreach ($this->appLists($workspace) as $file => [$app, $def]) {
+            $records = Record::query()->withoutGlobalScope('workspace')->where('workspace_id', $workspace->id)
+                ->ofEntity($app->key, $def->key)->with(['contact', 'assignee'])->orderBy('id')->get();
+            $out = fopen('php://temp', 'r+');
+            (new RecordCsv($app, $def, $workspace->id))->write($out, $records);
+            rewind($out);
+            $zip->addFromString($file, (string) stream_get_contents($out));
+            fclose($out);
+        }
+
         $audit = DB::table('activity_log')->where('workspace_id', $workspace->id)->orderBy('id')
             ->get(['created_at', 'log_name', 'event', 'description', 'subject_type', 'subject_id', 'causer_id'])
             ->map(fn ($row) => (array) $row)->all();
@@ -81,6 +98,7 @@ class DataExportController extends Controller
             'Created '.now()->toDayDateTimeString().' by '.$request->user()->name,
             '',
             'Each CSV file holds one kind of record. Columns ending in _id point at the "id" column of the related file.',
+            'The apps folder has one easy-to-read file per app list, with a column for each field. The same records are in records.csv, with the app fields in its "data" column.',
             'Payment gateway keys, SMS keys and passwords are never included.',
         ]));
         $zip->close();
@@ -97,6 +115,28 @@ class DataExportController extends Controller
             ->reject(fn (string $table) => in_array($table, self::EXCLUDED_TABLES, true) || $table === 'activity_log')
             ->filter(fn (string $table) => Schema::hasColumn($table, 'workspace_id'))
             ->sort()->values()->all();
+    }
+
+    /**
+     * Every app list with records in the workspace (deleted ones left out), keyed by its file name in the export.
+     *
+     * @return array<string, array{0: Blueprint, 1: Entity}>
+     */
+    protected function appLists(Workspace $workspace): array
+    {
+        $registry = app(BlueprintRegistry::class);
+        $lists = [];
+        $pairs = Record::query()->withoutGlobalScope('workspace')->where('workspace_id', $workspace->id)
+            ->select(['blueprint', 'entity'])->distinct()->orderBy('blueprint')->orderBy('entity')->get();
+        foreach ($pairs as $pair) {
+            $app = $registry->get((string) $pair->blueprint);
+            $def = $app?->entity((string) $pair->entity);
+            if ($def) {
+                $lists['apps/'.$app->key.'-'.$def->key.'.csv'] = [$app, $def];
+            }
+        }
+
+        return $lists;
     }
 
     protected function canExport(Request $request): bool

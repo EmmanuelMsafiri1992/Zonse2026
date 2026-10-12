@@ -8,9 +8,8 @@ use App\Blueprints\Entity;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RecordRequest;
 use App\Models\Branch;
-use App\Models\CustomField;
 use App\Models\Record;
-use App\Support\CustomFields;
+use App\Support\RecordCsv;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -196,61 +195,11 @@ class RecordController extends Controller
 
         $filename = $app->key.'-'.$def->key.'-'.now()->format('Ymd').'.csv';
 
-        $extra = CustomFields::for(CustomField::appEntity($app->key, $def->key));
+        $csv = new RecordCsv($app, $def);
 
-        return response()->streamDownload(function () use ($records, $def, $extra) {
+        return response()->streamDownload(function () use ($records, $csv) {
             $out = fopen('php://output', 'w');
-            $header = ['Number', $def->titleLabel, 'Status'];
-            if ($def->hasContact()) {
-                $header[] = $def->contactLabel;
-            }
-            if ($def->hasAssignee) {
-                $header[] = 'Assignee';
-            }
-            if ($def->hasAmount()) {
-                $header[] = $def->amountLabel;
-            }
-            if ($def->hasDate()) {
-                $header[] = $def->dateLabel;
-            }
-            if ($def->hasDue()) {
-                $header[] = $def->dueLabel;
-            }
-            foreach ($def->fields as $field) {
-                $header[] = $field->label;
-            }
-            foreach ($extra as $field) {
-                $header[] = $field->label;
-            }
-            $header[] = 'Created';
-            fputcsv($out, $header);
-
-            foreach ($records as $record) {
-                $row = [$record->number, $record->title, $record->statusLabel()];
-                if ($def->hasContact()) {
-                    $row[] = $record->contact?->displayName() ?? '';
-                }
-                if ($def->hasAssignee) {
-                    $row[] = $record->assignee?->name ?? '';
-                }
-                if ($def->hasAmount()) {
-                    $row[] = $record->amount !== null ? number_format((float) $record->amount, 2, '.', '') : '';
-                }
-                if ($def->hasDate()) {
-                    $row[] = $record->occurs_on?->toDateString() ?? '';
-                }
-                if ($def->hasDue()) {
-                    $row[] = $record->due_on?->toDateString() ?? '';
-                }
-                foreach ($def->fields as $field) {
-                    $row[] = $record->displayValue($field);
-                }
-                foreach ($extra as $field) {
-                    $row[] = $field->display($record->customField($field->key)) ?? '';
-                }
-                $row[] = $record->created_at?->toDateTimeString();
-                fputcsv($out, $row);
-            }
+            $csv->write($out, $records);
             fclose($out);
         }, $filename, ['Content-Type' => 'text/csv']);
     }
