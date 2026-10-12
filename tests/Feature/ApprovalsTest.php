@@ -361,6 +361,21 @@ class ApprovalsTest extends TestCase
         $this->assertSame($owner->id, $asked->fresh()->decided_by);
     }
 
+    public function test_a_list_that_starts_records_as_approved_is_held_too(): void
+    {
+        [$owner, $workspace, $member] = $this->workspace();
+        $workspace->enableModules(['suppliers'], $owner);
+        $this->rule($workspace, ['name' => 'New suppliers', 'subject' => 'suppliers.suppliers.approve', 'min_amount' => 0]);
+        $create = fn (array $attributes) => Record::factory()->ofEntity('suppliers', 'suppliers')->create(['workspace_id' => $workspace->id, 'status' => null, ...$attributes]);
+
+        $this->actingAs($member);
+        $this->assertThrows(fn () => $create(['title' => 'Unchecked Ltd']), ValidationException::class);
+        $this->assertSame('pending', $create(['title' => 'Checked Ltd', 'status' => 'pending'])->status);
+
+        $this->actingAs($owner);
+        $this->assertSame('approved', $create(['title' => 'Owner Ltd'])->status);
+    }
+
     public function test_rules_can_cover_approving_records_in_the_apps_that_are_on(): void
     {
         [$owner, $workspace] = $this->workspace();

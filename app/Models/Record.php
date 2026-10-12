@@ -62,7 +62,6 @@ class Record extends Model
         static::creating(function (Record $record) {
             $record->uuid ??= (string) Str::uuid();
             $record->created_by ??= auth()->id();
-            $record->status = $record->status ?: $record->definition()->defaultStatus();
             if (empty($record->number)) {
                 $entity = $record->definition();
                 $record->number = Sequence::next($entity->sequenceKey(), $entity->numberPrefix, $record->workspace_id ?: app(WorkspaceContext::class)->id());
@@ -70,6 +69,8 @@ class Record extends Model
         });
 
         static::saving(function (Record $record) {
+            // Set before the app logic and approval check run, which both come ahead of creating.
+            $record->status = $record->status ?: $record->definition()->defaultStatus();
             $record->appLogic()?->saving($record);
             Approvals::guardRecord($record);
             $record->search_text = $record->buildSearchText();
