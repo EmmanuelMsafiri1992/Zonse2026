@@ -2,6 +2,7 @@
 
 namespace App\Blueprints;
 
+use App\Models\Record;
 use Illuminate\Support\Facades\File;
 
 /**
@@ -59,6 +60,16 @@ class BlueprintRegistry
     public function entity(string $blueprintKey, string $entityKey): ?Entity
     {
         return $this->get($blueprintKey)?->entity($entityKey);
+    }
+
+    /**
+     * Fields of an entity its app works out itself, for a record being edited or, by default, a new one.
+     *
+     * @return list<string>
+     */
+    public function computed(Entity $entity, ?Record $record = null): array
+    {
+        return $this->get($entity->blueprintKey)?->logic()->computed($entity, $record ?? new Record) ?? [];
     }
 
     /** @return array<string, Blueprint> */

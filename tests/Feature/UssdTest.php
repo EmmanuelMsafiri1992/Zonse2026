@@ -95,6 +95,22 @@ class UssdTest extends TestCase
         $this->assertSame($record->definition()->defaultStatus(), $record->status);
     }
 
+    public function test_a_caller_is_not_asked_for_figures_the_app_works_out(): void
+    {
+        [$owner, $workspace] = $this->workspace();
+        $workspace->enableModules(['bar'], $owner);
+        $entities = app(WorkspaceContext::class)->run($workspace, fn () => app(UssdMenu::class)->loggableEntities());
+        $list = collect($entities)->search(fn ($entity) => $entity->blueprintKey === 'bar') + 1;
+
+        $this->assertStringNotContainsString('(USD)', $this->dial($workspace, "2468*2*{$list}*Table 4"));
+        $reply = $this->dial($workspace, "2468*2*{$list}*Table 4*2 x Lager @ 3");
+
+        $tab = Record::allWorkspaces()->where('workspace_id', $workspace->id)->sole();
+        $this->assertSame('END Saved Tab '.$tab->number.'. Thank you.', $reply);
+        $this->assertSame('2 x Lager @ 3', $tab->data['items']);
+        $this->assertEquals(6, $tab->amount);
+    }
+
     public function test_invalid_answers_end_the_session_without_saving(): void
     {
         [, $workspace] = $this->workspace();

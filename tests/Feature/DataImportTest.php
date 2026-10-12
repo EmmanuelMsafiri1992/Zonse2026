@@ -246,6 +246,31 @@ class DataImportTest extends TestCase
         $this->assertSame($farai->id, (int) $visit->data['patient']);
     }
 
+    public function test_app_records_import_leaves_worked_out_fields_to_the_app(): void
+    {
+        [$owner] = $this->importWorkspace(['payables', 'loyalty', 'contacts']);
+        $this->actingAs($owner)->get(route('settings.imports.template', ['records.payables.bills', 'csv']))->assertOk()
+            ->assertDontSee('Amount paid')->assertSee('Supplier invoice number');
+
+        $bills = $this->uploadAndPreview($owner, 'records.payables.bills', $this->csvFile('bills.csv', [
+            ['Description', 'Supplier invoice number', 'Bill total', 'Amount paid'],
+            ['Electricity', 'INV-1', '300', '999'],
+        ]));
+        $this->actingAs($owner)->post(route('settings.imports.run', $bills))->assertSessionHasNoErrors();
+        $bill = Record::query()->ofEntity('payables', 'bills')->sole();
+        $this->assertSame(300.0, (float) $bill->amount);
+        $this->assertSame(0.0, (float) $bill->value('paid_amount'));
+
+        $members = $this->uploadAndPreview($owner, 'records.loyalty.members', $this->csvFile('members.csv', [['Name', 'Points'], ['Tendai Moyo', '120']]));
+        $this->actingAs($owner)->post(route('settings.imports.run', $members))->assertSessionHasNoErrors();
+        $member = Record::query()->ofEntity('loyalty', 'members')->sole();
+        $this->assertSame(120.0, (float) $member->value('points'));
+
+        $again = $this->uploadAndPreview($owner, 'records.loyalty.members', $this->csvFile('members-again.csv', [['Name', 'Points'], ['Tendai Moyo', '9000']]), ['duplicates' => 'update']);
+        $this->actingAs($owner)->post(route('settings.imports.run', $again))->assertSessionHasNoErrors();
+        $this->assertSame(120.0, (float) $member->fresh()->value('points'));
+    }
+
     public function test_access_files_and_workspaces_are_guarded(): void
     {
         [$owner, $workspace] = $this->importWorkspace();

@@ -49,9 +49,7 @@ class RecordRequest extends FormRequest
      */
     public function computed(): array
     {
-        $entity = $this->entity();
-
-        return app(BlueprintRegistry::class)->get($entity->blueprintKey)?->logic()->computed($entity, $this->existing() ?? new Record) ?? [];
+        return app(BlueprintRegistry::class)->computed($this->entity(), $this->existing());
     }
 
     /** @return array<string, mixed> */

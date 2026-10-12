@@ -3,6 +3,7 @@
 namespace App\Support\Import;
 
 use App\Blueprints\Blueprint;
+use App\Blueprints\BlueprintRegistry;
 use App\Blueprints\Entity;
 use App\Blueprints\Field;
 use App\Models\Record;
@@ -13,7 +14,8 @@ use Modules\Contacts\Models\Contact;
 
 /**
  * The records of one app entity (students, bookings, properties…). Headings match the entity's
- * own labels, so a file from the app's "Export CSV" button imports straight back.
+ * own labels, so a file from the app's "Export CSV" button imports straight back. Figures the app
+ * works out itself (a bill's amount paid) are not imported; the app fills them in as each row saves.
  */
 class RecordTarget extends ImportTarget
 {
@@ -50,6 +52,7 @@ class RecordTarget extends ImportTarget
     public function columns(): array
     {
         $entity = $this->entity;
+        $computed = app(BlueprintRegistry::class)->computed($entity);
         $columns = ['title' => ['label' => $entity->titleLabel, 'required' => true, 'example' => 'Example '.$entity->lowerLabel(), 'aliases' => ['title', 'name']]];
         if (count($entity->statuses) > 1) {
             $columns['status'] = ['label' => 'Status', 'example' => reset($entity->statuses), 'hint' => implode(', ', $entity->statuses).'.', 'aliases' => ['stage', 'state']];
@@ -60,7 +63,7 @@ class RecordTarget extends ImportTarget
         if ($entity->hasAssignee) {
             $columns['assignee'] = ['label' => 'Assignee', 'example' => '', 'hint' => 'The name or email of a team member.', 'aliases' => ['assignedto', 'owner', 'staff', 'responsible']];
         }
-        if ($entity->hasAmount()) {
+        if ($entity->hasAmount() && ! in_array('amount', $computed, true)) {
             $columns['amount'] = ['label' => $entity->amountLabel, 'example' => '100.00', 'aliases' => ['amount', 'total', 'value', 'price']];
         }
         if ($entity->hasDate()) {
@@ -70,6 +73,9 @@ class RecordTarget extends ImportTarget
             $columns['due_on'] = ['label' => $entity->dueLabel, 'example' => today()->addWeek()->format('Y-m-d'), 'aliases' => ['duedate', 'due', 'deadline']];
         }
         foreach ($entity->fields as $field) {
+            if (in_array($field->key, $computed, true)) {
+                continue;
+            }
             $columns['data.'.$field->key] = [
                 'label' => $field->label,
                 'required' => $field->required,
@@ -223,6 +229,11 @@ class RecordTarget extends ImportTarget
     protected function payload(array $values, ?Model $existing): array
     {
         $entity = $this->entity;
+        $computed = app(BlueprintRegistry::class)->computed($entity, $existing instanceof Record ? $existing : null);
+        $values['data'] = array_diff_key($values['data'], array_flip($computed));
+        if (in_array('amount', $computed, true)) {
+            $values['amount'] = null;
+        }
         $data = array_merge(
             $existing ? (array) $existing->data : collect($entity->fields)->mapWithKeys(fn (Field $field) => [$field->key => $field->cast(null)])->all(),
             $values['data'],

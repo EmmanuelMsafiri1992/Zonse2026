@@ -293,18 +293,20 @@ class UssdMenu
     }
 
     /**
-     * The questions asked when logging a record: its title, the amount when it has one, then every required field.
+     * The questions asked when logging a record: its title, the amount when it has one, then every required field,
+     * leaving out anything the app works out itself.
      *
      * @return list<string>
      */
     protected function steps(Entity $entity): array
     {
         $steps = ['title'];
-        if ($entity->hasAmount()) {
+        $computed = $this->blueprints->computed($entity);
+        if ($entity->hasAmount() && ! in_array('amount', $computed, true)) {
             $steps[] = 'amount';
         }
         foreach ($entity->fields as $field) {
-            if ($field->required) {
+            if ($field->required && ! in_array($field->key, $computed, true)) {
                 $steps[] = 'data.'.$field->key;
             }
         }

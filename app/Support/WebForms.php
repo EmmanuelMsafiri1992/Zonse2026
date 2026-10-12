@@ -306,8 +306,9 @@ class WebForms
         }
 
         $data = [];
+        $computed = app(BlueprintRegistry::class)->computed($definition);
         foreach ($definition->fields as $field) {
-            if (array_key_exists('data.'.$field->key, $values)) {
+            if (array_key_exists('data.'.$field->key, $values) && ! in_array($field->key, $computed, true)) {
                 $data[$field->key] = $field->cast($values['data.'.$field->key]);
             }
         }
@@ -354,8 +355,9 @@ class WebForms
         }
 
         $fields = ['title' => self::field($entity->titleLabel, 'text', must: true)];
+        $computed = app(BlueprintRegistry::class)->computed($entity);
         foreach ($entity->fields as $field) {
-            if (! in_array($field->type, ['record', 'user'], true)) {
+            if (! in_array($field->type, ['record', 'user'], true) && ! in_array($field->key, $computed, true)) {
                 $fields['data.'.$field->key] = self::field($field->label, $field->type, $field->options, $field->required, $field->help, array_slice($field->rules(), 1));
             }
         }

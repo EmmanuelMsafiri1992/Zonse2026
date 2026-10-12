@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\WebForm;
 use App\Models\Workspace;
 use App\Notifications\WorkspaceAlert;
+use App\Support\WebForms;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Notification;
@@ -190,6 +191,14 @@ class WebFormsTest extends TestCase
         $this->assertSame(['Farai Chikore', '1991-02-03', 'male', 'Dr Ncube'], [$patient->title, $patient->value('date_of_birth'), $patient->value('sex'), $patient->customField('referred_by')]);
         $this->assertSame('farai@example.com', $patient->contact?->email);
         $this->assertSame('PT-0001', $patient->number);
+    }
+
+    public function test_an_app_form_cannot_ask_for_figures_the_app_works_out(): void
+    {
+        $fields = WebForms::available('payables.bills');
+
+        $this->assertArrayHasKey('data.supplier_invoice_number', $fields);
+        $this->assertArrayNotHasKey('data.paid_amount', $fields);
     }
 
     public function test_closed_forms_and_unknown_links_take_no_answers(): void
