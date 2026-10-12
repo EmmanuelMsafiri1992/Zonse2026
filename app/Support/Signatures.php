@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\Record;
 use App\Models\SignatureEvent;
 use App\Models\SignatureRequest;
 use App\Models\SignatureSigner;
@@ -251,6 +252,12 @@ class Signatures
         if ($quote instanceof Quote && in_array($quote->status, ['draft', 'sent', 'expired'], true)) {
             $quote->accept();
             self::event($request, 'quote-accepted', 'Quote '.$quote->number.' marked as accepted');
+        }
+
+        $record = $request->signable;
+        if ($record instanceof Record) {
+            $record->addComment('"'.$request->title.'" was signed by everyone. The signed copy and certificate are under E-signatures.', internal: true, authorName: 'E-signatures');
+            self::event($request, 'record-noted', 'Noted on '.$record->activityLabel());
         }
 
         Audit::log('default', 'signature-completed', '"'.$request->title.'" was signed by everyone', $request, workspace: $request->workspace);

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Send for signing')
 @section('content')
-    <x-page-header title="Send for signing" :sub="$quote ? 'Quote '.$quote->number.' will be attached as a PDF. Once everyone signs, the quote is marked accepted.' : 'Upload a PDF and choose who must sign it.'"
+    <x-page-header title="Send for signing" :sub="$quote ? 'Quote '.$quote->number.' will be attached as a PDF. Once everyone signs, the quote is marked accepted.' : ($template ? $template->name.' will be filled in and attached as a PDF.' : 'Upload a PDF and choose who must sign it.')"
                    :crumbs="['E-signatures' => route('signatures.index'), 'New']" />
 
     <div class="row g-4">
@@ -9,7 +9,7 @@
             <form method="POST" action="{{ route('signatures.store') }}" enctype="multipart/form-data" class="card" x-data="{ signers: @js(array_values($signers)), max: {{ \App\Support\Signatures::MAX_SIGNERS }} }">
                 @csrf
                 <div class="card-body">
-                    <x-form.input name="title" label="Title" :value="$quote ? 'Quote '.$quote->number : null" maxlength="190" required placeholder="e.g. Tenancy agreement, 12 Samora Machel Ave" />
+                    <x-form.input name="title" label="Title" :value="$quote ? 'Quote '.$quote->number : ($template ? trim($template->name.' '.($subject?->number ?? '')) : null)" maxlength="190" required placeholder="e.g. Tenancy agreement, 12 Samora Machel Ave" />
 
                     @if($quote)
                         <input type="hidden" name="quote_id" value="{{ $quote->id }}">
@@ -20,6 +20,17 @@
                                 <div class="fs-8 text-muted">{{ $quote->contact?->displayName() }} · {{ $quote->money($quote->total) }}</div>
                             </div>
                             <a href="{{ route('quotes.pdf', $quote) }}" target="_blank" class="btn btn-sm btn-white"><x-icon name="eye" class="zi zi-sm" /> View</a>
+                        </div>
+                    @elseif($template)
+                        <input type="hidden" name="template_id" value="{{ $template->id }}">
+                        @if($subject)<input type="hidden" name="subject_id" value="{{ $subject->getKey() }}">@endif
+                        <div class="border rounded p-3 mb-3 d-flex align-items-center gap-2">
+                            <x-icon name="file-text" />
+                            <div class="flex-grow-1">
+                                <div class="fw-600">{{ $template->name }}</div>
+                                @if($subjectName)<div class="fs-8 text-muted">Filled in from {{ $subjectName }}</div>@endif
+                            </div>
+                            <a href="{{ route('documents.show', [$template, $subject?->getKey()]) }}" target="_blank" class="btn btn-sm btn-white" data-no-ajax><x-icon name="eye" class="zi zi-sm" /> View</a>
                         </div>
                     @else
                         <div class="mb-3">
@@ -53,7 +64,7 @@
                 </div>
                 <div class="card-footer d-flex gap-2">
                     <button class="btn btn-primary"><x-icon name="send" /> Send for signing</button>
-                    <a href="{{ $quote ? route('quotes.show', $quote) : route('signatures.index') }}" class="btn btn-white">Cancel</a>
+                    <a href="{{ $quote ? route('quotes.show', $quote) : ($subject && method_exists($subject, 'activityUrl') ? $subject->activityUrl() : route('signatures.index')) }}" class="btn btn-white">Cancel</a>
                 </div>
             </form>
         </div>

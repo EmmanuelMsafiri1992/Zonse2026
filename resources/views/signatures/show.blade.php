@@ -96,7 +96,7 @@
                     @if($signatureRequest->signable && method_exists($signatureRequest->signable, 'activityUrl'))
                         <hr>
                         <div class="fs-8 text-muted">Made from</div>
-                        <a href="{{ $signatureRequest->signable->activityUrl() }}">{{ class_basename($signatureRequest->signable) }} {{ $signatureRequest->signable->number ?? '' }}</a>
+                        <a href="{{ $signatureRequest->signable->activityUrl() }}">{{ method_exists($signatureRequest->signable, 'activityLabel') ? $signatureRequest->signable->activityLabel() : class_basename($signatureRequest->signable).' '.($signatureRequest->signable->number ?? '') }}</a>
                     @endif
                 </div>
             </div>

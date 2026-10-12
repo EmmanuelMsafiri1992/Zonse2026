@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\DocumentTemplate;
+use App\Models\Record;
 use App\Models\SignatureRequest;
 use App\Models\SignatureSigner;
 use App\Models\User;
@@ -16,6 +18,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
+use Modules\Contacts\Models\Contact;
 use Modules\Invoicing\Models\Quote;
 use Tests\Concerns\InteractsWithWorkspaces;
 use Tests\TestCase;
@@ -272,6 +275,45 @@ class SignaturesTest extends TestCase
         $this->post(route('signing.sign', $this->signer($request, 1)->token), $this->signature())->assertSessionHasNoErrors();
         $this->assertSame('accepted', $quote->fresh()->status);
         $this->assertDatabaseHas('signature_events', ['signature_request_id' => $request->id, 'event' => 'quote-accepted']);
+    }
+
+    public function test_an_app_record_document_is_sent_for_signing_and_noted_once_signed(): void
+    {
+        [$owner, $workspace, $member] = $this->workspace();
+        $workspace->enableModules(['payables'], $owner);
+        $supplier = Contact::factory()->for($workspace)->create(['name' => 'Harare Hardware', 'email' => 'accounts@hararehardware.example']);
+        $bill = Record::factory()->ofEntity('payables', 'bills', ['supplier_invoice_number' => 'HH-77'])
+            ->create(['workspace_id' => $workspace->id, 'title' => 'Cement order', 'contact_id' => $supplier->id, 'amount' => 900]);
+        $template = DocumentTemplate::factory()->create([
+            'workspace_id' => $workspace->id, 'name' => 'Bill sign-off', 'subject' => 'payables.bills', 'body' => 'We agree to pay {{ record.title }}.',
+        ]);
+        $page = route('apps.records.show', ['payables', 'bills', $bill->id]);
+        $create = route('signatures.create', ['template' => $template->id, 'subject' => $bill->id]);
+
+        $this->actingAs($member)->get($page)->assertOk()->assertSee('Send for signing')->assertSee($create);
+        $this->get($create)->assertOk()->assertSee('Bill sign-off')->assertSee('Filled in from Bill '.$bill->number)
+            ->assertSee('accounts@hararehardware.example')->assertDontSee('f_document');
+        $this->get(route('signatures.create', ['template' => $template->id, 'subject' => $bill->id + 999]))->assertNotFound();
+
+        $this->post(route('signatures.store'), [
+            'title' => 'Bill sign-off '.$bill->number, 'signing_order' => 'parallel', 'template_id' => $template->id, 'subject_id' => $bill->id,
+            'signers' => [['name' => 'Harare Hardware', 'email' => 'accounts@hararehardware.example']],
+        ])->assertSessionHasNoErrors();
+        $request = SignatureRequest::allWorkspaces()->sole();
+        $this->assertTrue($request->signable->is($bill));
+        $this->assertStringStartsWith('%PDF', Storage::disk('local')->get($request->document_path));
+        $this->assertStringStartsWith('bill-sign-off', $request->document_name);
+
+        $this->get($page)->assertSee('Signatures')->assertSee('Bill sign-off '.$bill->number);
+        $this->get(route('signatures.show', $request))->assertSee('Bill '.$bill->number);
+        auth()->guard('web')->logout();
+
+        $this->post(route('signing.sign', $this->signer($request, 1)->token), $this->signature())->assertSessionHasNoErrors();
+        $this->assertSame('completed', $request->fresh()->status);
+        $this->assertStringContainsString('was signed by everyone', $bill->comments()->sole()->body);
+
+        $viewer = $this->memberOf($workspace, 'viewer');
+        $this->actingAs($viewer)->get($page)->assertOk()->assertSee('Bill sign-off')->assertDontSee('Send for signing');
     }
 
     public function test_the_sender_or_an_admin_can_remind_and_cancel(): void

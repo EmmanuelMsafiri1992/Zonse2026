@@ -12,6 +12,7 @@ use App\Models\Workspace;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
@@ -91,6 +92,34 @@ class DocumentTemplates
             $model instanceof Record => CustomField::appEntity($model->blueprint, $model->entity),
             default => null,
         };
+    }
+
+    /**
+     * The contact, payment or record a template is filled from, checked against what the signed-in person may see.
+     * Null for a template that stands on its own.
+     */
+    public static function subjectModel(DocumentTemplate $template, ?int $id): ?Model
+    {
+        if ($template->subject === 'none') {
+            abort_if($id !== null, 404);
+
+            return null;
+        }
+        abort_if($id === null, 404);
+
+        if ($template->subject === 'contact') {
+            $model = Contact::query()->findOrFail($id);
+            Gate::authorize('view', $model);
+        } elseif ($template->subject === 'payment') {
+            $model = Payment::query()->with(['invoice', 'contact'])->findOrFail($id);
+            Gate::authorize('viewAny', Payment::class);
+        } else {
+            [$blueprint, $entity] = explode('.', $template->subject, 2);
+            $model = Record::query()->ofEntity($blueprint, $entity)->with('contact')->findOrFail($id);
+            Gate::authorize('view', $model);
+        }
+
+        return $model;
     }
 
     /**

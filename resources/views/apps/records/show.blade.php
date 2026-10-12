@@ -79,6 +79,21 @@
                 @include('apps.records.partials.billing')
             @endif
 
+            @php $signatureRequests = \App\Models\SignatureRequest::query()->where('signable_type', $record->getMorphClass())->where('signable_id', $record->id)->latest('id')->get(); @endphp
+            @if($signatureRequests->isNotEmpty())
+                <div class="card mb-3">
+                    <div class="card-header"><h5 class="card-title">Signatures</h5></div>
+                    <ul class="list-group list-group-flush fs-7">
+                        @foreach($signatureRequests as $signatureRequest)
+                            <li class="list-group-item d-flex justify-content-between gap-2">
+                                <a href="{{ route('signatures.show', $signatureRequest) }}" class="text-truncate">{{ $signatureRequest->title }}</a>
+                                <span class="text-muted text-nowrap">{{ $signatureRequest->statusLabel() }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             @can('update', $record)
                 @if(count($def->statuses) > 1)
                     <div class="card mb-3">
