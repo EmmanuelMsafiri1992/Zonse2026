@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\ApiToken;
+use App\Models\Record;
 use App\Models\User;
 use App\Models\Workspace;
 use App\Tenancy\WorkspaceContext;
@@ -159,6 +160,54 @@ class ApiTest extends TestCase
 
         $this->deleteJson('/api/v1/contacts/'.$id, [], $this->bearer($key))->assertNoContent();
         $this->assertNull(Contact::allWorkspaces()->find($id));
+    }
+
+    public function test_a_write_key_works_with_any_switched_on_apps_records(): void
+    {
+        [$owner, $workspace] = $this->workspaceWithModules();
+        $workspace->enableModules(['payables'], $owner);
+        $key = $this->keyFor($owner, $workspace->fresh());
+        $supplier = Contact::factory()->create(['workspace_id' => $workspace->id, 'name' => 'ZESA']);
+
+        $id = $this->postJson('/api/v1/apps/payables/bills', [
+            'title' => 'Electricity', 'amount' => 300, 'contact_id' => $supplier->id, 'fields' => ['supplier_invoice_number' => 'INV-1', 'paid_amount' => 999],
+        ], $this->bearer($key))->assertCreated()
+            ->assertJsonPath('data.app', 'payables')->assertJsonPath('data.status', 'received')->assertJsonPath('data.amount', 300)
+            ->assertJsonPath('data.fields.supplier_invoice_number', 'INV-1')->assertJsonPath('data.worked_out', ['paid_amount'])->json('data.id');
+        $bill = Record::allWorkspaces()->findOrFail($id);
+        $this->assertSame($workspace->id, $bill->workspace_id);
+        $this->assertSame(0.0, (float) $bill->value('paid_amount'));
+
+        $this->patchJson('/api/v1/apps/payables/bills/'.$id, ['fields' => ['vat' => 45]], $this->bearer($key))
+            ->assertOk()->assertJsonPath('data.title', 'Electricity')->assertJsonPath('data.fields.vat', 45)->assertJsonPath('data.fields.supplier_invoice_number', 'INV-1');
+        $this->getJson('/api/v1/apps/payables/bills?q=Electric', $this->bearer($key))->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.number', $bill->number);
+        $this->getJson('/api/v1/apps/payables/bills/'.$id, $this->bearer($key))->assertOk()->assertJsonPath('data.contact_id', $supplier->id);
+
+        $this->postJson('/api/v1/apps/payables/bills', ['amount' => 'lots'], $this->bearer($key))->assertUnprocessable()->assertJsonValidationErrors(['title', 'amount', 'fields.supplier_invoice_number']);
+        $this->postJson('/api/v1/apps/payables/bills', ['title' => 'Again', 'contact_id' => $supplier->id, 'fields' => ['supplier_invoice_number' => 'INV-1']], $this->bearer($key))
+            ->assertUnprocessable()->assertJsonValidationErrors(['fields.supplier_invoice_number']);
+
+        $this->getJson('/api/v1/apps/payables/nothing', $this->bearer($key))->assertNotFound();
+        $this->getJson('/api/v1/apps/clinic/patients', $this->bearer($key))->assertForbidden();
+        $this->getJson('/api/v1/apps/payables/payments/'.$id, $this->bearer($key))->assertNotFound();
+
+        $this->deleteJson('/api/v1/apps/payables/bills/'.$id, [], $this->bearer($key))->assertNoContent();
+        $this->assertNull(Record::allWorkspaces()->find($id));
+    }
+
+    public function test_a_read_key_reads_app_records_but_cannot_change_them(): void
+    {
+        [$owner, $workspace] = $this->workspaceWithModules();
+        $workspace->enableModules(['payables'], $owner);
+        $key = $this->keyFor($owner, $workspace->fresh(), 'read');
+        $other = $this->ownerWithWorkspace()[1];
+        Record::factory()->ofEntity('payables', 'bills', ['supplier_invoice_number' => 'X'])->create(['workspace_id' => $other->id, 'title' => 'Not mine']);
+        $bill = Record::factory()->ofEntity('payables', 'bills', ['supplier_invoice_number' => 'INV-2'])->create(['workspace_id' => $workspace->id, 'title' => 'Water']);
+
+        $this->getJson('/api/v1/apps/payables/bills', $this->bearer($key))->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.title', 'Water');
+        $this->patchJson('/api/v1/apps/payables/bills/'.$bill->id, ['title' => 'Changed'], $this->bearer($key))->assertForbidden();
+        $this->postJson('/api/v1/apps/payables/bills', ['title' => 'New'], $this->bearer($key))->assertForbidden();
+        $this->assertSame('Water', $bill->fresh()->title);
     }
 
     public function test_validation_errors_come_back_as_json(): void

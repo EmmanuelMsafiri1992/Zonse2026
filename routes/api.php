@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\AppointmentController;
 use App\Http\Controllers\Api\V1\ContactController;
 use App\Http\Controllers\Api\V1\InvoiceController;
 use App\Http\Controllers\Api\V1\MeController;
+use App\Http\Controllers\Api\V1\RecordController;
 use App\Http\Controllers\Api\V1\TaskController;
 use App\Http\Controllers\Api\V1\TicketController;
 use Illuminate\Support\Facades\Route;
@@ -35,6 +36,16 @@ Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'api.workspace
 
         Route::middleware('module:appointments')->group(function () {
             Route::apiResource('appointments', AppointmentController::class)->only(['index', 'show']);
+        });
+
+        Route::prefix('apps/{blueprint}/{entity}')->middleware('blueprint')->name('apps.records.')->group(function () {
+            Route::get('/', [RecordController::class, 'index'])->name('index');
+            Route::get('/{record}', [RecordController::class, 'show'])->whereNumber('record')->name('show');
+            Route::middleware('abilities:write')->group(function () {
+                Route::post('/', [RecordController::class, 'store'])->name('store');
+                Route::match(['put', 'patch'], '/{record}', [RecordController::class, 'update'])->whereNumber('record')->name('update');
+                Route::delete('/{record}', [RecordController::class, 'destroy'])->whereNumber('record')->name('destroy');
+            });
         });
     });
 });
