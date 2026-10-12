@@ -331,6 +331,11 @@ class ApprovalsTest extends TestCase
         $move($large)->assertSessionHasErrors('status');
         $this->assertSame('received', $large->fresh()->status);
         $this->assertThrows(fn () => $bill(2000)->update(['status' => 'approved']), ValidationException::class);
+        $create = fn (int $amount) => $this->post(route('apps.records.store', ['payables', 'bills']), ['title' => 'New '.$amount, 'status' => 'approved', 'amount' => $amount, 'data' => ['supplier_invoice_number' => 'S-'.$amount]]);
+        $create(4000)->assertSessionHasErrors(['status' => 'This bill needs approval first ("Big bills", owners and admins). Save it with another status, then ask for approval on its page.']);
+        $create(300)->assertSessionHasNoErrors();
+        $this->assertSame('approved', Record::query()->where('title', 'New 300')->sole()->status);
+        $this->assertSame(0, Record::query()->where('title', 'New 4000')->count());
         $this->assertThrows(fn () => Record::factory()->ofEntity('payables', 'bills')->create(['workspace_id' => $workspace->id, 'amount' => 3000, 'status' => 'approved']), ValidationException::class);
 
         $page = route('apps.records.show', ['payables', 'bills', $large->id]);

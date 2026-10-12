@@ -6,6 +6,7 @@ use App\Models\ApprovalRequest;
 use App\Models\ApprovalRule;
 use App\Models\Record;
 use App\Models\User;
+use App\Tenancy\WorkspaceContext;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -48,6 +49,12 @@ class Approvals
     {
         $user = auth()->user();
         if (! $user instanceof User || ! $record->isDirty('status') || $record->status !== ApprovalRule::RECORD_STATUS) {
+            return;
+        }
+
+        // A new record only gets its workspace while being created, which comes after saving.
+        $record->workspace_id ??= app(WorkspaceContext::class)->id();
+        if (! $record->workspace_id) {
             return;
         }
 
