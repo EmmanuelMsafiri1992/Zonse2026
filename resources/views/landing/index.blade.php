@@ -2,13 +2,16 @@
 @section('content')
     @include('landing.hero')
 
+    @include('landing.ai')
+
     @if($professions->isNotEmpty())
-        <section class="py-5 bg-white border-top border-bottom">
+        <section class="z-mk-section">
             <div class="container">
-                <div class="row g-4 align-items-start">
+                <div class="row g-5 align-items-start">
                     <div class="col-lg-4">
-                        <h3 class="mb-2">Built for people like you</h3>
-                        <p class="text-muted mb-0">Pick your profession when you sign up and we suggest the apps that fit how you work.</p>
+                        <div class="z-mk-kicker">Who it is for</div>
+                        <h2 class="z-mk-title">Built for people like you</h2>
+                        <p class="z-mk-lead mb-0">Pick your profession when you sign up and we suggest the apps that fit how you work. Change them whenever you like.</p>
                     </div>
                     <div class="col-lg-8">
                         <ul class="z-profession-list">
@@ -23,33 +26,31 @@
         </section>
     @endif
 
-    <section class="py-5">
+    <section class="z-mk-section" id="apps">
         <div class="container">
-            <div class="text-center mb-4">
-                <h3>{{ $suites->count() }} suites. Mix and match.</h3>
-                <p class="text-muted">Each suite is a family of apps that share the same contacts, documents, calendar and ledger.</p>
-            </div>
-            <div class="row g-3">
-                @foreach($suites as $s)
-                    <div class="col-sm-6 col-lg-4 col-xl-3">
-                        <div class="card card-flat h-100 hover-raise">
-                            <div class="card-body d-flex gap-3">
-                                <span class="z-avatar z-avatar-soft rounded-3"><x-icon :name="$s->icon ?: 'box'" /></span>
-                                <div>
-                                    <div class="fw-600">{{ $s->name }}</div>
-                                    <div class="fs-8 text-muted">{{ $s->modules_count }} apps</div>
-                                </div>
-                            </div>
-                        </div>
+            <div class="row g-5 align-items-start">
+                <div class="col-lg-4">
+                    <div class="z-mk-kicker">{{ $moduleCount }} apps</div>
+                    <h2 class="z-mk-title">{{ $suites->count() }} suites. Mix and match.</h2>
+                    <p class="z-mk-lead mb-0">Each suite is a family of apps that share the same contacts, documents, calendar and ledger, so nothing is typed twice.</p>
+                </div>
+                <div class="col-lg-8">
+                    <div class="z-suite-list">
+                        @foreach($suites as $s)
+                            <a href="{{ route('register') }}"><x-icon :name="$s->icon ?: 'box'" /> {{ $s->name }} <small>{{ $s->modules_count }} apps</small></a>
+                        @endforeach
                     </div>
-                @endforeach
+                </div>
             </div>
         </div>
     </section>
 
-    <section class="py-5 bg-white border-top">
+    <section class="z-mk-section is-tinted" id="pricing">
         <div class="container">
-            <div class="text-center mb-4"><h3>Simple pricing</h3><p class="text-muted">Start free. Upgrade when you grow.</p></div>
+            <div class="text-center mb-5">
+                <h2 class="z-mk-title mb-2">Simple pricing</h2>
+                <p class="z-mk-lead mx-auto">Start free. Upgrade when you grow. Pay by card, Paynow or bank transfer in your own currency.</p>
+            </div>
             <div class="row g-4 justify-content-center">
                 @foreach($plans as $p)
                     @include('partials.plan-card', ['p' => $p, 'selectable' => false, 'guest' => true])
@@ -57,6 +58,4 @@
             </div>
         </div>
     </section>
-
-    @include('landing.ai')
 @endsection

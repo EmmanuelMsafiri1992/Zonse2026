@@ -15,7 +15,7 @@
          @if($selectable) :class="{ selected: plan === {{ Js::from($p->key) }} }" x-on:click="plan = {{ Js::from($p->key) }}" @endif>
         @if(! empty($bestValue))<span class="z-plan-tag">Best value for your apps</span>
         @elseif($p->is_featured)<span class="z-plan-tag">Most popular</span>@endif
-        <h5 class="mb-0">{{ $p->name }}</h5>
+        <h3 class="h5 mb-0">{{ $p->name }}</h3>
         <div class="text-muted fs-7 mb-3">{{ $p->tagline }}</div>
         <div class="z-plan-price mb-3">
             @if($p->isFree())
@@ -28,7 +28,7 @@
                 <div class="fs-8 text-muted fw-normal">or ${{ number_format($p->price_yearly, 0) }}/year</div>
             @endif
         </div>
-        @if(! $p->isFree() && $p->trial_days)<div class="z-pill z-pill-trial mb-3">{{ $p->trial_days }}-day free trial</div>@endif
+        @if(! $p->isFree() && $p->trial_days)<div class="z-plan-trial">{{ $p->trial_days }}-day free trial, no card needed</div>@endif
         <ul>
             @foreach($features as $f)<li><x-icon name="check" class="zi zi-sm" /> <span>{{ $f }}</span></li>@endforeach
         </ul>

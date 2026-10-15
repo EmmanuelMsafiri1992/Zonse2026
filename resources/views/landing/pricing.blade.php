@@ -1,11 +1,11 @@
 @extends('layouts.marketing')
 @section('title', 'Pricing')
 @section('content')
-    <section class="py-5">
+    <section class="z-mk-section">
         <div class="container">
-            <div class="text-center mb-5" style="max-width:700px;margin:auto">
-                <h1 class="fw-600">Pricing</h1>
-                <p class="lead text-muted">One subscription for every app. Paid plans include a free trial, no card needed.</p>
+            <div class="text-center mb-5">
+                <h1 class="z-mk-title mb-2">Pricing</h1>
+                <p class="z-mk-lead mx-auto">One subscription for every app. Paid plans include a free trial, no card needed. Pay by card, Paynow or bank transfer in your own currency.</p>
             </div>
             <div class="row g-4 justify-content-center">
                 @foreach($plans as $p)
@@ -13,7 +13,7 @@
                 @endforeach
             </div>
             <div class="text-center mt-5">
-                <a href="{{ route('register') }}" class="btn btn-primary btn-lg">Create your free account</a>
+                <a href="{{ route('register') }}" class="btn btn-primary btn-lg px-4">Create your free account</a>
             </div>
         </div>
     </section>

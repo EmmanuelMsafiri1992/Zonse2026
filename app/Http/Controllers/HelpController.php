@@ -87,7 +87,7 @@ class HelpController extends Controller
     public function tourDone(Request $request, string $tour): JsonResponse
     {
         abort_unless(isset(Tours::TOURS[$tour]), 404);
-        $data = $request->validate(['outcome' => ['required', Rule::in(['completed', 'dismissed'])]]);
+        $data = $request->validate(['outcome' => ['required', Rule::in(['completed', 'dismissed', 'shown'])]]);
         Tours::record($request->user(), $tour, $data['outcome']);
 
         return response()->json(['ok' => true]);

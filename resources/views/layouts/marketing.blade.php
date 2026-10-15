@@ -10,17 +10,22 @@
     @vite(['resources/scss/app.scss', 'resources/js/app.js'])
 </head>
 <body>
-<nav class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
+<nav class="z-mk-nav sticky-top">
     <div class="container">
-        <a class="navbar-brand d-inline-flex align-items-center" href="{{ route('home') }}">
-            <img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }}" style="height:40px;width:auto">
+        <a class="z-mk-brand" href="{{ route('home') }}">
+            <img src="{{ asset('images/logo-mark.png') }}" alt="" width="32" height="32">
+            <span>{{ config('app.name') }}</span>
         </a>
-        <div class="d-flex align-items-center gap-2">
-            <a href="{{ route('pricing') }}" class="btn btn-link text-decoration-none d-none d-sm-inline-flex">Pricing</a>
+        <div class="z-mk-links">
+            <a href="{{ route('home') }}#apps">Apps</a>
+            @if(! empty($aiPacks))<a href="{{ route('home') }}#zonseob-ai">Zonseob AI</a>@endif
+            <a href="{{ route('pricing') }}">Pricing</a>
+        </div>
+        <div class="z-mk-actions">
             @auth
                 <a href="{{ route('dashboard') }}" class="btn btn-primary">Open dashboard</a>
             @else
-                <a href="{{ route('login') }}" class="btn btn-white">Sign in</a>
+                <a href="{{ route('login') }}" class="btn btn-link text-decoration-none">Sign in</a>
                 <a href="{{ route('register') }}" class="btn btn-primary">Start free</a>
             @endauth
         </div>
@@ -29,10 +34,14 @@
 
 @yield('content')
 
-<footer class="py-4 border-top bg-white">
-    <div class="container d-flex flex-wrap justify-content-between fs-7 text-muted">
-        <span>&copy; {{ date('Y') }} {{ config('app.name') }}</span>
-        <span>Built for every profession.</span>
+<footer class="z-mk-foot">
+    <div class="container">
+        <a class="z-mk-brand" href="{{ route('home') }}"><img src="{{ asset('images/logo-mark.png') }}" alt="" width="24" height="24"> {{ config('app.name') }}</a>
+        <a href="{{ route('home') }}#apps">Apps</a>
+        <a href="{{ route('pricing') }}">Pricing</a>
+        @if(! empty($aiPacks))<a href="{{ route('home') }}#zonseob-ai">Zonseob AI</a>@endif
+        <a href="{{ route('login') }}">Sign in</a>
+        <span class="ms-auto">&copy; {{ date('Y') }} {{ config('app.name') }}. One platform, every profession.</span>
     </div>
 </footer>
 @include('partials.landing-chat')

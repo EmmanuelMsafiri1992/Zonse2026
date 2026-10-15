@@ -34,10 +34,12 @@ $z-text-light:     #9699A6;
 $z-border:         #D0D4E4;
 $z-border-strong:  #C3C6D4;
 
-// Typography (sizes follow monday's scale: 14px body, 16px large text, 24px titles)
+// Typography: 15px body so forms and tables read at arm's length, 13-14px for secondary text
 $z-font-heading:   "Poppins", "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 $z-font-body:      "Figtree", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-$z-font-size:      .875rem;   // 14px
+$z-font-size:      .9375rem;  // 15px
+$z-font-size-sm:   .875rem;   // 14px
+$z-font-size-xs:   .8125rem;  // 13px
 
 // Shape & elevation
 $z-radius:         8px;
@@ -77,10 +79,10 @@ $font-size-base:   $z-font-size;
 $line-height-base: 1.5;
 $h1-font-size: 2rem;      // 32px
 $h2-font-size: 1.5rem;    // 24px
-$h3-font-size: 1.125rem;  // 18px
-$h4-font-size: 1rem;      // 16px
-$h5-font-size: .9375rem;  // 15px
-$h6-font-size: .875rem;   // 14px
+$h3-font-size: 1.25rem;   // 20px
+$h4-font-size: 1.0625rem; // 17px
+$h5-font-size: 1rem;      // 16px
+$h6-font-size: .9375rem;  // 15px
 $border-color:     $z-border;
 $border-radius:    $z-radius-sm;
 $border-radius-sm: $z-radius-sm;
@@ -117,6 +119,7 @@ $btn-padding-y: .5rem;
 $btn-padding-x: 1rem;
 $btn-font-weight: 400;
 $btn-font-size: $z-font-size;
+$btn-font-size-sm: $z-font-size-sm;
 $btn-border-radius: $z-radius-sm;
 $btn-border-radius-sm: $z-radius-sm;
 $btn-focus-width: .15rem;

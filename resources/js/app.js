@@ -58,7 +58,7 @@ Alpine.data('passkeyRegister', passkeyRegister);
 Alpine.data('zTour', (allSteps = [], doneUrl = '', autoStart = false) => ({
     allSteps, steps: [], index: 0, open: false, ring: null, card: '',
     get step() { return this.steps[this.index] || { title: '', text: '' }; },
-    init() { if (autoStart) setTimeout(() => this.start(), 600); },
+    init() { if (autoStart) { this.record('shown'); setTimeout(() => this.start(), 600); } },
     visible(selector) {
         if (!selector) return true;
         const el = document.querySelector(selector);
@@ -105,6 +105,9 @@ Alpine.data('zTour', (allSteps = [], doneUrl = '', autoStart = false) => ({
     },
     close(outcome) {
         this.open = false;
+        this.record(outcome);
+    },
+    record(outcome) {
         const token = document.querySelector('meta[name="csrf-token"]')?.content;
         fetch(doneUrl, {
             method: 'POST',

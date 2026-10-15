@@ -9,72 +9,82 @@
         @endcan
     </x-page-header>
 
-    @if($subscription && $workspace->onTrial())
-        <div class="alert alert-info d-flex align-items-center gap-3 shadow-z border-0">
-            <x-icon name="sparkles" class="zi zi-lg" />
-            <div class="flex-grow-1">
-                <strong>Your {{ $plan?->name }} trial ends in {{ $subscription->daysLeftInTrial() }} {{ \Illuminate\Support\Str::plural('day', $subscription->daysLeftInTrial()) }}.</strong>
-                Enjoy every app while you decide. No card needed until then.
-            </div>
-            @can('manage-workspace')<a href="{{ route('settings.billing.index') }}" class="btn btn-sm btn-primary">Manage plan</a>@endcan
-        </div>
-    @endif
-
+    @php
+        $planDelta = match (true) {
+            ! $subscription => 'Choose a plan',
+            $workspace->onTrial() => 'Trial, '.$subscription->daysLeftInTrial().' '.\Illuminate\Support\Str::plural('day', $subscription->daysLeftInTrial()).' left',
+            default => ucfirst($subscription->status),
+        };
+    @endphp
     <div class="row g-3 mb-4">
         <div class="col-sm-6 col-xl-3"><x-stat label="Active apps" :value="$enabledModules->count()" icon="layout-grid" color="primary" :href="route('settings.modules.index')" :delta="$readyModules->count().' ready to use'" /></div>
         <div class="col-sm-6 col-xl-3"><x-stat label="Team members" :value="$memberCount" icon="users" color="info" :href="route('settings.members.index')" /></div>
         <div class="col-sm-6 col-xl-3"><x-stat label="Branches" :value="$branchCount" icon="map-pin" color="success" :href="route('settings.branches.index')" /></div>
-        <div class="col-sm-6 col-xl-3"><x-stat label="Plan" :value="$plan?->name ?? 'None'" icon="credit-card" color="purple" :href="route('settings.billing.index')" :delta="$subscription ? ucfirst($subscription->status) : 'Choose a plan'" /></div>
+        <div class="col-sm-6 col-xl-3"><x-stat label="Plan" :value="$plan?->name ?? 'None'" icon="credit-card" color="purple" :href="route('settings.billing.index')" :delta="$planDelta" /></div>
+    </div>
+
+    <div class="z-dash-section">
+        <div class="z-dash-section-head">
+            <h2>Your apps</h2>
+            @can('manage-workspace')<a href="{{ route('settings.modules.index') }}">Manage apps</a>@endcan
+        </div>
+        @if($enabledModules->isEmpty())
+            <div class="card"><div class="card-body">
+                <x-empty icon="layout-grid" title="No apps enabled yet" text="Browse the marketplace and switch on what your business needs.">
+                    @can('manage-workspace')<a href="{{ route('settings.modules.index') }}" class="btn btn-primary">Browse apps</a>@endcan
+                </x-empty>
+            </div></div>
+        @else
+            @php $registry = app(\App\Registries\ModuleRegistry::class); @endphp
+            @if($pinnedModules->isNotEmpty())
+                <div class="z-dash-apps">
+                    @foreach($pinnedModules as $m)
+                        @php $entryUrl = $registry->entryUrl($m->key); @endphp
+                        <a href="{{ $entryUrl ?: route('settings.modules.index') }}" class="z-dash-app">
+                            <span class="z-dash-app-icon">{!! \App\Support\Icon::ref($m->icon ?: ($m->suite?->icon ?? 'box')) !!}</span>
+                            <div>
+                                <b>{{ $m->name }}</b>
+                                <small>{{ $m->suite?->name }}</small>
+                                @if($m->description)<p>{{ \Illuminate\Support\Str::limit($m->description, 90) }}</p>@endif
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            @endif
+            @if($otherModules->isNotEmpty())
+                <div class="z-dash-more">
+                    @foreach($otherModules as $m)
+                        @php $entryUrl = $m->isAvailable() ? $registry->entryUrl($m->key) : null; @endphp
+                        @if($entryUrl)
+                            <a href="{{ $entryUrl }}">{!! \App\Support\Icon::ref($m->icon ?: ($m->suite?->icon ?? 'box')) !!} {{ $m->name }}</a>
+                        @else
+                            <span>{!! \App\Support\Icon::ref($m->icon ?: ($m->suite?->icon ?? 'box')) !!} {{ $m->name }}@unless($m->isAvailable()) <em class="text-muted">coming soon</em>@endunless</span>
+                        @endif
+                    @endforeach
+                </div>
+            @endif
+            {!! \App\Support\Icon::sprite() !!}
+        @endif
     </div>
 
     @if($widgets->isNotEmpty())
-        <div class="row g-3 mb-4">
-            @foreach($widgets as $widget)
-                <div class="col-lg-{{ $widget['width'] }}">
-                    {!! $widgetRegistry->render($widget) !!}
-                </div>
-            @endforeach
+        <div class="z-dash-section">
+            <div class="z-dash-section-head"><h2>At a glance</h2></div>
+            <div class="row g-3">
+                @foreach($widgets as $widget)
+                    <div class="col-lg-{{ $widget['width'] }}">
+                        {!! $widgetRegistry->render($widget) !!}
+                    </div>
+                @endforeach
+            </div>
         </div>
     @endif
 
-    <div class="row g-3">
-        <div class="col-lg-8">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h5 class="card-title">Your apps</h5>
-                    @can('manage-workspace')<a href="{{ route('settings.modules.index') }}" class="btn btn-sm btn-soft-primary">Manage</a>@endcan
-                </div>
-                <div class="card-body">
-                    @if($enabledModules->isEmpty())
-                        <x-empty icon="layout-grid" title="No apps enabled yet" text="Browse the marketplace and switch on what your business needs.">
-                            @can('manage-workspace')<a href="{{ route('settings.modules.index') }}" class="btn btn-primary">Browse apps</a>@endcan
-                        </x-empty>
-                    @else
-                        <div class="row g-3">
-                            @foreach($enabledModules as $m)
-                                <div class="col-sm-6 col-xl-4">
-                                    @php $entryUrl = app(\App\Registries\ModuleRegistry::class)->entryUrl($m->key); @endphp
-                                    <{{ $entryUrl ? 'a' : 'div' }} @if($entryUrl) href="{{ $entryUrl }}" @endif class="d-flex gap-3 p-3 rounded-10 border h-100 text-reset text-decoration-none {{ $m->isAvailable() ? 'hover-raise bg-white' : 'bg-soft' }}">
-                                        <span class="z-avatar z-avatar-soft rounded-3">{!! \App\Support\Icon::ref($m->icon ?: ($m->suite?->icon ?? 'box')) !!}</span>
-                                        <div class="mw-0">
-                                            <div class="fw-600 text-truncate">{{ $m->name }}</div>
-                                            <div class="fs-8 text-muted">{{ $m->suite?->name }}</div>
-                                            @unless($m->isAvailable())<span class="z-pill z-pill-muted mt-1">Coming soon</span>@endunless
-                                        </div>
-                                    </{{ $entryUrl ? 'a' : 'div' }}>
-                                </div>
-                            @endforeach
-                        </div>
-                        {!! \App\Support\Icon::sprite() !!}
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-4">
-            <div class="card mb-3">
-                <div class="card-header"><h5 class="card-title">Getting started</h5></div>
-                <div class="card-body z-kpi-list">
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="z-dash-section">
+                <div class="z-dash-section-head"><h2>Getting started</h2></div>
+                <div class="card"><div class="card-body z-kpi-list">
                     @php
                         $checks = [
                             ['Create your workspace', true, route('settings.workspace.edit')],
@@ -93,25 +103,27 @@
                             </a>
                         </div>
                     @endforeach
-                </div>
+                </div></div>
             </div>
+        </div>
 
-            <div class="card">
-                <div class="card-header"><h5 class="card-title">Recent activity</h5></div>
-                <div class="card-body">
+        <div class="col-lg-6">
+            <div class="z-dash-section">
+                <div class="z-dash-section-head"><h2>Recent activity</h2></div>
+                <div class="card"><div class="card-body">
                     @if($recentActivity->isEmpty())
-                        <p class="text-muted fs-7 mb-0">Activity from your apps will show up here.</p>
+                        <p class="text-muted mb-0">Activity from your apps will show up here.</p>
                     @else
                         <div class="z-timeline">
                             @foreach($recentActivity as $a)
                                 <div class="z-timeline-item">
-                                    <div class="fs-7">{{ $a->description }}</div>
+                                    <div>{{ $a->description }}</div>
                                     <div class="z-timeline-time">{{ $a->created_at->diffForHumans() }}</div>
                                 </div>
                             @endforeach
                         </div>
                     @endif
-                </div>
+                </div></div>
             </div>
         </div>
     </div>

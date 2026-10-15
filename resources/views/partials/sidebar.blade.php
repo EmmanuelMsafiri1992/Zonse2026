@@ -45,7 +45,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <span>{{ $workspace->plan()?->name ?? 'No plan' }} plan</span>
                 @if($workspace->onTrial())
-                    <span class="z-pill z-pill-trial">{{ $workspace->subscription->daysLeftInTrial() }}d trial</span>
+                    <span>{{ $workspace->subscription->daysLeftInTrial() }}d of trial left</span>
                 @endif
             </div>
         @endif
