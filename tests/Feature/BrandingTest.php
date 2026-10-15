@@ -43,7 +43,7 @@ class BrandingTest extends TestCase
     {
         [$owner, $workspace] = $this->ownerWithWorkspace();
 
-        $this->get(route('home'))->assertOk()->assertSee('images/logo.png', false)->assertSee('favicon.ico', false);
+        $this->get(route('home'))->assertOk()->assertSee('images/logo-mark.png', false)->assertDontSee('images/logo.png', false)->assertSee('favicon.ico', false);
         $this->get(route('login'))->assertOk()->assertSee('images/logo-mark.png', false);
         $this->actingAs($owner)->get(route('dashboard'))->assertOk()->assertSee('images/logo-mark.png', false);
 

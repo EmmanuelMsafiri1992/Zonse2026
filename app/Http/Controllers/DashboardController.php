@@ -23,7 +23,6 @@ class DashboardController extends Controller
         $enabled = $workspace->modules()->with('suite')->orderBy('modules.sort_order')->get();
         $ready = $enabled->filter(fn (Module $m) => $m->isAvailable());
         $pinned = $ready->take(self::PINNED_APPS);
-        $pinnedKeys = $pinned->map(fn (Module $m) => 'apps.'.$m->key)->all();
 
         return view('dashboard.index', [
             'workspace' => $workspace,
@@ -35,7 +34,7 @@ class DashboardController extends Controller
             'otherModules' => $enabled->reject(fn (Module $m) => $pinned->contains('id', $m->id)),
             'memberCount' => $workspace->members()->count(),
             'branchCount' => $workspace->branches()->count(),
-            'widgets' => $widgets->visible()->filter(fn (array $widget) => ! str_starts_with($widget['key'], 'apps.') || in_array($widget['key'], $pinnedKeys, true)),
+            'widgets' => $widgets->visible(),
             'widgetRegistry' => $widgets,
             'recentActivity' => Activity::query()
                 ->where('workspace_id', $workspace->id)
