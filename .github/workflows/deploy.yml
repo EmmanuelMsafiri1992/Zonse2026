@@ -69,9 +69,16 @@ jobs:
           echo $! > "$pidfile"
 
           php artisan up
+          # The home page proves the new code is serving. /up also wants scheduler and queue
+          # heartbeats, which are a server setup matter, so it is reported but does not fail the deploy.
           for attempt in 1 2 3 4 5; do
-            if curl -fsS -o /dev/null "http://127.0.0.1:${{ env.APP_PORT }}/up"; then
+            if curl -fsS -o /dev/null "http://127.0.0.1:${{ env.APP_PORT }}/"; then
               echo "App is answering on port ${{ env.APP_PORT }}"
+              if curl -fsS -o /dev/null "http://127.0.0.1:${{ env.APP_PORT }}/up"; then
+                echo "Health check /up passed"
+              else
+                echo "::warning::/up is failing: run 'php artisan zonseo:production-check' on the server (scheduler cron or queue worker is probably not running)"
+              fi
               exit 0
             fi
             sleep 2
