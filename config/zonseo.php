@@ -78,6 +78,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Zonseob's own Claude key
+    |--------------------------------------------------------------------------
+    |
+    | Used by the chat on the public pages (landing_model, a cheap model is
+    | plenty) and by Zonseob AI, the Claude access people buy with tokens
+    | (model). Workspaces' own assistant keys are separate and set in-app.
+    | Without a key the public chat answers from the help centre instead.
+    |
+    */
+
+    'assistant' => [
+        'api_key' => env('ANTHROPIC_API_KEY'),
+        'landing_model' => env('ANTHROPIC_LANDING_MODEL', 'claude-haiku-5-5'),
+        'model' => env('ANTHROPIC_MODEL', 'claude-sonnet-5-5'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Platform checkout (paying Zonseob for plans and AI tokens)
     |--------------------------------------------------------------------------
     |

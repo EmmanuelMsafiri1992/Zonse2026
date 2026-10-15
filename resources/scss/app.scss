@@ -418,3 +418,29 @@ $z-hero-lime: #A6D93B;
   li { padding: .55rem 0; border-bottom: 1px solid $z-border; break-inside: avoid; }
   @media (min-width: 768px) { columns: 3; }
 }
+
+// ---- Public-page chat ----
+.z-chat { position: fixed; right: 1rem; bottom: 1rem; z-index: 1040; }
+.z-chat-launch { display: inline-flex; align-items: center; gap: .5rem; padding: .6rem 1rem; border: 1px solid $z-navy-2; border-radius: $z-radius-pill; background: $z-navy-2; color: #fff; font-weight: 600; font-size: .9rem; box-shadow: 0 4px 14px rgba(0, 0, 0, .18);
+  &:hover, &:focus { background: lighten($z-navy-2, 6%); color: #fff; } }
+.z-chat-panel { width: min(380px, calc(100vw - 2rem)); height: min(560px, calc(100vh - 2rem)); display: flex; flex-direction: column; background: $z-surface; border: 1px solid $z-border; border-radius: 12px; box-shadow: 0 12px 32px rgba(0, 0, 0, .18); overflow: hidden; }
+.z-chat-head { display: flex; align-items: center; gap: .25rem; padding: .75rem .75rem .75rem 1rem; border-bottom: 1px solid $z-border; background: $z-body-bg;
+  > div:first-child { flex: 1; min-width: 0; } }
+.z-chat-body { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: .6rem; }
+.z-chat-msg { max-width: 88%; font-size: .9rem; line-height: 1.5;
+  > div { padding: .55rem .8rem; border-radius: 10px; }
+  p { margin: 0 0 .5rem; &:last-child { margin-bottom: 0; } }
+  ul, ol { margin: .25rem 0 .5rem; padding-left: 1.2rem; &:last-child { margin-bottom: 0; } }
+  a { color: $z-primary; text-decoration: underline; }
+  &.from-bot { align-self: flex-start; > div { background: $z-body-bg; border: 1px solid $z-border; } }
+  &.from-me { align-self: flex-end; > div { background: $z-navy-2; color: #fff; } } }
+.z-chat-suggest { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .25rem;
+  button { border: 1px solid $z-border; background: $z-surface; color: $z-text; border-radius: 8px; padding: .35rem .65rem; font-size: .8rem; text-align: left;
+    &:hover { background: $z-hover; } } }
+.z-chat-form { display: flex; gap: .5rem; padding: .75rem; border-top: 1px solid $z-border; }
+.z-chat-foot { padding: 0 .75rem .6rem; }
+@media (max-width: 575.98px) {
+  .z-chat { right: .75rem; bottom: .75rem; }
+  .z-chat-launch span { display: none; }
+  .z-chat-launch { padding: .7rem; border-radius: 50%; }
+}

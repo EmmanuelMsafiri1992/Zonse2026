@@ -17,6 +17,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InboxController;
 use App\Http\Controllers\InboxWebhookController;
 use App\Http\Controllers\InvitationController;
+use App\Http\Controllers\LandingChatController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\Portal\PortalAuthController;
@@ -61,6 +62,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/pricing', [HomeController::class, 'pricing'])->name('pricing');
+
+// The question-and-answer chat on the public pages; answers come from the help centre or Zonseob's own Claude key.
+Route::post('/chat', [LandingChatController::class, 'store'])->middleware('throttle:landing-chat')->name('chat.store');
+Route::delete('/chat', [LandingChatController::class, 'destroy'])->middleware('throttle:landing-chat')->name('chat.destroy');
 
 // Invitations can be opened by guests (they are asked to sign in / register first).
 Route::get('/invitations/{token}', [InvitationController::class, 'show'])->name('invitations.accept');

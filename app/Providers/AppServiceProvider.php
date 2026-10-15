@@ -104,6 +104,7 @@ class AppServiceProvider extends ServiceProvider
             Limit::perMinute(20)->by('portal-link:'.$request->ip()),
         ]);
         RateLimiter::for('public-form', fn (Request $request) => Limit::perMinute(10)->by('public-form:'.$request->ip()));
+        RateLimiter::for('landing-chat', fn (Request $request) => Limit::perMinute(12)->by('landing-chat:'.$request->ip()));
         DatabaseNotification::creating(function (DatabaseNotification $notification) {
             $notification->workspace_id ??= $notification->data['workspace_id'] ?? null;
         });

@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'One platform for every profession') · {{ config('app.name') }}</title>
     @include('partials.fonts')
     @include('partials.favicon')
@@ -34,5 +35,6 @@
         <span>Built for every profession.</span>
     </div>
 </footer>
+@include('partials.landing-chat')
 </body>
 </html>

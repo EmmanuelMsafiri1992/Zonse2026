@@ -39,6 +39,8 @@ Copy `.env.example` to `.env`, then set at least:
 | `CHECKOUT_MANUAL_INSTRUCTIONS` | Bank or cash details for transfers a super admin confirms by hand. Blank hides the option. |
 | `SUBSCRIPTION_GRACE_DAYS` | Days a lapsed workspace keeps working before it is paused (default 7). |
 | `SUBSCRIPTION_ENFORCE_FROM` | A date (`2026-11-01`); no workspace is paused before it. Leave blank to enforce now. |
+| `ANTHROPIC_API_KEY` | Zonseob's own Claude key, for the chat on the public pages and for Zonseob AI. Blank makes the public chat answer from the help centre. |
+| `ANTHROPIC_LANDING_MODEL` / `ANTHROPIC_MODEL` | Models for the public chat (default `claude-haiku-5-5`) and Zonseob AI (default `claude-sonnet-5-5`). |
 
 ## 3. First deploy
 
