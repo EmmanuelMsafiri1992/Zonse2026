@@ -10,7 +10,8 @@ use App\Http\Controllers\Api\V1\TicketController;
 use Illuminate\Support\Facades\Route;
 
 // Version 1. Keys are made under Settings > API & webhooks; "read" keys may only use GET.
-Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'api.workspace', 'throttle:api'])->group(function () {
+// A workspace whose plan has lapsed gets 402 on everything but "me", the same as the web app.
+Route::prefix('v1')->name('api.v1.')->middleware(['auth:sanctum', 'api.workspace', 'subscribed', 'throttle:api'])->group(function () {
     Route::middleware('abilities:read')->group(function () {
         Route::get('me', MeController::class)->name('me');
 

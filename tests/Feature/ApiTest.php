@@ -93,6 +93,25 @@ class ApiTest extends TestCase
         $this->getJson('/api/v1/contacts/'.$foreign->id, $this->bearer($key))->assertNotFound();
     }
 
+    public function test_a_lapsed_plan_closes_the_api_too(): void
+    {
+        config()->set('zonseo.checkout.grace_days', 7);
+        config()->set('zonseo.checkout.enforce_from', null);
+        [$owner, $workspace] = $this->workspaceWithModules();
+        Contact::factory()->create(['workspace_id' => $workspace->id, 'name' => 'Chipo Moyo']);
+        $key = $this->keyFor($owner, $workspace);
+
+        // Trial over, grace period spent: records are closed, "me" still answers so integrations can see why.
+        $workspace->subscription->forceFill(['trial_ends_at' => now()->subDays(10)])->save();
+        $this->getJson('/api/v1/contacts', $this->bearer($key))->assertStatus(402)->assertJsonPath('message', 'Your plan has ended. Pay for a plan to carry on.');
+        $this->postJson('/api/v1/contacts', ['name' => 'Blocked'], $this->bearer($key))->assertStatus(402);
+        $this->getJson('/api/v1/me', $this->bearer($key))->assertOk();
+
+        // Still inside the grace period: everything works.
+        $workspace->subscription->forceFill(['trial_ends_at' => now()->subDays(2)])->save();
+        $this->getJson('/api/v1/contacts', $this->bearer($key))->assertOk()->assertJsonCount(1, 'data');
+    }
+
     public function test_requests_without_a_valid_key_are_refused(): void
     {
         [$owner, $workspace] = $this->workspaceWithModules();

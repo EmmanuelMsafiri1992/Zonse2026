@@ -19,7 +19,7 @@ class EnsureSubscriptionActive
     public const OPEN_ROUTES = [
         'settings.billing.*', 'settings.data-export.*', 'checkout.*', 'ai.*', 'logout', 'profile.*', 'workspaces.*',
         'notifications.*', 'help.*', 'onboarding.*', 'invitations.*', 'sso.*', 'admin.*',
-        'password.*', 'two-factor.*', 'user-profile-information.*', 'user-password.*', 'verification.*',
+        'password.*', 'two-factor.*', 'user-profile-information.*', 'user-password.*', 'verification.*', 'api.v1.me',
     ];
 
     public function __construct(protected WorkspaceContext $context) {}

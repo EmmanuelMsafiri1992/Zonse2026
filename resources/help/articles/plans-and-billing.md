@@ -23,7 +23,7 @@ Paying while a trial or a paid period is still running does not waste anything: 
 
 ## Grace period and paused workspaces
 
-When a trial or a paid period ends without a payment, the workspace keeps working for a short grace period (seven days unless we say otherwise) and a notice at the top of every page says so. After that the apps are paused: the owner is sent to the billing page to pay, and members see a page saying the workspace is paused. Nothing is deleted; paying reopens everything at once. The free plan never pauses.
+When a trial or a paid period ends without a payment, the workspace keeps working for a short grace period (seven days unless we say otherwise) and a notice at the top of every page says so. After that the apps are paused: the owner is sent to the billing page to pay, and members see a page saying the workspace is paused. Nothing is deleted; paying reopens everything at once. API keys are paused too: every call except `/api/v1/me` answers 402 until the plan is paid. The free plan never pauses.
 
 ## Payment history
 
