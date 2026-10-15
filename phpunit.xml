@@ -32,5 +32,7 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <!-- Tests that travel past a trial must not be paused; SubscriptionCheckoutTest sets its own date. -->
+        <env name="SUBSCRIPTION_ENFORCE_FROM" value="2099-01-01"/>
     </php>
 </phpunit>

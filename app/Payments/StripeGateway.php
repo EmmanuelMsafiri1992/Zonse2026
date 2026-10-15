@@ -1,17 +1,15 @@
 <?php
 
-namespace Modules\Invoicing\Payments;
+namespace App\Payments;
 
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-use Modules\Invoicing\Models\Invoice;
-use Modules\Invoicing\Models\OnlinePayment;
 
 /**
  * Stripe Checkout for international cards, Apple Pay and Google Pay. Webhooks are verified with the
- * endpoint's signing secret; without one, payments are still confirmed when the customer comes back.
+ * endpoint's signing secret; without one, payments are still confirmed when the payer comes back.
  */
 class StripeGateway implements PaymentGateway
 {
@@ -46,21 +44,21 @@ class StripeGateway implements PaymentGateway
         ];
     }
 
-    public function start(OnlinePayment $attempt, Invoice $invoice, array $credentials): string
+    public function start(PaymentAttempt $attempt, Charge $charge, array $credentials): string
     {
         $session = $this->call($credentials, 'post', '/checkout/sessions', array_filter([
             'mode' => 'payment',
-            'success_url' => route('online-payments.return', $attempt->uuid),
-            'cancel_url' => route('online-payments.return', ['attempt' => $attempt->uuid, 'cancelled' => 1]),
-            'client_reference_id' => $attempt->uuid,
-            'customer_email' => $invoice->contact?->email,
-            'metadata' => ['online_payment' => $attempt->uuid, 'invoice' => $invoice->number],
+            'success_url' => $charge->returnUrl,
+            'cancel_url' => $charge->cancelUrl,
+            'client_reference_id' => $attempt->attemptUuid(),
+            'customer_email' => $charge->email,
+            'metadata' => ['attempt' => $attempt->attemptUuid(), 'reference' => $charge->reference],
             'line_items' => [[
                 'quantity' => 1,
                 'price_data' => [
-                    'currency' => strtolower($attempt->currency_code),
-                    'unit_amount' => self::minorUnits($attempt->amount, $attempt->currency_code),
-                    'product_data' => ['name' => 'Invoice '.$invoice->number.' · '.$invoice->workspace->name],
+                    'currency' => strtolower($attempt->attemptCurrency()),
+                    'unit_amount' => self::minorUnits($attempt->attemptAmount(), $attempt->attemptCurrency()),
+                    'product_data' => ['name' => $charge->description],
                 ],
             ]],
         ]));
@@ -68,18 +66,18 @@ class StripeGateway implements PaymentGateway
         if (empty($session['id']) || empty($session['url'])) {
             throw new GatewayException('Stripe did not return a checkout page.');
         }
-        $attempt->forceFill(['gateway_reference' => $session['id']])->save();
+        $attempt->remember(['gateway_reference' => $session['id']]);
 
         return $session['url'];
     }
 
-    public function check(OnlinePayment $attempt, array $credentials): GatewayResult
+    public function check(PaymentAttempt $attempt, array $credentials): GatewayResult
     {
-        if (! $attempt->gateway_reference) {
+        if (! $attempt->gatewayReference()) {
             throw new GatewayException('This Stripe payment has no checkout session to check.');
         }
 
-        return $this->resultFor($this->call($credentials, 'get', '/checkout/sessions/'.rawurlencode($attempt->gateway_reference)), $attempt);
+        return $this->resultFor($this->call($credentials, 'get', '/checkout/sessions/'.rawurlencode($attempt->gatewayReference())), $attempt);
     }
 
     public function notification(Request $request, array $credentials): ?array
@@ -103,11 +101,11 @@ class StripeGateway implements PaymentGateway
     /**
      * @param  array<string, mixed>  $session
      */
-    protected function resultFor(array $session, OnlinePayment $attempt): GatewayResult
+    protected function resultFor(array $session, PaymentAttempt $attempt): GatewayResult
     {
         if (($session['payment_status'] ?? null) === 'paid') {
-            $expected = self::minorUnits($attempt->amount, $attempt->currency_code);
-            if ((int) ($session['amount_total'] ?? 0) < $expected || strtoupper($session['currency'] ?? '') !== strtoupper($attempt->currency_code)) {
+            $expected = self::minorUnits($attempt->attemptAmount(), $attempt->attemptCurrency());
+            if ((int) ($session['amount_total'] ?? 0) < $expected || strtoupper($session['currency'] ?? '') !== strtoupper($attempt->attemptCurrency())) {
                 return GatewayResult::failed('Stripe\'s amount or currency does not match this payment.');
             }
 

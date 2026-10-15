@@ -56,6 +56,10 @@ class AppServiceProvider extends ServiceProvider
             if ($user->is_super_admin) {
                 return true;
             }
+            // Running the platform itself is for super admins only, never workspace admins.
+            if ($ability === 'administer-platform') {
+                return false;
+            }
             $workspace = app(WorkspaceContext::class)->get();
             if ($workspace && $user->isAdminOf($workspace)) {
                 return true;
@@ -65,6 +69,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Gate::define('manage-workspace', fn (User $user) => false);
+        Gate::define('administer-platform', fn (User $user) => false);
         Gate::define('access-workspace', function (User $user) {
             $workspace = app(WorkspaceContext::class)->get();
 
@@ -176,6 +181,7 @@ class AppServiceProvider extends ServiceProvider
                 ]))
             ->add(MenuItem::make('Apps & modules', 'settings.modules.index', 'layout-grid')->order(20)->active('settings.modules.*'))
             ->add(MenuItem::make('Plan & billing', 'settings.billing.index', 'credit-card')->order(30)->active('settings.billing.*'))
+            ->add(MenuItem::make('Platform payments', 'admin.payments.index', 'banknote')->can('administer-platform')->order(35)->active('admin.payments.*'))
             ->add(MenuItem::make('Text messages', 'sms.index', 'message-square')->can('manage-workspace')->order(40)->active(['sms.*', 'settings.sms.*']));
     }
 }

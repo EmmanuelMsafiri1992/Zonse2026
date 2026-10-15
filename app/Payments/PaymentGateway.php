@@ -1,15 +1,13 @@
 <?php
 
-namespace Modules\Invoicing\Payments;
+namespace App\Payments;
 
 use Illuminate\Http\Request;
-use Modules\Invoicing\Models\Invoice;
-use Modules\Invoicing\Models\OnlinePayment;
 
 /**
- * A way for customers to pay an invoice online. Each driver talks to its provider over plain
- * HTTP, keeps its credentials in the workspace's settings, and never trusts the browser:
- * money is only recorded once the provider itself confirms it.
+ * A way to take money online. Each driver talks to its provider over plain HTTP and never trusts
+ * the browser: money is only recorded once the provider itself confirms it. The same drivers serve
+ * customers paying a workspace's invoices and workspaces paying for their Zonseob plan.
  */
 interface PaymentGateway
 {
@@ -17,7 +15,7 @@ interface PaymentGateway
 
     public function label(): string;
 
-    /** What the customer can pay with, shown under the button. */
+    /** What the payer can pay with, shown under the button. */
     public function methods(): string;
 
     /**
@@ -28,14 +26,14 @@ interface PaymentGateway
     public function fields(): array;
 
     /**
-     * Open a session with the provider for this attempt and return the URL to send the customer to.
+     * Open a session with the provider for this attempt and return the URL to send the payer to.
      * Stores whatever the gateway needs later (session id, poll URL) on the attempt.
      *
      * @param  array<string, string>  $credentials
      *
      * @throws GatewayException when the provider refuses or cannot be reached
      */
-    public function start(OnlinePayment $attempt, Invoice $invoice, array $credentials): string;
+    public function start(PaymentAttempt $attempt, Charge $charge, array $credentials): string;
 
     /**
      * Ask the provider where the attempt stands.
@@ -44,7 +42,7 @@ interface PaymentGateway
      *
      * @throws GatewayException when the provider cannot be reached or its answer cannot be trusted
      */
-    public function check(OnlinePayment $attempt, array $credentials): GatewayResult;
+    public function check(PaymentAttempt $attempt, array $credentials): GatewayResult;
 
     /**
      * Read a server-to-server notification. Returns the attempt reference the notification is about

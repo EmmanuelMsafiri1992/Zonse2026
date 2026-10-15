@@ -38,7 +38,9 @@
                 +{{ \App\Support\Money::format(array_sum(array_column($addonQuote, 'monthly')), $p->currency) }}/month.
             </div>
         @endif
-        @if(! $selectable)
+        @if(! $selectable && ! empty($guest))
+            <a href="{{ route('register', ['plan' => $p->key]) }}" class="btn {{ $p->is_featured ? 'btn-primary' : 'btn-white' }} w-100 mt-3">{{ $p->isFree() ? 'Start free' : 'Start with '.$p->name }}</a>
+        @elseif(! $selectable)
             <form method="POST" action="{{ route('settings.billing.subscribe', $p) }}" class="mt-3">
                 @csrf
                 <input type="hidden" name="billing_cycle" value="{{ $cycleStatic ?? 'monthly' }}">

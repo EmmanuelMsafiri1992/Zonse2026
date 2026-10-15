@@ -4,6 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Models\Workspace;
+use App\Payments\GatewayException;
+use App\Payments\PaynowGateway;
+use App\Payments\StripeGateway;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request as HttpRequest;
 use Illuminate\Support\Facades\Crypt;
@@ -11,10 +14,7 @@ use Illuminate\Support\Facades\Http;
 use Modules\Contacts\Models\Contact;
 use Modules\Invoicing\Models\Invoice;
 use Modules\Invoicing\Models\OnlinePayment;
-use Modules\Invoicing\Payments\GatewayException;
 use Modules\Invoicing\Payments\PaymentGateways;
-use Modules\Invoicing\Payments\PaynowGateway;
-use Modules\Invoicing\Payments\StripeGateway;
 use Tests\Concerns\InteractsWithWorkspaces;
 use Tests\TestCase;
 

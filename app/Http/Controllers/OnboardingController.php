@@ -214,6 +214,7 @@ class OnboardingController extends Controller
         });
         $workspace->unsetRelation('subscription');
         app(ModuleBilling::class)->reconcile($workspace);
+        session()->forget('intended_plan');
 
         return redirect()->route('dashboard')->with('flash', [
             'type' => 'success',
@@ -225,6 +226,10 @@ class OnboardingController extends Controller
     {
         $plans = Plan::active()->get();
         $recommendation = $this->advisor->recommendPlan($workspace, $plans);
+        // The plan chosen on the pricing page before signing up comes first.
+        if ($intended = $plans->firstWhere('key', session('intended_plan'))) {
+            $recommendation['plan'] = $intended;
+        }
 
         return view('onboarding.plan', $data + [
             'plans' => $plans,

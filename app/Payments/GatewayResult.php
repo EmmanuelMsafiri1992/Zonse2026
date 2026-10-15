@@ -1,8 +1,8 @@
 <?php
 
-namespace Modules\Invoicing\Payments;
+namespace App\Payments;
 
-/** Where an online payment stands according to the provider. */
+/** Where a payment stands according to the provider. */
 final readonly class GatewayResult
 {
     public function __construct(

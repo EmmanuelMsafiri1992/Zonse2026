@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Controllers\Admin\PaymentsController;
 use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\Apps\AppController;
 use App\Http\Controllers\Apps\PosController;
 use App\Http\Controllers\Apps\RecordController;
 use App\Http\Controllers\Apps\RecordWorkflowController;
 use App\Http\Controllers\AssistantController;
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentCaptureController;
 use App\Http\Controllers\DocumentController;
@@ -125,6 +127,10 @@ Route::post('/webhooks/ussd/{token}', UssdCallbackController::class)->middleware
 Route::get('/webhooks/inbox/{token}', [InboxWebhookController::class, 'verify'])->middleware('throttle:60,1')->name('inbox.webhook.verify');
 Route::post('/webhooks/inbox/{token}', [InboxWebhookController::class, 'receive'])->middleware('throttle:300,1')->name('inbox.webhook');
 
+// Paying Zonseob for a plan or AI tokens: back from the gateway's page, and the gateway's own notification.
+Route::get('/checkout/{checkout}/return', [CheckoutController::class, 'complete'])->whereUuid('checkout')->middleware('throttle:60,1')->name('checkout.return');
+Route::post('/webhooks/checkout/{gateway}', [CheckoutController::class, 'webhook'])->middleware('throttle:120,1')->name('checkout.webhook');
+
 // Sign in with Google or Microsoft (guests), or link one to the signed-in user's profile.
 Route::prefix('auth/{provider}')->name('sso.')->whereIn('provider', ['google', 'microsoft'])->middleware('throttle:20,1')->group(function () {
     Route::get('/redirect', [SocialLoginController::class, 'redirect'])->name('redirect');
@@ -140,6 +146,14 @@ Route::middleware(['auth', 'workspace'])->group(function () {
     // Workspaces
     Route::post('/workspaces', [WorkspaceController::class, 'store'])->name('workspaces.store');
     Route::post('/workspaces/{workspace}/switch', [WorkspaceController::class, 'switch'])->name('workspaces.switch');
+
+    // Running Zonseob itself: payments from every workspace, bank-transfer confirmations, exchange rates.
+    Route::prefix('admin')->middleware('super-admin')->name('admin.')->group(function () {
+        Route::get('/payments', [PaymentsController::class, 'index'])->name('payments.index');
+        Route::post('/payments/{checkout}/confirm', [PaymentsController::class, 'confirm'])->name('payments.confirm');
+        Route::post('/payments/{checkout}/reject', [PaymentsController::class, 'reject'])->name('payments.reject');
+        Route::put('/payments/settings', [PaymentsController::class, 'updateSettings'])->name('payments.settings');
+    });
 
     Route::middleware('onboarded')->group(function () {
         Route::get('/dashboard', DashboardController::class)->name('dashboard');
@@ -264,6 +278,7 @@ Route::middleware(['auth', 'workspace'])->group(function () {
             Route::get('/billing', [BillingController::class, 'index'])->name('billing.index');
             Route::post('/billing/subscribe/{plan:key}', [BillingController::class, 'subscribe'])->name('billing.subscribe');
             Route::post('/billing/cancel', [BillingController::class, 'cancel'])->name('billing.cancel');
+            Route::post('/billing/checkout', [CheckoutController::class, 'store'])->middleware('throttle:20,1')->name('billing.checkout');
 
             Route::get('/audit', [AuditLogController::class, 'index'])->name('audit.index');
             Route::get('/audit/export', [AuditLogController::class, 'export'])->name('audit.export');

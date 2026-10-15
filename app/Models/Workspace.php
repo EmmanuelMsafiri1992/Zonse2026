@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Payments\SubscriptionAccess;
 use Database\Factories\WorkspaceFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -187,6 +188,12 @@ class Workspace extends Model
     public function plan(): ?Plan
     {
         return $this->subscription?->plan;
+    }
+
+    /** Whether the apps may be used right now: active, on trial, in the grace period or paused. */
+    public function access(): SubscriptionAccess
+    {
+        return SubscriptionAccess::for($this);
     }
 
     public function onTrial(): bool

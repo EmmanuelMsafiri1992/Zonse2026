@@ -3,6 +3,12 @@
 namespace Modules\Invoicing\Payments;
 
 use App\Models\Workspace;
+use App\Payments\Charge;
+use App\Payments\GatewayException;
+use App\Payments\GatewayResult;
+use App\Payments\PaymentGateway;
+use App\Payments\PaynowGateway;
+use App\Payments\StripeGateway;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Log;
@@ -125,6 +131,21 @@ class PaymentGateways
             'amount' => $invoice->balance,
             'currency_code' => $invoice->currency_code,
         ]);
+    }
+
+    /** What the gateway shows the customer and where it sends them and its notifications. */
+    public function charge(Invoice $invoice, OnlinePayment $attempt): Charge
+    {
+        $invoice->loadMissing(['workspace', 'contact']);
+
+        return new Charge(
+            reference: $invoice->number.'-'.$attempt->id,
+            description: 'Invoice '.$invoice->number.' · '.$invoice->workspace->name,
+            returnUrl: route('online-payments.return', $attempt->uuid),
+            cancelUrl: route('online-payments.return', ['attempt' => $attempt->uuid, 'cancelled' => 1]),
+            webhookUrl: route('online-payments.webhook', ['gateway' => $attempt->gateway, 'workspace' => $invoice->workspace->slug, 'attempt' => $attempt->uuid]),
+            email: $invoice->contact?->email,
+        );
     }
 
     /**

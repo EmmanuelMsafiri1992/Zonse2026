@@ -2,6 +2,7 @@
 
 namespace App\Actions\Fortify;
 
+use App\Models\Plan;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -33,6 +34,14 @@ class CreateNewUser implements CreatesNewUsers
             ],
             'password' => $this->passwordRules(),
         ])->validate();
+
+        // A plan picked on the pricing page is recommended again at the plan step of the setup wizard.
+        $plan = (string) ($input['plan'] ?? '');
+        if ($plan !== '' && Plan::active()->where('key', $plan)->exists()) {
+            session(['intended_plan' => $plan]);
+        } else {
+            session()->forget('intended_plan');
+        }
 
         return User::create([
             'name' => $input['name'],

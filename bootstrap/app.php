@@ -5,6 +5,8 @@ use App\Http\Middleware\CapturePartnerReferral;
 use App\Http\Middleware\EnsureBlueprintEnabled;
 use App\Http\Middleware\EnsureModuleEnabled;
 use App\Http\Middleware\EnsureOnboarded;
+use App\Http\Middleware\EnsureSubscriptionActive;
+use App\Http\Middleware\EnsureSuperAdmin;
 use App\Http\Middleware\HandleInstantNavigation;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetApiWorkspace;
@@ -43,9 +45,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'api.workspace' => SetApiWorkspace::class,
             'abilities' => CheckAbilities::class,
             'portal' => AuthenticatePortal::class,
+            'subscribed' => EnsureSubscriptionActive::class,
+            'super-admin' => EnsureSuperAdmin::class,
         ]);
 
-        $middleware->web(append: [SecurityHeaders::class, CapturePartnerReferral::class, HandleInstantNavigation::class]);
+        // Every signed-in page checks the workspace's plan; billing, profile and help stay open when it has lapsed.
+        $middleware->web(append: [SecurityHeaders::class, CapturePartnerReferral::class, HandleInstantNavigation::class, EnsureSubscriptionActive::class]);
 
         // Payment gateways post their notifications without a session; each one is verified in the controller.
         $middleware->validateCsrfTokens(except: ['webhooks/*', 'f/*']);
@@ -63,6 +68,7 @@ return Application::configure(basePath: dirname(__DIR__))
             AuthenticatePortal::class,
             SubstituteBindings::class,
             Authorize::class,
+            EnsureSubscriptionActive::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -2,6 +2,7 @@
 
 namespace Modules\Invoicing\Models;
 
+use App\Payments\PaymentAttempt;
 use App\Support\Money;
 use App\Tenancy\BelongsToWorkspace;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,7 +16,7 @@ use Modules\Invoicing\Database\Factories\OnlinePaymentFactory;
  * A customer's attempt to pay an invoice online. It stays pending until the gateway confirms
  * it, then records exactly one Payment against the invoice, however many times it is confirmed.
  */
-class OnlinePayment extends Model
+class OnlinePayment extends Model implements PaymentAttempt
 {
     /** @use HasFactory<OnlinePaymentFactory> */
     use BelongsToWorkspace, HasFactory;
@@ -65,6 +66,36 @@ class OnlinePayment extends Model
     public function money(): string
     {
         return Money::format($this->amount, $this->currency_code);
+    }
+
+    public function attemptUuid(): string
+    {
+        return $this->uuid;
+    }
+
+    public function attemptAmount(): float
+    {
+        return (float) $this->amount;
+    }
+
+    public function attemptCurrency(): string
+    {
+        return $this->currency_code;
+    }
+
+    public function pollUrl(): ?string
+    {
+        return $this->poll_url;
+    }
+
+    public function gatewayReference(): ?string
+    {
+        return $this->gateway_reference;
+    }
+
+    public function remember(array $attributes): void
+    {
+        $this->forceFill($attributes)->save();
     }
 
     /**

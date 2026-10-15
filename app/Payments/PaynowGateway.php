@@ -1,13 +1,11 @@
 <?php
 
-namespace Modules\Invoicing\Payments;
+namespace App\Payments;
 
 use App\Support\Money;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-use Modules\Invoicing\Models\Invoice;
-use Modules\Invoicing\Models\OnlinePayment;
 
 /**
  * Paynow (Zimbabwe): EcoCash, OneMoney, InnBucks, ZimSwitch, Visa and Mastercard through one hosted page.
@@ -46,18 +44,18 @@ class PaynowGateway implements PaymentGateway
         ];
     }
 
-    public function start(OnlinePayment $attempt, Invoice $invoice, array $credentials): string
+    public function start(PaymentAttempt $attempt, Charge $charge, array $credentials): string
     {
         $fields = [
             'id' => $credentials['integration_id'],
-            'reference' => $invoice->number.'-'.$attempt->id,
-            'amount' => number_format($attempt->amount, 2, '.', ''),
-            'additionalinfo' => 'Invoice '.$invoice->number,
-            'returnurl' => route('online-payments.return', $attempt->uuid),
-            'resulturl' => route('online-payments.webhook', ['gateway' => 'paynow', 'workspace' => $invoice->workspace->slug, 'attempt' => $attempt->uuid]),
+            'reference' => $charge->reference,
+            'amount' => number_format($attempt->attemptAmount(), 2, '.', ''),
+            'additionalinfo' => $charge->description,
+            'returnurl' => $charge->returnUrl,
+            'resulturl' => $charge->webhookUrl,
         ];
-        if ($invoice->contact?->email) {
-            $fields['authemail'] = $invoice->contact->email;
+        if ($charge->email) {
+            $fields['authemail'] = $charge->email;
         }
         $fields['status'] = 'Message';
         $fields['hash'] = self::hash($fields, $credentials['integration_key']);
@@ -67,22 +65,23 @@ class PaynowGateway implements PaymentGateway
             throw new GatewayException('Paynow did not accept the payment: '.($data['error'] ?? 'no reason given').'.');
         }
 
-        $attempt->forceFill(['poll_url' => $data['pollurl']])->save();
+        $attempt->remember(['poll_url' => $data['pollurl']]);
 
         return $data['browserurl'];
     }
 
-    public function check(OnlinePayment $attempt, array $credentials): GatewayResult
+    public function check(PaymentAttempt $attempt, array $credentials): GatewayResult
     {
-        if (! $attempt->poll_url || ! self::isPaynowUrl($attempt->poll_url)) {
+        $pollUrl = $attempt->pollUrl();
+        if (! $pollUrl || ! self::isPaynowUrl($pollUrl)) {
             throw new GatewayException('This Paynow payment has no poll URL to check.');
         }
 
-        $data = $this->send($attempt->poll_url, [], $credentials['integration_key']);
+        $data = $this->send($pollUrl, [], $credentials['integration_key']);
         $status = strtolower(trim($data['status'] ?? ''));
 
         if (in_array($status, self::PAID_STATUSES, true)) {
-            if (Money::round((float) ($data['amount'] ?? 0)) < Money::round($attempt->amount)) {
+            if (Money::round((float) ($data['amount'] ?? 0)) < Money::round($attempt->attemptAmount())) {
                 return GatewayResult::failed('Paynow reported '.($data['amount'] ?? '0').' paid, less than the '.$attempt->money().' due.');
             }
 

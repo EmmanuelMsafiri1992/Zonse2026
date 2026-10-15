@@ -3,6 +3,7 @@
 namespace Modules\Invoicing\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Payments\PaymentGateway;
 use App\Support\Audit;
 use App\Support\Sequence;
 use App\Tenancy\WorkspaceContext;
@@ -15,7 +16,6 @@ use Modules\Invoicing\Http\Requests\TaxRateRequest;
 use Modules\Invoicing\Models\Invoice;
 use Modules\Invoicing\Models\InvoiceLine;
 use Modules\Invoicing\Models\TaxRate;
-use Modules\Invoicing\Payments\PaymentGateway;
 use Modules\Invoicing\Payments\PaymentGateways;
 
 /**

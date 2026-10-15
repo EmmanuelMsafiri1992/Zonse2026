@@ -20,6 +20,7 @@
 
         <main class="z-content">
             @include('partials.flash')
+            @include('partials.subscription-notice')
             @yield('content')
         </main>
 

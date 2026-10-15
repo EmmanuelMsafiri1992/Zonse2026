@@ -3,23 +3,33 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
+use App\Models\Checkout;
 use App\Models\Module;
 use App\Models\Plan;
+use App\Payments\PlatformCheckout;
+use App\Payments\SubscriptionAccess;
+use App\Payments\SubscriptionPayments;
 use App\Support\Audit;
 use App\Support\ModuleBilling;
 use App\Support\Money;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 
 /**
- * Plan selection and subscription state. Payment collection is deliberately
- * behind a "gateway" abstraction: today it is 'manual' (an admin confirms
- * payment); Paynow / Stripe / Paystack adapters plug in here later.
+ * Plan selection and subscription state. Switching plans here starts a trial or a manual
+ * subscription; paying for it goes through CheckoutController (Paynow, Stripe or a bank transfer
+ * an admin confirms), which activates the paid period.
  */
 class BillingController extends Controller
 {
-    public function __construct(protected WorkspaceContext $context, protected ModuleBilling $billing) {}
+    public function __construct(
+        protected WorkspaceContext $context,
+        protected ModuleBilling $billing,
+        protected PlatformCheckout $checkout,
+        protected SubscriptionPayments $payments,
+    ) {}
 
     public function index()
     {
@@ -35,7 +45,46 @@ class BillingController extends Controller
             // Apps each plan would start charging as add-ons, so the switch button can say so up front.
             'switchQuotes' => $plans->mapWithKeys(fn (Plan $p) => [$p->id => $this->billing->quoteSwitch($workspace, $p)]),
             'history' => $workspace->subscriptions()->with('plan')->latest()->limit(10)->get(),
+            'quotes' => $this->quotes($workspace, $plans),
+            'gateways' => $this->checkout->available(),
+            'manualInstructions' => $this->checkout->manualInstructions(),
+            'paynowCurrency' => $this->checkout->currencyFor('paynow'),
+            'payments' => Checkout::query()->where('workspace_id', $workspace->id)->latest()->limit(10)->get(),
+            'access' => SubscriptionAccess::for($workspace),
         ]);
+    }
+
+    /**
+     * What each paid plan costs this workspace per cycle, in USD and in every local currency with a rate.
+     *
+     * @param  Collection<int, Plan>  $plans
+     * @return array<string, array<string, array{plan_label: string, plan: string, addons: string, addons_raw: float, usd: string, local: array<string, string>}>>
+     */
+    protected function quotes($workspace, $plans): array
+    {
+        $quotes = [];
+        foreach ($plans as $plan) {
+            if ($plan->isFree()) {
+                continue;
+            }
+            foreach (['monthly', 'yearly'] as $cycle) {
+                $quote = $this->payments->quote($workspace, $plan, $cycle);
+                $local = [];
+                foreach ($this->checkout->localAmounts($quote['total']) as $currency => $amount) {
+                    $local[$currency] = Money::format($amount, $currency);
+                }
+                $quotes[$plan->key][$cycle] = [
+                    'plan_label' => $plan->name.' plan',
+                    'plan' => Money::format($quote['plan'], PlatformCheckout::BASE_CURRENCY),
+                    'addons' => Money::format($quote['addons'], PlatformCheckout::BASE_CURRENCY),
+                    'addons_raw' => (float) $quote['addons'],
+                    'usd' => Money::format($quote['total'], PlatformCheckout::BASE_CURRENCY),
+                    'local' => $local,
+                ];
+            }
+        }
+
+        return $quotes;
     }
 
     public function subscribe(Request $request, Plan $plan)

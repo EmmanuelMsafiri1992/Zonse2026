@@ -8,6 +8,7 @@
 
     <form method="POST" action="{{ route('register') }}">
         @csrf
+        @if(request('plan'))<input type="hidden" name="plan" value="{{ request('plan') }}">@endif
         <x-form.input name="name" label="Your full name" required autofocus autocomplete="name" />
         <x-form.input name="email" label="Email address" type="email" :value="session('invitation.email')" required autocomplete="username" />
         <x-form.input name="password" label="Password" type="password" required autocomplete="new-password" help="At least 8 characters." />

@@ -4,6 +4,7 @@ namespace Modules\Invoicing\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Workspace;
+use App\Payments\GatewayException;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -11,7 +12,6 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use Modules\Invoicing\Models\Invoice;
 use Modules\Invoicing\Models\OnlinePayment;
-use Modules\Invoicing\Payments\GatewayException;
 use Modules\Invoicing\Payments\PaymentGateways;
 
 /**
@@ -38,7 +38,7 @@ class OnlinePaymentController extends Controller
 
         $attempt = $this->gateways->begin($invoice, $driver);
         try {
-            $url = $driver->start($attempt, $invoice, $this->gateways->credentials($invoice->workspace, $driver));
+            $url = $driver->start($attempt, $this->gateways->charge($invoice, $attempt), $this->gateways->credentials($invoice->workspace, $driver));
         } catch (GatewayException $e) {
             $attempt->markFailed('failed', $e->getMessage());
             Log::warning('Online payment could not start', ['attempt' => $attempt->uuid, 'gateway' => $gateway, 'error' => $e->getMessage()]);

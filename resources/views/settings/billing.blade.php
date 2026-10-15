@@ -77,10 +77,7 @@
         </div>
     @endif
 
-    <div class="alert alert-light border d-flex gap-2 align-items-start">
-        <x-icon name="info" class="zi mt-1 text-primary" />
-        <div class="fs-7">Online card and mobile-money payments (Paynow, EcoCash, Stripe, Paystack) are being connected. Until then our team confirms payments manually and activates your plan within a working day.</div>
-    </div>
+    @include('settings.billing-pay')
 
     <div x-data="{ cycle: {{ Js::from($subscription?->billing_cycle ?? 'monthly') }} }">
         <div class="d-flex justify-content-between align-items-center mb-3">
