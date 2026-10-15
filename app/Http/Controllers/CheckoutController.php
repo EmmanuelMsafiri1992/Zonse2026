@@ -80,8 +80,8 @@ class CheckoutController extends Controller
         }
 
         $flash = match ($status) {
-            'paid' => ['type' => 'success', 'message' => 'Thank you. Your payment of '.$checkout->money().' has been received and your '.$checkout->description().' is active.'],
-            'pending' => ['type' => 'info', 'message' => 'Your payment is being confirmed by '.ucfirst($checkout->gateway).'. Your plan is extended the moment it is.'],
+            'paid' => ['type' => 'success', 'message' => 'Thank you. Your payment of '.$checkout->money().' has been received and '.($checkout->purpose === 'tokens' ? $checkout->description().' have been added to your balance.' : 'your '.$checkout->description().' is active.')],
+            'pending' => ['type' => 'info', 'message' => 'Your payment is being confirmed by '.ucfirst($checkout->gateway).'. '.($checkout->purpose === 'tokens' ? 'Your tokens are added' : 'Your plan is extended').' the moment it is.'],
             'cancelled' => ['type' => 'info', 'message' => 'Payment cancelled. Nothing was charged.'],
             default => ['type' => 'danger', 'message' => 'The payment did not go through. '.($checkout->failure_reason ?? '').' You can try again.'],
         };

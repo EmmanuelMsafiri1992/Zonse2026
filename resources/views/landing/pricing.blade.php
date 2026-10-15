@@ -17,4 +17,6 @@
             </div>
         </div>
     </section>
+
+    @include('landing.ai')
 @endsection

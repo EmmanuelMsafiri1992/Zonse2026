@@ -96,6 +96,27 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Zonseob AI (Claude access paid for with tokens)
+    |--------------------------------------------------------------------------
+    |
+    | Every person gets welcome_tokens to try it. Packs are "key=tokens=usd"
+    | pairs and are paid for through the platform checkout, so people without
+    | foreign currency can buy them with EcoCash or a local transfer. An answer
+    | costs its input tokens plus output_weight times its output tokens, which
+    | keeps the price of a pack in step with what Anthropic charges. Nobody can
+    | ask with fewer than min_balance tokens left.
+    |
+    */
+
+    'ai' => [
+        'welcome_tokens' => (int) env('ZONSEOB_AI_WELCOME_TOKENS', 20000),
+        'packs' => env('ZONSEOB_AI_PACKS', 'starter=250000=5,standard=1000000=15,large=5000000=60'),
+        'output_weight' => 4,
+        'min_balance' => 1000,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Platform checkout (paying Zonseob for plans and AI tokens)
     |--------------------------------------------------------------------------
     |

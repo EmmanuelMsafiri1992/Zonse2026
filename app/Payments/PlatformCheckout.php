@@ -27,7 +27,7 @@ class PlatformCheckout
     /** @var array<string, PaymentGateway> */
     protected array $gateways = [];
 
-    public function __construct(protected SubscriptionPayments $subscriptions)
+    public function __construct(protected SubscriptionPayments $subscriptions, protected TokenPayments $tokens)
     {
         foreach ([new PaynowGateway, new StripeGateway] as $gateway) {
             $this->gateways[$gateway->key()] = $gateway;
@@ -300,6 +300,7 @@ class PlatformCheckout
 
         match ($checkout->purpose) {
             'subscription' => $this->subscriptions->apply($checkout),
+            'tokens' => $this->tokens->apply($checkout),
             default => null,
         };
 

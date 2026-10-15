@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\PaymentsController;
+use App\Http\Controllers\AiController;
 use App\Http\Controllers\ApprovalController;
 use App\Http\Controllers\Apps\AppController;
 use App\Http\Controllers\Apps\PosController;
@@ -206,6 +207,13 @@ Route::middleware(['auth', 'workspace'])->group(function () {
         Route::get('/assistant/{conversation}/status', [AssistantController::class, 'status'])->name('assistant.status');
         Route::post('/assistant/{conversation}/retry', [AssistantController::class, 'retry'])->middleware('throttle:10,1')->name('assistant.retry');
         Route::delete('/assistant/{conversation}', [AssistantController::class, 'destroy'])->name('assistant.destroy');
+
+        Route::get('/ai', [AiController::class, 'index'])->name('ai.index');
+        Route::post('/ai', [AiController::class, 'store'])->middleware('throttle:20,1')->name('ai.store');
+        Route::post('/ai/tokens', [AiController::class, 'buy'])->middleware('throttle:10,1')->name('ai.tokens');
+        Route::get('/ai/{chat}', [AiController::class, 'show'])->whereUuid('chat')->name('ai.show');
+        Route::post('/ai/{chat}/messages', [AiController::class, 'ask'])->whereUuid('chat')->middleware('throttle:20,1')->name('ai.ask');
+        Route::delete('/ai/{chat}', [AiController::class, 'destroy'])->whereUuid('chat')->name('ai.destroy');
 
         Route::get('/help', [HelpController::class, 'index'])->name('help.index');
         Route::get('/help/whats-new', [HelpController::class, 'releases'])->name('help.releases');

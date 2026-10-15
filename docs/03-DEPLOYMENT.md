@@ -41,6 +41,8 @@ Copy `.env.example` to `.env`, then set at least:
 | `SUBSCRIPTION_ENFORCE_FROM` | A date (`2026-11-01`); no workspace is paused before it. Leave blank to enforce now. |
 | `ANTHROPIC_API_KEY` | Zonseob's own Claude key, for the chat on the public pages and for Zonseob AI. Blank makes the public chat answer from the help centre. |
 | `ANTHROPIC_LANDING_MODEL` / `ANTHROPIC_MODEL` | Models for the public chat (default `claude-haiku-5-5`) and Zonseob AI (default `claude-sonnet-5-5`). |
+| `ZONSEOB_AI_WELCOME_TOKENS` | Free Zonseob AI tokens every new person starts with (default 20000). |
+| `ZONSEOB_AI_PACKS` | Token packs for sale as `key=tokens=usd` pairs (default `starter=250000=5,standard=1000000=15,large=5000000=60`). An answer costs its input tokens plus four times its output tokens. |
 
 ## 3. First deploy
 
