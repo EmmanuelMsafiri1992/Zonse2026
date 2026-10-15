@@ -29,6 +29,9 @@ class BackupCommand extends Command
         $directory = rtrim((string) config('zonseo.backup.path'), '/\\');
         File::ensureDirectoryExists($directory);
         $name = 'zonseo-'.now()->format('Ymd-His');
+        if (is_file($directory.DIRECTORY_SEPARATOR.$name.'.tar.gz')) {
+            $name .= '-'.Str::lower(Str::random(4));
+        }
         $work = $directory.DIRECTORY_SEPARATOR.$name;
         File::ensureDirectoryExists($work);
 
@@ -40,7 +43,7 @@ class BackupCommand extends Command
             $tarPath = $directory.DIRECTORY_SEPARATOR.$name.'.tar';
             $archive = new PharData($tarPath);
             $archive->addFile($dump, basename($dump));
-            $uploads = storage_path('app/public');
+            $uploads = rtrim((string) config('zonseo.backup.uploads'), '/\\');
             if (! $this->option('no-uploads') && config('zonseo.backup.include_uploads') && is_dir($uploads)) {
                 $count = 0;
                 foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($uploads, FilesystemIterator::SKIP_DOTS)) as $file) {

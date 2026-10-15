@@ -10,7 +10,7 @@ This guide takes a fresh Ubuntu 24.04 server to a live Zonseo site. Paths assume
 ## 1. Server requirements
 
 - PHP 8.4 with `bcmath, ctype, curl, fileinfo, gd, intl, mbstring, openssl, pdo_mysql, phar, tokenizer, xml, zip`
-- MySQL 8 / MariaDB 10.6+ (or PostgreSQL 15+) and the matching `mysqldump` / `pg_dump` client for backups
+- MySQL 8 / MariaDB 10.6+ (or PostgreSQL 15+) and the matching `mysqldump` / `pg_dump` and `mysql` / `psql` clients for backups and restores
 - Nginx, Composer 2, Node 20+ (only to build assets), Supervisor, cron
 - A TLS certificate (Let's Encrypt via `certbot --nginx`)
 
@@ -32,6 +32,13 @@ Copy `.env.example` to `.env`, then set at least:
 | `ALERT_EMAIL` | Where health alerts go |
 | `TRUSTED_PROXIES` | Proxy IPs, or `*`, if behind Cloudflare / a load balancer |
 | `BACKUP_PATH` | Optional; defaults to `storage/app/backups` |
+| `PAYNOW_INTEGRATION_ID` / `PAYNOW_INTEGRATION_KEY` | Zonseob's own Paynow account, for workspaces paying their plan with EcoCash, OneMoney or local cards. Leave blank to hide Paynow. |
+| `PAYNOW_CURRENCY` | Currency Paynow charges in (`USD` or `ZWG`). |
+| `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` | Zonseob's own Stripe account for international cards. Point the Stripe webhook at `/webhooks/checkout/stripe` (event `checkout.session.completed`). |
+| `CHECKOUT_RATES` | Units per US$1 for each local currency shown on the billing page, e.g. `ZWG=26.5,ZAR=18`. Can be overridden on the Platform payments page. |
+| `CHECKOUT_MANUAL_INSTRUCTIONS` | Bank or cash details for transfers a super admin confirms by hand. Blank hides the option. |
+| `SUBSCRIPTION_GRACE_DAYS` | Days a lapsed workspace keeps working before it is paused (default 7). |
+| `SUBSCRIPTION_ENFORCE_FROM` | A date (`2026-11-01`); no workspace is paused before it. Leave blank to enforce now. |
 
 ## 3. First deploy
 
@@ -182,12 +189,17 @@ Also store `.env` (above all `APP_KEY`) in a password manager.
 **Restore:**
 
 ```bash
-tar -xzf zonseo-20261008-013000.tar.gz -C /tmp/restore
-mysql -u zonseo -p zonseo < /tmp/restore/database.sql
-cp -r /tmp/restore/uploads/. /var/www/zonseo/storage/app/public/
+php artisan down
+php artisan zonseo:restore                      # newest backup in BACKUP_PATH
+php artisan zonseo:restore /path/to/zonseo-20261008-013000.tar.gz
+php artisan migrate --force                     # only if the backup is from an older version
+php artisan up
 ```
 
-Test a restore on a spare database at least once.
+It asks before changing anything, first backs up what is there now (so a restore can itself be undone), loads
+the dump with the `mysql` / `psql` client (`BACKUP_MYSQL`, `BACKUP_PSQL` to point elsewhere) and copies the uploads
+back without deleting files added since. `--connection=` restores into another connection, which is how to test
+a restore on a spare database; do that at least once.
 
 ## 10. Deploying updates
 

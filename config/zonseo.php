@@ -32,6 +32,9 @@ return [
         'include_uploads' => (bool) env('BACKUP_INCLUDE_UPLOADS', true),
         'mysqldump' => env('BACKUP_MYSQLDUMP', 'mysqldump'),
         'pg_dump' => env('BACKUP_PG_DUMP', 'pg_dump'),
+        'mysql' => env('BACKUP_MYSQL', 'mysql'),
+        'psql' => env('BACKUP_PSQL', 'psql'),
+        'uploads' => storage_path('app/public'),
     ],
 
     /*
@@ -71,6 +74,37 @@ return [
     'partners' => [
         'commission_percent' => (float) env('PARTNER_COMMISSION_PERCENT', 20),
         'cname_target' => env('CUSTOM_DOMAIN_TARGET'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Platform checkout (paying Zonseob for plans and AI tokens)
+    |--------------------------------------------------------------------------
+    |
+    | Prices are in USD. Paynow (EcoCash, OneMoney, local cards) charges in
+    | PAYNOW_CURRENCY at the rates below; Stripe charges cards in USD. Rates
+    | are "how many units per US$1" (CHECKOUT_RATES="ZWG=26.5,ZAR=18") and can
+    | be overridden from the Platform payments page. Write
+    | CHECKOUT_MANUAL_INSTRUCTIONS to offer bank transfers an admin confirms
+    | by hand. A lapsed plan gets grace_days before the workspace is paused;
+    | SUBSCRIPTION_ENFORCE_FROM (a date) postpones every pause until then.
+    |
+    */
+
+    'checkout' => [
+        'paynow' => [
+            'integration_id' => env('PAYNOW_INTEGRATION_ID'),
+            'integration_key' => env('PAYNOW_INTEGRATION_KEY'),
+            'currency' => env('PAYNOW_CURRENCY', 'USD'),
+        ],
+        'stripe' => [
+            'secret_key' => env('STRIPE_SECRET_KEY'),
+            'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+        ],
+        'rates' => env('CHECKOUT_RATES', ''),
+        'manual_instructions' => env('CHECKOUT_MANUAL_INSTRUCTIONS'),
+        'grace_days' => (int) env('SUBSCRIPTION_GRACE_DAYS', 7),
+        'enforce_from' => env('SUBSCRIPTION_ENFORCE_FROM'),
     ],
 
 ];

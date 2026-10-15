@@ -7,8 +7,10 @@ use App\Models\User;
 use App\Support\Health;
 use Database\Seeders\DemoSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Process;
 use RuntimeException;
 use Tests\TestCase;
 
@@ -111,6 +113,73 @@ class ProductionHardeningTest extends TestCase
 
         $archive = new \PharData($latest);
         $this->assertTrue(isset($archive['database.sqlite']));
+    }
+
+    public function test_a_backup_restores_the_database_and_uploads_after_taking_a_safety_copy(): void
+    {
+        $database = $this->scratch.'/app.sqlite';
+        $pdo = new \PDO('sqlite:'.$database);
+        $pdo->exec("CREATE TABLE notes (body TEXT); INSERT INTO notes VALUES ('as backed up')");
+        $pdo = null;
+        config(['database.connections.backup_test' => ['driver' => 'sqlite', 'database' => $database, 'prefix' => ''],
+            'zonseo.backup.uploads' => $this->scratch.'/uploads']);
+        File::ensureDirectoryExists($this->scratch.'/uploads/logos');
+        File::put($this->scratch.'/uploads/logos/shop.png', 'logo');
+
+        $this->artisan('zonseo:backup', ['--connection' => 'backup_test'])->assertSuccessful();
+        $backup = Health::latestBackup();
+
+        DB::connection('backup_test')->table('notes')->update(['body' => 'changed later']);
+        File::delete($this->scratch.'/uploads/logos/shop.png');
+        File::put($this->scratch.'/uploads/added-later.pdf', 'pdf');
+
+        $this->artisan('zonseo:restore', ['archive' => $backup, '--connection' => 'backup_test'])
+            ->expectsConfirmation('Restore it?', 'yes')
+            ->expectsOutputToContain('Backed up the current data first')
+            ->expectsOutputToContain('Uploads: 1 files')
+            ->assertSuccessful();
+
+        $this->assertSame(['as backed up'], DB::connection('backup_test')->table('notes')->pluck('body')->all());
+        $this->assertSame('logo', File::get($this->scratch.'/uploads/logos/shop.png'));
+        $this->assertFileExists($this->scratch.'/uploads/added-later.pdf');
+        $this->assertCount(2, File::glob($this->scratch.'/backups/zonseo-*.tar.gz'));
+        $this->assertSame([], File::glob(storage_path('app/restore-*')));
+
+        // The safety copy holds what was there before the restore, so the restore can be undone.
+        $this->artisan('zonseo:restore', ['--connection' => 'backup_test', '--no-safety-backup' => true, '--force' => true])->assertSuccessful();
+        $this->assertSame(['changed later'], DB::connection('backup_test')->table('notes')->pluck('body')->all());
+    }
+
+    public function test_a_mysql_restore_feeds_the_dump_to_the_mysql_client(): void
+    {
+        config(['database.connections.restore_mysql' => ['driver' => 'mysql', 'host' => 'db.internal', 'port' => 3306, 'database' => 'zonseo', 'username' => 'zonseo', 'password' => 'secret']]);
+        $tar = $this->scratch.'/backups/zonseo-20260101-000000.tar';
+        $archive = new \PharData($tar);
+        $archive->addFromString('database.sql', 'CREATE TABLE restored (id INT);');
+        $archive->compress(\Phar::GZ);
+        unset($archive);
+        Process::fake();
+
+        $this->artisan('zonseo:restore', ['archive' => $tar.'.gz', '--connection' => 'restore_mysql', '--no-safety-backup' => true, '--force' => true])->assertSuccessful();
+
+        Process::assertRan(fn ($process) => $process->command[0] === 'mysql' && in_array('--host=db.internal', $process->command, true)
+            && $process->environment['MYSQL_PWD'] === 'secret' && ! in_array('secret', $process->command, true));
+    }
+
+    public function test_a_restore_changes_nothing_without_a_yes_or_a_backup(): void
+    {
+        $this->artisan('zonseo:restore', ['--force' => true])->expectsOutputToContain('No backups found')->assertFailed();
+
+        $database = $this->scratch.'/app.sqlite';
+        File::put($database, '');
+        config(['database.connections.backup_test' => ['driver' => 'sqlite', 'database' => $database, 'prefix' => '']]);
+        $this->artisan('zonseo:backup', ['--connection' => 'backup_test', '--no-uploads' => true])->assertSuccessful();
+
+        $this->artisan('zonseo:restore', ['--connection' => 'backup_test'])
+            ->expectsConfirmation('Restore it?', 'no')
+            ->expectsOutput('Nothing was changed.')
+            ->assertFailed();
+        $this->assertCount(1, File::glob($this->scratch.'/backups/zonseo-*.tar.gz'));
     }
 
     public function test_backup_fails_cleanly_for_a_missing_database(): void
