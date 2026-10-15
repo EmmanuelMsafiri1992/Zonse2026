@@ -7,6 +7,9 @@
         <p class="text-muted">{{ $invitation->inviter?->name ?? 'A colleague' }} invited you to join as <strong>{{ $invitation->role }}</strong>.</p>
     </div>
 
+    @if($errors->any())
+        <div class="alert alert-danger">{{ $errors->first() }}</div>
+    @endif
     @if(! $valid)
         <div class="alert alert-warning">This invitation has expired or was already used. Ask the workspace admin to send a new one.</div>
     @elseif(auth()->check())

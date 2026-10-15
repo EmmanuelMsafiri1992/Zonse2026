@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Notifications\WorkspaceInvitationNotification;
 use App\Support\Audit;
 use App\Support\Lists;
+use App\Support\PlanLimits;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -27,6 +28,7 @@ class MemberController extends Controller
             'invitations' => $workspace->invitations()->whereNull('accepted_at')->latest()->get(),
             'roles' => Lists::ROLES,
             'branches' => $workspace->branches()->orderBy('name')->get(),
+            'limits' => PlanLimits::for($workspace),
         ]);
     }
 
@@ -46,6 +48,8 @@ class MemberController extends Controller
         $invitation = $workspace->invitations()->whereNull('accepted_at')->where('email', $data['email'])->first();
         if ($invitation) {
             $invitation->forceFill(['role' => $data['role'], 'expires_at' => now()->addDays(7)])->save();
+        } elseif (! ($limits = PlanLimits::for($workspace))->canInvite()) {
+            return back()->withErrors(['email' => $limits->seatsMessage()]);
         } else {
             $invitation = Invitation::create($data + ['workspace_id' => $workspace->id, 'invited_by' => $request->user()->id]);
         }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Invitation;
 use App\Support\Notifier;
+use App\Support\PlanLimits;
 use Illuminate\Http\Request;
 
 class InvitationController extends Controller
@@ -32,6 +33,11 @@ class InvitationController extends Controller
 
         $workspace = $invitation->workspace;
         if (! $user->belongsToWorkspace($workspace)) {
+            if (! PlanLimits::for($workspace)->canJoin()) {
+                return redirect()->route('invitations.accept', $token)
+                    ->withErrors(['plan' => "{$workspace->name} has no room left on its plan for another member. Ask the workspace owner to upgrade, then accept again."]);
+            }
+
             $workspace->members()->attach($user->id, [
                 'role' => $invitation->role ?: 'member',
                 'joined_at' => now(),

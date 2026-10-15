@@ -2,8 +2,19 @@
 @section('title', 'Branches')
 @section('content')
     <x-page-header title="Branches & locations" sub="Shops, clinics, campuses, depots or offices. Stock, sales and staff can be tracked per branch." :crumbs="['Settings' => route('settings.workspace.edit'), 'Branches']">
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#branchModal"><x-icon name="plus" /> Add branch</button>
+        @if($limits->canAddBranch())
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#branchModal"><x-icon name="plus" /> Add branch</button>
+        @else
+            <a href="{{ route('settings.billing.index') }}" class="btn btn-primary"><x-icon name="credit-card" /> Upgrade to add branches</a>
+        @endif
     </x-page-header>
+    @if($limits->branchesAllowed() !== null)
+        @if($limits->branchesUsed() > $limits->branchesAllowed())
+            <p class="text-muted fs-7 mb-3">Your {{ $limits->planName() }} plan includes {{ $limits->branchesAllowed() }} {{ \Illuminate\Support\Str::plural('branch', $limits->branchesAllowed()) }} and this workspace already has {{ $limits->branchesUsed() }}. Nothing is removed, but no more can be added until you upgrade.</p>
+        @else
+            <p class="text-muted fs-7 mb-3">{{ $limits->branchesUsed() }} of {{ $limits->branchesAllowed() }} {{ \Illuminate\Support\Str::plural('branch', $limits->branchesAllowed()) }} on your {{ $limits->planName() }} plan used.</p>
+        @endif
+    @endif
 
     <div class="card">
         <div class="z-table-wrap">

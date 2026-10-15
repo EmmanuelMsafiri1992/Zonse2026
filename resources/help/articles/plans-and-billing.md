@@ -11,6 +11,8 @@ routes: settings.billing.*, pricing, checkout.*
 
 Open [Plan & billing](route:settings.billing.index) and pick a plan. Paid plans start with a free trial, so you can set everything up before paying. Switching plans takes effect straight away; apps the new plan does not cover stay on as paid add-ons, and the page tells you before you switch.
 
+Each plan also sets how many people and branches a workspace can have. The Team members and Branches pages show how many of those places you have used, and when they are full the Invite and Add buttons are replaced by a link to upgrade.
+
 ## Pay for your plan
 
 Prices are in US dollars, but you can pay in your own currency. The "Pay for your plan" card shows what a month or a year costs in dollars and in every currency we accept, then offers the ways to pay that are open to you:

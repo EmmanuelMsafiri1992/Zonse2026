@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Invitation;
+use App\Models\Plan;
 use App\Models\User;
 use App\Notifications\WorkspaceInvitationNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -98,6 +99,36 @@ class WorkspaceSettingsTest extends TestCase
         $this->assertSame($workspace->id, $colleague->fresh()->current_workspace_id);
         $this->assertNotNull($invitation->fresh()->accepted_at);
         $this->get("/invitations/{$invitation->token}")->assertOk()->assertSee('expired');
+    }
+
+    public function test_plan_limits_cap_members_and_branches(): void
+    {
+        Notification::fake();
+        [$owner, $workspace] = $this->ownerWithWorkspace('solo');
+
+        $this->actingAs($owner)->get('/settings/members')->assertOk()->assertSee('1 of 1 seat')->assertSee('Upgrade to invite more');
+        $this->actingAs($owner)->post('/settings/members/invite', ['email' => 'second@example.com', 'role' => 'manager'])
+            ->assertSessionHasErrors('email');
+        $this->assertSame(0, Invitation::count());
+
+        $this->actingAs($owner)->get('/settings/branches')->assertOk()->assertSee('1 of 1 branch')->assertSee('Upgrade to add branches');
+        $this->actingAs($owner)->post('/settings/branches', ['name' => 'Bulawayo', 'code' => 'BYO'])->assertSessionHasErrors('name');
+        $this->assertSame(1, $workspace->branches()->count());
+
+        $invitation = Invitation::create(['workspace_id' => $workspace->id, 'email' => 'second@example.com', 'role' => 'manager', 'invited_by' => $owner->id]);
+        $second = User::factory()->create(['email' => 'second@example.com']);
+        $this->actingAs($second)->post("/invitations/{$invitation->token}")->assertRedirect(route('invitations.accept', $invitation->token))
+            ->assertSessionHasErrors('plan');
+        $this->assertFalse($second->fresh()->belongsToWorkspace($workspace));
+        $this->assertNull($invitation->fresh()->accepted_at);
+
+        $business = Plan::where('key', 'business')->firstOrFail();
+        $workspace->subscription->update(['plan_id' => $business->id]);
+
+        $this->actingAs($second)->post("/invitations/{$invitation->token}")->assertRedirect(route('dashboard'));
+        $this->assertTrue($second->fresh()->belongsToWorkspace($workspace));
+        $this->actingAs($owner)->post('/settings/branches', ['name' => 'Bulawayo', 'code' => 'BYO'])->assertSessionHasNoErrors();
+        $this->assertSame(2, $workspace->branches()->count());
     }
 
     public function test_member_roles_can_be_changed_and_members_removed(): void

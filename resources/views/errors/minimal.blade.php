@@ -27,7 +27,7 @@
 </head>
 <body>
 <main class="box">
-    <a class="brand" href="{{ url('/') }}"><img src="{{ asset('images/logo.png') }}" alt="{{ config('app.name') }}" style="height:36px;width:auto"></a>
+    <a class="brand" href="{{ url('/') }}"><img src="{{ asset('images/logo-mark.png') }}" alt="" width="28" height="28"> {{ config('app.name') }}</a>
     <div class="code">@yield('code')</div>
     <h1>@yield('message')</h1>
     <p>@yield('hint', 'Something went wrong on our side. Please try again in a moment.')</p>

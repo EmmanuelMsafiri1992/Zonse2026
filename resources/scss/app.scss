@@ -304,9 +304,12 @@ $z-color-map: (primary: $z-primary, success: $z-success, info: $z-info, warning:
   .z-plan-trial { font-size: $z-font-size-xs; color: $z-text-muted; margin-bottom: 1rem; }
   ul { padding-left: 0; list-style: none; margin-bottom: 0; li { padding: .4rem 0; display: flex; gap: .5rem; font-size: $z-font-size-sm; .zi { color: $z-primary; margin-top: .2rem; } } }
   .z-plan-tag { display: block; font-size: $z-font-size-xs; font-weight: 500; color: $z-primary-dark; margin-bottom: .5rem; }
-  > .btn, > form { margin-top: auto; }
-  &.featured { border-color: $z-primary; box-shadow: inset 0 3px 0 $z-primary; }
-  &.selected { border-color: $z-primary; background: color.adjust($z-primary-soft, $lightness: 7%); }
+  > .btn, > form, > .z-plan-selected { margin-top: auto; }
+  .z-plan-selected { padding-top: 1rem; font-size: $z-font-size-sm; font-weight: 500; color: $z-primary-dark; display: flex; align-items: center; gap: .35rem; .zi { color: $z-primary; } }
+  // "Most popular" only gets a coloured top edge; the chosen plan gets the strong border, so the two never look alike.
+  &.featured { box-shadow: inset 0 3px 0 $z-primary; }
+  &.selected { border-color: $z-primary; box-shadow: 0 0 0 1px $z-primary; background: color.adjust($z-primary-soft, $lightness: 7%); }
+  &.featured.selected { box-shadow: 0 0 0 1px $z-primary, inset 0 3px 0 $z-primary; }
 }
 
 // ---------- Auth pages ----------

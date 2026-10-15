@@ -38,7 +38,9 @@
                 +{{ \App\Support\Money::format(array_sum(array_column($addonQuote, 'monthly')), $p->currency) }}/month.
             </div>
         @endif
-        @if(! $selectable && ! empty($guest))
+        @if($selectable)
+            <div class="z-plan-selected" x-show="plan === {{ Js::from($p->key) }}" x-cloak><x-icon name="check" class="zi zi-sm" /> Selected</div>
+        @elseif(! empty($guest))
             <a href="{{ route('register', ['plan' => $p->key]) }}" class="btn {{ $p->is_featured ? 'btn-primary' : 'btn-white' }} w-100 mt-3">{{ $p->isFree() ? 'Start free' : 'Start with '.$p->name }}</a>
         @elseif(! $selectable)
             <form method="POST" action="{{ route('settings.billing.subscribe', $p) }}" class="mt-3">

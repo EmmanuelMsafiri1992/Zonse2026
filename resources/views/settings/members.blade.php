@@ -2,8 +2,19 @@
 @section('title', 'Team members')
 @section('content')
     <x-page-header title="Team members" sub="People who can sign in to this workspace and what they are allowed to do." :crumbs="['Settings' => route('settings.workspace.edit'), 'Team']">
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#inviteModal"><x-icon name="user-plus" /> Invite member</button>
+        @if($limits->canInvite())
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#inviteModal"><x-icon name="user-plus" /> Invite member</button>
+        @else
+            <a href="{{ route('settings.billing.index') }}" class="btn btn-primary"><x-icon name="credit-card" /> Upgrade to invite more</a>
+        @endif
     </x-page-header>
+    @if($limits->seatsAllowed() !== null)
+        @if($limits->seatsUsed() > $limits->seatsAllowed())
+            <p class="text-muted fs-7 mb-3">Your {{ $limits->planName() }} plan includes {{ $limits->seatsAllowed() }} {{ \Illuminate\Support\Str::plural('seat', $limits->seatsAllowed()) }} and this workspace already has {{ $limits->seatsUsed() }}. Nobody is removed, but no one else can be invited until you upgrade.</p>
+        @else
+            <p class="text-muted fs-7 mb-3">{{ $limits->seatsUsed() }} of {{ $limits->seatsAllowed() }} {{ \Illuminate\Support\Str::plural('seat', $limits->seatsAllowed()) }} on your {{ $limits->planName() }} plan used, counting invitations still open.</p>
+        @endif
+    @endif
 
     <div class="card mb-4">
         <div class="card-header"><h5 class="card-title">Members <span class="badge rounded-pill z-soft-primary ms-1">{{ $members->count() }}</span></h5></div>

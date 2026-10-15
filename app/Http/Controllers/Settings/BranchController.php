@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Support\Audit;
+use App\Support\PlanLimits;
 use App\Tenancy\WorkspaceContext;
 use Illuminate\Http\Request;
 
@@ -16,11 +17,16 @@ class BranchController extends Controller
     {
         return view('settings.branches', [
             'branches' => Branch::orderByDesc('is_default')->orderBy('name')->get(),
+            'limits' => PlanLimits::for($this->context->getOrFail()),
         ]);
     }
 
     public function store(Request $request)
     {
+        if (! ($limits = PlanLimits::for($this->context->getOrFail()))->canAddBranch()) {
+            return back()->withErrors(['name' => $limits->branchesMessage()]);
+        }
+
         $data = $this->validated($request);
         $branch = Branch::create($data + ['is_active' => true]);
         $this->applyDefault($branch, $request->boolean('is_default'));
