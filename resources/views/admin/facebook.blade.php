@@ -166,7 +166,8 @@
                 <div class="card-body fs-7 text-muted">
                     <p>The order is fixed: {{ count(app(\App\Social\PostWriter::class)->intros(0, 0)) }} posts introducing the platform, then each suite in catalogue order, each followed by one post per app. Text comes from the catalogue and the app blueprints, so it stays accurate as apps change.</p>
                     <p>Every post carries a branded card. Click a thumbnail above to see it at full size before it goes out.</p>
-                    <p class="mb-0">Posting runs from the scheduler (<code>zonseo:post-to-facebook</code>). Nothing is ever posted twice; a failed attempt is retried at the next time.</p>
+                    <p>Posting runs from the scheduler (<code>zonseo:post-to-facebook</code>) and, as a fallback, after normal site traffic (checked at most every five minutes). Nothing is ever posted twice; a failed attempt is retried at the next time.</p>
+                    <p class="mb-0">If the server's cron is not running, have any uptime monitor or external cron open this URL every few minutes:<br><code class="user-select-all text-break">{{ $tickUrl }}</code></p>
                 </div>
             </div>
         </div>

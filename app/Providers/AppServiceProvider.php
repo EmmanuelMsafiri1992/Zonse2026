@@ -12,6 +12,7 @@ use App\Registries\MenuRegistry;
 use App\Registries\ModuleRegistry;
 use App\Registries\SearchRegistry;
 use App\Registries\WidgetRegistry;
+use App\Social\SocialPoster;
 use App\Support\Branding;
 use App\Support\Health;
 use App\Support\Help\HelpCentre;
@@ -48,6 +49,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureProduction();
+
+        // The Facebook series must keep going even when cron is down: after each web response,
+        // SocialPoster::tick() checks (at most every five minutes) whether a post is due.
+        if (! $this->app->runningInConsole() && ! $this->app->runningUnitTests()) {
+            $this->app->terminating(fn () => $this->app->make(SocialPoster::class)->tick());
+        }
 
         // Super admins can do anything; workspace owners/admins can do anything
         // inside their own workspace. Finer-grained permissions (spatie) apply

@@ -7,6 +7,7 @@ use App\Models\SocialPost;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Throwable;
 
@@ -171,6 +172,41 @@ class SocialPoster
         $post->save();
 
         return $post;
+    }
+
+    /**
+     * Runs the scheduled check without cron: called when a web request finishes and from the
+     * signed tick URL. Throttled to once every five minutes, and never throws, so a Facebook
+     * problem cannot break a page. Returns the post it published or failed, if any.
+     */
+    public function tick(): ?SocialPost
+    {
+        try {
+            if (! Cache::add('social:facebook:tick', 1, 300)) {
+                return null;
+            }
+            if (! $this->isEnabled()) {
+                return null;
+            }
+            $slot = $this->dueSlot();
+
+            return $slot ? $this->postNext($slot) : null;
+        } catch (Throwable $e) {
+            report($e);
+
+            return null;
+        }
+    }
+
+    /** The secret in the public tick URL, derived from APP_KEY so it needs no extra setting. */
+    public function tickSignature(): string
+    {
+        return hash_hmac('sha256', 'social-tick', (string) config('app.key'));
+    }
+
+    public function tickUrl(): string
+    {
+        return rtrim((string) config('app.url'), '/').'/facebook/tick/'.$this->tickSignature();
     }
 
     protected function put(string $key, mixed $value): void

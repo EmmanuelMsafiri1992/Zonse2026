@@ -165,4 +165,22 @@ class FacebookPosterTest extends TestCase
 
         return $admin->fresh();
     }
+
+    public function test_tick_url_is_signed_throttled_and_posts_only_when_due(): void
+    {
+        Http::fake(['graph.facebook.com/*' => Http::response(['id' => '1', 'post_id' => '61595532235489_7'])]);
+        $poster = app(SocialPoster::class);
+        $poster->saveToken('page-token');
+        $poster->saveSettings(['page_id' => '61595532235489', 'enabled' => true, 'times' => '09:00,15:00', 'timezone' => 'Africa/Johannesburg']);
+        CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-10-20 09:07', 'Africa/Johannesburg'));
+
+        $this->get('/facebook/tick/not-the-signature')->assertNotFound();
+        $this->getJson('/facebook/tick/'.$poster->tickSignature())->assertOk()->assertJsonPath('posted', 'One platform, every profession');
+        // Within five minutes the tick is a no-op, whatever is due.
+        $this->getJson('/facebook/tick/'.$poster->tickSignature())->assertOk()->assertJsonPath('posted', null);
+        Http::assertSentCount(1);
+        $this->assertSame(1, SocialPost::query()->where('status', SocialPost::STATUS_POSTED)->count());
+
+        CarbonImmutable::setTestNow();
+    }
 }

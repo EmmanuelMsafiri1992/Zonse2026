@@ -394,3 +394,7 @@ Route::middleware(['auth', 'workspace'])->group(function () {
         });
     });
 });
+
+// Signed, public: drives the Facebook series from an external scheduler or uptime check when the
+// server's cron is not running. The signature is derived from APP_KEY; a wrong one is a plain 404.
+Route::get('/facebook/tick/{signature}', [FacebookController::class, 'tick'])->middleware('throttle:30,1')->name('facebook.tick');

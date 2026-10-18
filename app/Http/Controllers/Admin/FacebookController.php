@@ -10,6 +10,7 @@ use App\Social\PostPlanner;
 use App\Social\SocialException;
 use App\Social\SocialPoster;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -38,6 +39,22 @@ class FacebookController extends Controller
             'failed' => SocialPost::query()->where('channel', SocialPoster::CHANNEL)->where('status', SocialPost::STATUS_FAILED)->count(),
             'nextSlot' => $this->poster->dueSlot(),
             'cardsAvailable' => app(PostCard::class)->available(),
+            'tickUrl' => $this->poster->tickUrl(),
+        ]);
+    }
+
+    /** Public, signed: lets an external scheduler or uptime check drive the series when cron does not. */
+    public function tick(string $signature): JsonResponse
+    {
+        if (! hash_equals($this->poster->tickSignature(), $signature)) {
+            abort(404);
+        }
+        $post = $this->poster->tick();
+
+        return response()->json([
+            'ok' => true,
+            'posted' => $post?->isPosted() ? $post->title : null,
+            'failed' => $post && ! $post->isPosted() ? $post->error : null,
         ]);
     }
 
