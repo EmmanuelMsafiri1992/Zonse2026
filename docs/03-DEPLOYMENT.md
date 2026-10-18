@@ -43,6 +43,8 @@ Copy `.env.example` to `.env`, then set at least:
 | `ANTHROPIC_LANDING_MODEL` / `ANTHROPIC_MODEL` | Models for the public chat (default `claude-haiku-5-5`) and Zonseob AI (default `claude-sonnet-5-5`). |
 | `ZONSEOB_AI_WELCOME_TOKENS` | Free Zonseob AI tokens every new person starts with (default 20000). |
 | `ZONSEOB_AI_PACKS` | Token packs for sale as `key=tokens=usd` pairs (default `starter=250000=5,standard=1000000=15,large=5000000=60`). An answer costs its input tokens plus four times its output tokens. |
+| `FACEBOOK_PAGE_ID` / `FACEBOOK_PAGE_TOKEN` | Fallbacks for the Facebook series (`zonseo:post-to-facebook`): the platform's Page and a long-lived Page token with `pages_manage_posts`. Normally set on the Facebook posts admin page instead, where the token is stored encrypted. |
+| `FACEBOOK_POST_TIMES` / `FACEBOOK_POST_TIMEZONE` | When the series posts (default `09:00,15:00` in `Africa/Johannesburg`); one post per time, in series order. Also editable on the admin page. |
 
 ## 3. First deploy
 
@@ -151,6 +153,7 @@ What it runs (`routes/console.php`; check with `php artisan schedule:list`):
 | every minute | scheduler heartbeat |
 | every 5 minutes | queue heartbeat (proves the worker is alive) |
 | every 15 minutes | `zonseo:monitor`: health checks, emails `ALERT_EMAIL` on problems |
+| every 15 minutes | `zonseo:post-to-facebook`: publishes the next post of the Facebook series when a posting time is due (no-op until the Page is connected and posting is on) |
 | 01:30 | `zonseo:backup`: database + uploads archive, keeps `BACKUP_KEEP_DAYS` days |
 | 02:00 | `zonseo:run-app-schedules` |
 | 09:00 | `zonseo:send-sms-reminders` |

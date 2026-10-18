@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\FacebookController;
 use App\Http\Controllers\Admin\PaymentsController;
 use App\Http\Controllers\AiController;
 use App\Http\Controllers\ApprovalController;
@@ -159,6 +160,14 @@ Route::middleware(['auth', 'workspace'])->group(function () {
         Route::post('/payments/{checkout}/confirm', [PaymentsController::class, 'confirm'])->name('payments.confirm');
         Route::post('/payments/{checkout}/reject', [PaymentsController::class, 'reject'])->name('payments.reject');
         Route::put('/payments/settings', [PaymentsController::class, 'updateSettings'])->name('payments.settings');
+
+        Route::get('/facebook', [FacebookController::class, 'index'])->name('facebook.index');
+        Route::put('/facebook/settings', [FacebookController::class, 'update'])->name('facebook.settings');
+        Route::post('/facebook/connect', [FacebookController::class, 'connect'])->name('facebook.connect');
+        Route::post('/facebook/disconnect', [FacebookController::class, 'disconnect'])->name('facebook.disconnect');
+        Route::post('/facebook/check', [FacebookController::class, 'check'])->name('facebook.check');
+        Route::post('/facebook/post-now', [FacebookController::class, 'postNow'])->name('facebook.post-now');
+        Route::get('/facebook/card/{kind}/{key}.png', [FacebookController::class, 'card'])->whereIn('kind', ['intro', 'suite', 'app'])->name('facebook.card');
     });
 
     Route::middleware('onboarded')->group(function () {

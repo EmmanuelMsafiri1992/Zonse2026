@@ -146,4 +146,24 @@ return [
         'enforce_from' => env('SUBSCRIPTION_ENFORCE_FROM'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Facebook Page series (Zonseob explaining itself)
+    |--------------------------------------------------------------------------
+    |
+    | zonseo:post-to-facebook publishes the "how Zonseob works" series to the
+    | platform's own Facebook Page: an introduction, then every suite and app.
+    | The Page ID, token, posting times and timezone are normally set on the
+    | Facebook posts admin page (the token is stored encrypted); these values
+    | are the fallbacks when nothing has been saved there.
+    |
+    */
+
+    'facebook' => [
+        'page_id' => env('FACEBOOK_PAGE_ID', '61595532235489'),
+        'page_token' => env('FACEBOOK_PAGE_TOKEN'),
+        'times' => env('FACEBOOK_POST_TIMES', '09:00,15:00'),
+        'timezone' => env('FACEBOOK_POST_TIMEZONE', 'Africa/Johannesburg'),
+    ],
+
 ];

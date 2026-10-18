@@ -15,6 +15,7 @@ Schedule::command('zonseo:run-app-schedules')->dailyAt('02:00')->withoutOverlapp
 Schedule::command('zonseo:send-sms-reminders')->dailyAt('09:00')->withoutOverlapping()->onOneServer();
 Schedule::command('zonseo:fiscal-retry')->everyFiveMinutes()->withoutOverlapping()->onOneServer();
 Schedule::command('zonseo:send-plan-reminders')->dailyAt('08:00')->withoutOverlapping()->onOneServer();
+Schedule::command('zonseo:post-to-facebook')->everyFifteenMinutes()->withoutOverlapping()->onOneServer();
 Schedule::call(fn () => Signatures::expireOverdue())->name('expire-signature-requests')->dailyAt('00:30')->onOneServer();
 
 // Monitoring, backups and housekeeping (see docs/03-DEPLOYMENT.md).

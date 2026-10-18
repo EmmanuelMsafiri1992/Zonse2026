@@ -184,6 +184,7 @@ class AppServiceProvider extends ServiceProvider
             ->add(MenuItem::make('Apps & modules', 'settings.modules.index', 'layout-grid')->order(20)->active('settings.modules.*'))
             ->add(MenuItem::make('Plan & billing', 'settings.billing.index', 'credit-card')->order(30)->active('settings.billing.*'))
             ->add(MenuItem::make('Platform payments', 'admin.payments.index', 'banknote')->can('administer-platform')->order(35)->active('admin.payments.*'))
+            ->add(MenuItem::make('Facebook posts', 'admin.facebook.index', 'megaphone')->can('administer-platform')->order(36)->active('admin.facebook.*'))
             ->add(MenuItem::make('Text messages', 'sms.index', 'message-square')->can('manage-workspace')->order(40)->active(['sms.*', 'settings.sms.*']));
     }
 }
