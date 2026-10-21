@@ -160,7 +160,8 @@ return [
     */
 
     'facebook' => [
-        'page_id' => env('FACEBOOK_PAGE_ID', '61595532235489'),
+        // The Graph Page ID from me/accounts; 61595532235489 in the profile URL is not accepted for posting.
+        'page_id' => env('FACEBOOK_PAGE_ID', '1345931425273444'),
         'page_token' => env('FACEBOOK_PAGE_TOKEN'),
         'times' => env('FACEBOOK_POST_TIMES', '09:00,15:00'),
         'timezone' => env('FACEBOOK_POST_TIMEZONE', 'Africa/Johannesburg'),
