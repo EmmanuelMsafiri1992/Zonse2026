@@ -78,6 +78,18 @@ class FacebookPosterTest extends TestCase
         $this->assertSame('intro:shared-contacts', app(PostPlanner::class)->next()->id());
     }
 
+    public function test_missed_earlier_slots_are_skipped_instead_of_posted_in_a_burst(): void
+    {
+        $this->connect(times: '09:00,15:00', timezone: 'Africa/Johannesburg');
+        $poster = app(SocialPoster::class);
+
+        // Switched on at 15:20 with neither slot used today: only the 15:00 slot is due.
+        $now = CarbonImmutable::parse('2026-10-19 15:20', 'Africa/Johannesburg');
+        $this->assertSame('15:00', $poster->dueSlot($now)->format('H:i'));
+
+        $this->assertNull($poster->dueSlot(CarbonImmutable::parse('2026-10-19 08:00', 'Africa/Johannesburg')));
+    }
+
     public function test_a_failed_post_is_recorded_and_retried_at_the_next_slot(): void
     {
         Http::fake(['graph.facebook.com/*' => Http::response(['error' => ['message' => 'Invalid OAuth access token.', 'code' => 190]], 400)]);

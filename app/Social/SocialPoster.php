@@ -170,21 +170,24 @@ class SocialPoster
         $tz = $this->settings()['timezone'];
         $now = CarbonImmutable::instance($now ?? now())->setTimezone($tz);
 
+        // Only the latest slot that has passed counts: earlier missed slots are skipped, not caught up in a burst.
+        $latest = null;
         foreach ($this->times() as $time) {
             [$h, $m] = array_map('intval', explode(':', $time));
             $slot = $now->setTime($h, $m);
-            if ($slot->greaterThan($now)) {
-                continue;
-            }
-            // A slot counts as filled once anything was attempted for it today; a failure waits for the next slot.
-            $attempted = SocialPost::query()->where('channel', self::CHANNEL)
-                ->where('scheduled_for', $slot->utc())->exists();
-            if (! $attempted) {
-                return $slot;
+            if ($slot->lessThanOrEqualTo($now) && (! $latest || $slot->greaterThan($latest))) {
+                $latest = $slot;
             }
         }
+        if (! $latest) {
+            return null;
+        }
 
-        return null;
+        // A slot counts as filled once anything was attempted for it; a failure waits for the next slot.
+        $attempted = SocialPost::query()->where('channel', self::CHANNEL)
+            ->where('scheduled_for', $latest->utc())->exists();
+
+        return $attempted ? null : $latest;
     }
 
     /** Publishes the next post in the series, recording success or failure. Null when the series is finished. */
