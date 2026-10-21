@@ -88,6 +88,11 @@ class FacebookPosterTest extends TestCase
         $this->assertSame('15:00', $poster->dueSlot($now)->format('H:i'));
 
         $this->assertNull($poster->dueSlot(CarbonImmutable::parse('2026-10-19 08:00', 'Africa/Johannesburg')));
+
+        // A post published by hand after 15:00 fills the 15:00 slot too.
+        CarbonImmutable::setTestNow($now);
+        SocialPost::create(['channel' => SocialPoster::CHANNEL, 'kind' => 'intro', 'key' => 'welcome', 'title' => 'Welcome', 'message' => 'Hi', 'status' => 'posted', 'scheduled_for' => $now->utc()]);
+        $this->assertNull($poster->dueSlot($now));
     }
 
     public function test_a_failed_post_is_recorded_and_retried_at_the_next_slot(): void

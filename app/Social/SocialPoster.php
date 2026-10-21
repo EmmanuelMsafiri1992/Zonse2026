@@ -183,9 +183,9 @@ class SocialPoster
             return null;
         }
 
-        // A slot counts as filled once anything was attempted for it; a failure waits for the next slot.
+        // A slot counts as filled once anything was attempted for it, or anything (e.g. "Post next now") went out since; a failure waits for the next slot.
         $attempted = SocialPost::query()->where('channel', self::CHANNEL)
-            ->where('scheduled_for', $latest->utc())->exists();
+            ->where('scheduled_for', '>=', $latest->utc())->exists();
 
         return $attempted ? null : $latest;
     }
