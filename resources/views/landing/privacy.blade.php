@@ -26,7 +26,7 @@
                 'We keep data while the workspace has an account. A workspace can export its data or ask us to delete it at any time, and anyone can ask what we hold about them or ask for it to be corrected or deleted.',
             ],
             'Contact' => [
-                'Email '.config('mail.from.address').' or use the chat on this site.',
+                'Ask through the chat on this site, or message the Zonseob Facebook Page.',
             ],
         ];
     @endphp
