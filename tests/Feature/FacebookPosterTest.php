@@ -111,6 +111,7 @@ class FacebookPosterTest extends TestCase
         [$owner] = $this->ownerWithWorkspace();
         $this->actingAs($owner)->get(route('admin.facebook.index'))->assertForbidden();
 
+        Http::fake(['graph.facebook.com/*' => Http::response(['access_token' => 'EAAG-secret-token', 'name' => 'Zonseob'])]);
         $admin = $this->superAdmin();
         $this->actingAs($admin)->get(route('admin.facebook.index'))->assertOk()
             ->assertSee('Facebook posts')->assertSee('One platform, every profession')->assertSee('not connected yet');
@@ -126,11 +127,45 @@ class FacebookPosterTest extends TestCase
         $this->assertNotSame('EAAG-secret-token', Setting::platform('facebook.page_token'), 'the token is stored encrypted');
 
         $this->actingAs($admin)->get(route('admin.facebook.index'))->assertOk()
-            ->assertSee('A token is stored')->assertDontSee('EAAG-secret-token');
+            ->assertSee('A token is stored')->assertSee('expires it within hours')->assertDontSee('EAAG-secret-token');
 
         $this->actingAs($admin)->put(route('admin.facebook.settings'), [
             'page_id' => 'abc', 'times' => '9am', 'timezone' => 'Mars/Olympus',
         ])->assertSessionHasErrors(['page_id', 'times', 'timezone']);
+    }
+
+    public function test_a_pasted_user_token_is_swapped_for_the_page_token_and_the_app_is_remembered(): void
+    {
+        Http::fake([
+            'graph.facebook.com/v21.0/oauth/access_token*' => Http::response(['access_token' => 'long-user-token']),
+            'graph.facebook.com/v21.0/61595532235489*' => Http::response(['access_token' => 'page-token', 'name' => 'Zonseob']),
+        ]);
+        $poster = app(SocialPoster::class);
+        $poster->saveSettings(['page_id' => '61595532235489']);
+        $admin = $this->superAdmin();
+
+        // Without the secret the token is still swapped for the Page's own, but flagged as short-lived.
+        $this->actingAs($admin)->put(route('admin.facebook.settings'), [
+            'page_id' => '61595532235489', 'page_token' => 'user-token', 'times' => '09:00', 'timezone' => 'Africa/Johannesburg',
+        ])->assertSessionHas('flash.type', 'warning');
+        $this->assertSame('page-token', $poster->token());
+        $this->assertFalse($poster->settings()['long_lived']);
+        Http::assertNotSent(fn ($r) => str_contains($r->url(), 'oauth/access_token'));
+
+        $this->actingAs($admin)->post(route('admin.facebook.connect'), [
+            'app_id' => '1234567890', 'app_secret' => 'app-secret', 'user_token' => 'user-token',
+        ])->assertSessionHas('flash.type', 'success');
+        $this->assertTrue($poster->settings()['long_lived']);
+        $this->assertSame('app-secret', $poster->appSecret());
+        $this->assertNotSame('app-secret', Setting::platform('facebook.app_secret'), 'the secret is stored encrypted');
+
+        // Next time only the token is needed: the App ID is shown, the secret kept, and both reused.
+        $this->actingAs($admin)->get(route('admin.facebook.index'))->assertOk()
+            ->assertSee('1234567890')->assertSee('A secret is stored')->assertDontSee('app-secret');
+        $this->actingAs($admin)->post(route('admin.facebook.connect'), [
+            'app_id' => '1234567890', 'user_token' => 'fresh-token',
+        ])->assertSessionHasNoErrors()->assertSessionHas('flash.type', 'success');
+        Http::assertSent(fn ($r) => str_contains($r->url(), 'oauth/access_token') && $r['client_secret'] === 'app-secret' && $r['fb_exchange_token'] === 'fresh-token');
     }
 
     public function test_post_now_publishes_the_next_post_from_the_admin_page(): void
@@ -182,5 +217,11 @@ class FacebookPosterTest extends TestCase
         $this->assertSame(1, SocialPost::query()->where('status', SocialPost::STATUS_POSTED)->count());
 
         CarbonImmutable::setTestNow();
+    }
+
+    public function test_the_privacy_policy_meta_asks_for_is_public(): void
+    {
+        $this->get('/privacy')->assertOk()->assertSee('Privacy policy')->assertSee('Pages API');
+        $this->get('/')->assertSee(route('privacy'));
     }
 }

@@ -22,7 +22,7 @@ class SocialPoster
 
     public function __construct(protected PostPlanner $planner, protected PostCard $card) {}
 
-    /** @return array{page_id: string, enabled: bool, times: string, timezone: string, has_token: bool, token_source: string} */
+    /** @return array{page_id: string, enabled: bool, times: string, timezone: string, has_token: bool, token_source: string, long_lived: bool, app_id: string, has_app_secret: bool} */
     public function settings(): array
     {
         $stored = Setting::platform('facebook.page_token');
@@ -34,6 +34,10 @@ class SocialPoster
             'timezone' => (string) (Setting::platform('facebook.timezone') ?: config('zonseo.facebook.timezone', 'Africa/Johannesburg')),
             'has_token' => $this->token() !== null,
             'token_source' => $stored ? 'settings' : (config('zonseo.facebook.page_token') ? 'env' : 'none'),
+            // Tokens saved before this flag existed, or from .env, are assumed fine.
+            'long_lived' => (bool) Setting::platform('facebook.long_lived', true),
+            'app_id' => (string) Setting::platform('facebook.app_id', ''),
+            'has_app_secret' => $this->appSecret() !== null,
         ];
     }
 
@@ -64,10 +68,60 @@ class SocialPoster
         }
     }
 
-    /** Stores the Page token encrypted with APP_KEY; an empty string removes it. */
-    public function saveToken(string $token): void
+    /**
+     * Stores the Page token encrypted with APP_KEY; an empty string removes it. $longLived is
+     * false for a Page token made without the app secret, which Facebook expires within hours.
+     */
+    public function saveToken(string $token, bool $longLived = true): void
     {
         $this->put('facebook.page_token', $token === '' ? null : Crypt::encryptString($token));
+        $this->put('facebook.long_lived', $longLived);
+    }
+
+    /**
+     * Turns whatever token was pasted into a Page token for the saved Page and stores it: through
+     * the long-lived exchange when the app secret is known, otherwise a Page token that expires
+     * within hours. Returns the Page's name. Nothing is stored when Facebook refuses.
+     */
+    public function connect(string $token): string
+    {
+        $pageId = $this->settings()['page_id'];
+        if ($pageId === '') {
+            throw new SocialException('Save the Page ID first.');
+        }
+
+        $appId = $this->settings()['app_id'];
+        $secret = $this->appSecret();
+        $longLived = $appId !== '' && $secret !== null;
+        $pageToken = $longLived
+            ? FacebookPage::exchangeForPageToken($appId, $secret, $token, $pageId)
+            : FacebookPage::pageTokenFor($token, $pageId);
+        $name = (new FacebookPage($pageId, $pageToken))->name();
+        $this->saveToken($pageToken, $longLived);
+
+        return $name;
+    }
+
+    /** Remembers the Meta app so a fresh token only needs pasting; a blank secret keeps the stored one. */
+    public function saveApp(string $appId, string $appSecret = ''): void
+    {
+        $this->put('facebook.app_id', trim($appId));
+        if (trim($appSecret) !== '') {
+            $this->put('facebook.app_secret', Crypt::encryptString(trim($appSecret)));
+        }
+    }
+
+    public function appSecret(): ?string
+    {
+        $stored = Setting::platform('facebook.app_secret');
+        if (! is_string($stored) || $stored === '') {
+            return null;
+        }
+        try {
+            return Crypt::decryptString($stored);
+        } catch (DecryptException) {
+            return null;
+        }
     }
 
     public function token(): ?string

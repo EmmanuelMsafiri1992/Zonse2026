@@ -41,6 +41,7 @@
         <a href="{{ route('pricing') }}">Pricing</a>
         @if(! empty($aiPacks))<a href="{{ route('home') }}#zonseob-ai">Zonseob AI</a>@endif
         <a href="{{ route('login') }}">Sign in</a>
+        <a href="{{ route('privacy') }}">Privacy</a>
         <span class="ms-auto">&copy; {{ date('Y') }} {{ config('app.name') }}. One platform, every profession.</span>
     </div>
 </footer>

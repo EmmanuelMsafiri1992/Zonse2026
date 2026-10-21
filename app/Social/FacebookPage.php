@@ -62,7 +62,17 @@ class FacebookPage
             throw new SocialException('Facebook did not return a long-lived token.');
         }
 
-        $page = Http::withToken($userToken)->get(self::API."/{$pageId}", ['fields' => 'access_token,name']);
+        return self::pageTokenFor($userToken, $pageId);
+    }
+
+    /**
+     * The Page's own token, read with whatever token was pasted. Explorer hands out a user token
+     * by default, and posting with one fails with "(#200) If posting to a group..."; asking the
+     * Page for its token turns a user token into a Page token and returns a Page token as it is.
+     */
+    public static function pageTokenFor(string $token, string $pageId): string
+    {
+        $page = Http::withToken($token)->get(self::API."/{$pageId}", ['fields' => 'access_token,name']);
         $pageToken = (string) (self::decode($page)['access_token'] ?? '');
         if ($pageToken === '') {
             throw new SocialException('That account cannot manage this Page: no Page token was returned. Make sure you are an admin of the Page and granted pages_manage_posts.');

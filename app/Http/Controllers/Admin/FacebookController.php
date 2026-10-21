@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SocialPost;
-use App\Social\FacebookPage;
 use App\Social\PostCard;
 use App\Social\PostPlanner;
 use App\Social\SocialException;
@@ -77,35 +76,42 @@ class FacebookController extends Controller
             'timezone' => $data['timezone'],
             'enabled' => (bool) ($data['enabled'] ?? false),
         ]);
-        if (($data['page_token'] ?? '') !== '') {
-            $this->poster->saveToken(trim($data['page_token']));
+        if (($data['page_token'] ?? '') === '') {
+            return back()->with('flash', ['type' => 'success', 'message' => 'Facebook settings saved.']);
         }
 
-        return back()->with('flash', ['type' => 'success', 'message' => 'Facebook settings saved.']);
+        return $this->connectWith(trim($data['page_token']));
     }
 
-    /** Swaps a short-lived user token from Graph API Explorer for a long-lived Page token and stores it. */
+    /**
+     * Remembers the app, then swaps the pasted Explorer token for the Page's own token. With the
+     * app secret the result does not expire; the secret is kept so later tokens only need pasting.
+     */
     public function connect(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'app_id' => ['required', 'string', 'max:40'],
-            'app_secret' => ['required', 'string', 'max:120'],
+            'app_id' => ['required', 'string', 'regex:/^\d{5,30}$/'],
+            'app_secret' => [$this->poster->settings()['has_app_secret'] ? 'nullable' : 'required', 'string', 'max:120'],
             'user_token' => ['required', 'string', 'max:1000'],
+        ], [
+            'app_id.regex' => 'The App ID is the number at the top of the app in developers.facebook.com.',
         ]);
-        $pageId = $this->poster->settings()['page_id'];
-        if ($pageId === '') {
-            return back()->with('flash', ['type' => 'warning', 'message' => 'Save the Page ID first.']);
-        }
+        $this->poster->saveApp($data['app_id'], (string) ($data['app_secret'] ?? ''));
 
+        return $this->connectWith(trim($data['user_token']));
+    }
+
+    protected function connectWith(string $token): RedirectResponse
+    {
         try {
-            $token = FacebookPage::exchangeForPageToken($data['app_id'], $data['app_secret'], $data['user_token'], $pageId);
-            $this->poster->saveToken($token);
-            $name = (new FacebookPage($pageId, $token))->name();
+            $name = $this->poster->connect($token);
         } catch (SocialException $e) {
             return back()->with('flash', ['type' => 'danger', 'message' => $e->getMessage()]);
         }
 
-        return back()->with('flash', ['type' => 'success', 'message' => "Connected to the Page \"{$name}\". The token does not expire while the app stays live."]);
+        return back()->with('flash', $this->poster->settings()['long_lived']
+            ? ['type' => 'success', 'message' => "Connected to the Page \"{$name}\". The token does not expire while the app stays live."]
+            : ['type' => 'warning', 'message' => "Connected to the Page \"{$name}\", but without the App ID and App secret this token stops working within hours. Add them under Connect with Graph API Explorer and connect again."]);
     }
 
     public function disconnect(): RedirectResponse

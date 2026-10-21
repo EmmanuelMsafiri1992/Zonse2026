@@ -8,6 +8,11 @@
             <x-icon name="plug-zap" class="zi" />
             <div class="fs-7">The Page is not connected yet. Save the Page ID, then connect with a token from Graph API Explorer in the panel on the right.</div>
         </div>
+    @elseif(! $settings['long_lived'])
+        <div class="alert alert-warning d-flex gap-2 align-items-center">
+            <x-icon name="clock" class="zi" />
+            <div class="fs-7">This token was saved without the App ID and App secret, so Facebook expires it within hours. Add them in "Connect with Graph API Explorer" with a fresh token to get one that does not expire.</div>
+        </div>
     @elseif(! $settings['enabled'])
         <div class="alert alert-info d-flex gap-2 align-items-center">
             <x-icon name="pause" class="zi" />
@@ -124,7 +129,7 @@
                 <div class="card-header"><h5 class="card-title">Settings</h5></div>
                 <div class="card-body">
                     <x-form.input name="page_id" label="Facebook Page ID" :value="$settings['page_id']" required help="The number in the Page URL: facebook.com/profile.php?id=…" />
-                    <x-form.input name="page_token" type="password" label="Page access token" autocomplete="off" :help="$settings['has_token'] ? 'A token is stored'.($settings['token_source'] === 'env' ? ' in the server environment' : '').'. Paste a new one only to replace it.' : 'Paste a long-lived Page token, or use Connect below to make one.'" />
+                    <x-form.input name="page_token" type="password" label="Page access token" autocomplete="off" :help="$settings['has_token'] ? 'A token is stored'.($settings['token_source'] === 'env' ? ' in the server environment' : '').'. Paste a new one only to replace it.' : 'Paste a token from Graph API Explorer; it is swapped for the Page token. Use Connect below so it does not expire.'" />
                     <x-form.input name="times" label="Posting times" :value="$settings['times']" required help="24-hour times separated by commas. One post goes out per time." />
                     <x-form.input name="timezone" label="Timezone" :value="$settings['timezone']" required list="tz-list" />
                     <datalist id="tz-list">@foreach(timezone_identifiers_list() as $tz)<option value="{{ $tz }}">@endforeach</datalist>
@@ -147,10 +152,10 @@
                     <ol class="ps-3 text-muted mb-3">
                         <li>At developers.facebook.com create (or open) an app and copy its App ID and App secret.</li>
                         <li>Open Tools, Graph API Explorer. Choose the app, choose "Get Page access token", pick this Page and grant <code>pages_manage_posts</code>, <code>pages_read_engagement</code> and <code>pages_show_list</code>.</li>
-                        <li>Copy the token it shows and paste the three values here. Zonseob exchanges it for a Page token that does not expire.</li>
+                        <li>Copy the token it shows and paste the three values here. Zonseob exchanges it for a Page token that does not expire. The App ID and secret are remembered, so next time only the token is needed.</li>
                     </ol>
-                    <x-form.input name="app_id" label="App ID" />
-                    <x-form.input name="app_secret" type="password" label="App secret" autocomplete="new-password" />
+                    <x-form.input name="app_id" label="App ID" :value="$settings['app_id']" />
+                    <x-form.input name="app_secret" type="password" label="App secret" autocomplete="new-password" :help="$settings['has_app_secret'] ? 'A secret is stored. Leave blank to keep it.' : null" />
                     <x-form.textarea name="user_token" label="Token from Graph API Explorer" rows="3" />
                 </div>
                 <div class="card-footer d-flex gap-2">

@@ -64,6 +64,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/pricing', [HomeController::class, 'pricing'])->name('pricing');
+Route::view('/privacy', 'landing.privacy')->name('privacy');
 
 // The question-and-answer chat on the public pages; answers come from the help centre or Zonseob's own Claude key.
 Route::post('/chat', [LandingChatController::class, 'store'])->middleware('throttle:landing-chat')->name('chat.store');
