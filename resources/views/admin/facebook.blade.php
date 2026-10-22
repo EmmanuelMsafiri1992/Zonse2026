@@ -134,6 +134,7 @@
                     <x-form.input name="timezone" label="Timezone" :value="$settings['timezone']" required list="tz-list" />
                     <datalist id="tz-list">@foreach(timezone_identifiers_list() as $tz)<option value="{{ $tz }}">@endforeach</datalist>
                     <x-form.check name="enabled" label="Post automatically" :checked="$settings['enabled']" switch help="Off keeps the connection but publishes nothing on its own." />
+                    <x-form.input name="pixel_id" label="Meta Pixel ID" :value="$settings['pixel_id']" help="From Meta Events Manager. Added to the public, sign-up and setup pages (never inside workspaces) and reports CompleteRegistration when someone signs up. In Ads Manager choose the Leads objective, conversion location Website, event CompleteRegistration." />
                 </div>
                 <div class="card-footer d-flex gap-2">
                     @if($configured)

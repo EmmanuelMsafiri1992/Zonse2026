@@ -241,4 +241,32 @@ class FacebookPosterTest extends TestCase
         $this->get('/privacy')->assertOk()->assertSee('Privacy policy')->assertSee('Pages API');
         $this->get('/')->assertSee(route('privacy'));
     }
+
+    public function test_the_meta_pixel_reports_sign_ups_on_public_pages_but_never_inside_a_workspace(): void
+    {
+        $this->get('/')->assertOk()->assertDontSee('fbevents.js');
+
+        $admin = $this->superAdmin();
+        $this->actingAs($admin)->put(route('admin.facebook.settings'), [
+            'page_id' => '1345931425273444', 'times' => '09:00', 'timezone' => 'Africa/Harare', 'pixel_id' => '987654321012345',
+        ])->assertRedirect()->assertSessionHasNoErrors();
+        $this->assertSame('987654321012345', app(SocialPoster::class)->pixelId());
+        $this->actingAs($admin)->get(route('admin.facebook.index'))->assertOk()->assertSee('987654321012345');
+        $this->actingAs($admin)->get(route('dashboard'))->assertOk()->assertDontSee('fbevents.js');
+
+        $this->app['auth']->forgetGuards();
+        $this->flushSession();
+        $this->get('/')->assertOk()->assertSee('fbevents.js')->assertSee('987654321012345')->assertDontSee('CompleteRegistration');
+        $this->get(route('register'))->assertOk()->assertSee('fbevents.js');
+
+        $this->post(route('register'), [
+            'name' => 'Rudo Chikwanda', 'email' => 'rudo@example.com', 'password' => 'secret-pass-123', 'password_confirmation' => 'secret-pass-123',
+        ])->assertRedirect();
+        $this->followingRedirects()->get(route('dashboard'))->assertOk()->assertSee("fbq('track', 'CompleteRegistration')", false);
+        $this->get(route('onboarding.step', 1))->assertOk()->assertDontSee('CompleteRegistration');
+
+        $this->actingAs($admin)->put(route('admin.facebook.settings'), [
+            'page_id' => 'abc', 'times' => '09:00', 'timezone' => 'Africa/Harare', 'pixel_id' => 'not-a-pixel',
+        ])->assertSessionHasErrors(['pixel_id']);
+    }
 }

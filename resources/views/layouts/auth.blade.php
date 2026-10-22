@@ -9,6 +9,7 @@
     @include('partials.favicon')
     @vite(['resources/scss/app.scss', 'resources/js/app.js'])
     @if($brandCss = app(\App\Support\Branding::class)->css($brand['color']))<style>{!! $brandCss !!}</style>@endif
+    @include('partials.meta-pixel')
 </head>
 <body>
 <div class="z-auth">

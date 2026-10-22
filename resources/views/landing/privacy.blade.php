@@ -21,6 +21,7 @@
             ],
             'Facebook' => [
                 "We post about Zonseob on our own Facebook Page through Meta's Pages API. That connection is used only to publish posts on the Zonseob Page; we do not read or store data about Facebook users. Workspaces that connect their own Facebook inbox control that connection from their settings.",
+                'Our public pages, sign-up and setup pages use the Meta Pixel so we can tell whether our Facebook adverts lead to sign-ups. It records page visits and that a sign-up happened, not what you enter. It is never loaded inside a workspace, so workspace records are never shared with Meta.',
             ],
             'Keeping and deleting data' => [
                 'We keep data while the workspace has an account. A workspace can export its data or ask us to delete it at any time, and anyone can ask what we hold about them or ask for it to be corrected or deleted.',
@@ -33,7 +34,7 @@
     <section class="z-mk-section">
         <div class="container" style="max-width: 760px">
             <h1 class="z-mk-title mb-2">Privacy policy</h1>
-            <p class="text-muted mb-5">Last updated 21 October 2026</p>
+            <p class="text-muted mb-5">Last updated 22 October 2026</p>
             @foreach($sections as $title => $paragraphs)
                 <h2 class="h5 fw-semibold mt-4 mb-2">{{ $title }}</h2>
                 @foreach($paragraphs as $p)

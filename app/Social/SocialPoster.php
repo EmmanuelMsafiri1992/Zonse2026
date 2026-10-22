@@ -22,7 +22,7 @@ class SocialPoster
 
     public function __construct(protected PostPlanner $planner, protected PostCard $card) {}
 
-    /** @return array{page_id: string, enabled: bool, times: string, timezone: string, has_token: bool, token_source: string, long_lived: bool, app_id: string, has_app_secret: bool} */
+    /** @return array{page_id: string, enabled: bool, times: string, timezone: string, has_token: bool, token_source: string, long_lived: bool, app_id: string, has_app_secret: bool, pixel_id: string} */
     public function settings(): array
     {
         $stored = Setting::platform('facebook.page_token');
@@ -38,7 +38,14 @@ class SocialPoster
             'long_lived' => (bool) Setting::platform('facebook.long_lived', true),
             'app_id' => (string) Setting::platform('facebook.app_id', ''),
             'has_app_secret' => $this->appSecret() !== null,
+            'pixel_id' => $this->pixelId(),
         ];
+    }
+
+    /** The Meta Pixel for the public and sign-up pages; empty when none is set. */
+    public function pixelId(): string
+    {
+        return (string) (Setting::platform('facebook.pixel_id') ?: config('zonseo.facebook.pixel_id', ''));
     }
 
     public function isConfigured(): bool
@@ -54,11 +61,11 @@ class SocialPoster
     }
 
     /**
-     * @param  array{page_id?: string, enabled?: bool, times?: string, timezone?: string}  $values
+     * @param  array{page_id?: string, enabled?: bool, times?: string, timezone?: string, pixel_id?: string}  $values
      */
     public function saveSettings(array $values): void
     {
-        foreach (['page_id', 'times', 'timezone'] as $key) {
+        foreach (['page_id', 'times', 'timezone', 'pixel_id'] as $key) {
             if (array_key_exists($key, $values)) {
                 $this->put('facebook.'.$key, trim((string) $values[$key]));
             }

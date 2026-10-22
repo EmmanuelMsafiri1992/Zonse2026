@@ -165,6 +165,8 @@ return [
         'page_token' => env('FACEBOOK_PAGE_TOKEN'),
         'times' => env('FACEBOOK_POST_TIMES', '09:00,15:00'),
         'timezone' => env('FACEBOOK_POST_TIMEZONE', 'Africa/Johannesburg'),
+        // Meta Pixel on the public and sign-up pages, so a Leads campaign can optimise for real registrations.
+        'pixel_id' => env('META_PIXEL_ID'),
     ],
 
 ];

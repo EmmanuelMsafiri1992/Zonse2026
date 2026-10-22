@@ -17,6 +17,7 @@ use App\Support\Branding;
 use App\Support\Health;
 use App\Support\Help\HelpCentre;
 use App\Tenancy\WorkspaceContext;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Events\DiagnosingHealth;
 use Illuminate\Http\Middleware\TrustProxies;
@@ -101,6 +102,8 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Event::subscribe(RecordSecurityEvents::class);
+        // The next public, sign-up or setup page reports the sign-up to the Meta Pixel (see partials.meta-pixel).
+        Event::listen(Registered::class, fn () => session()->put('meta_pixel.registered', true));
         Event::subscribe(SendWorkspaceNotifications::class);
         Event::subscribe(DispatchBusinessEvents::class);
 

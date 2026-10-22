@@ -8,6 +8,7 @@
     @include('partials.fonts')
     @include('partials.favicon')
     @vite(['resources/scss/app.scss', 'resources/js/app.js'])
+    @include('partials.meta-pixel')
 </head>
 <body>
 <nav class="z-mk-nav sticky-top">

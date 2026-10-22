@@ -65,7 +65,9 @@ class FacebookController extends Controller
             'times' => ['required', 'string', 'regex:/^\s*([01]\d|2[0-3]):[0-5]\d(\s*,\s*([01]\d|2[0-3]):[0-5]\d)*\s*$/'],
             'timezone' => ['required', 'string', Rule::in(timezone_identifiers_list())],
             'enabled' => ['nullable', 'boolean'],
+            'pixel_id' => ['nullable', 'string', 'regex:/^\d{5,30}$/'],
         ], [
+            'pixel_id.regex' => 'The Pixel ID is the number shown for the dataset in Meta Events Manager.',
             'page_id.regex' => 'The Page ID is the number in the Page URL (facebook.com/profile.php?id=…).',
             'times.regex' => 'Posting times are 24-hour times separated by commas, like 09:00,15:00.',
         ]);
@@ -75,6 +77,7 @@ class FacebookController extends Controller
             'times' => preg_replace('/\s+/', '', $data['times']),
             'timezone' => $data['timezone'],
             'enabled' => (bool) ($data['enabled'] ?? false),
+            'pixel_id' => (string) ($data['pixel_id'] ?? ''),
         ]);
         if (($data['page_token'] ?? '') === '') {
             return back()->with('flash', ['type' => 'success', 'message' => 'Facebook settings saved.']);

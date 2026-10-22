@@ -9,6 +9,7 @@
     @include('partials.favicon')
     @vite(['resources/scss/app.scss', 'resources/js/app.js'])
     @if($brandCss = app(\App\Support\Branding::class)->css($brand['color']))<style>{!! $brandCss !!}</style>@endif
+    @include('partials.meta-pixel')
 </head>
 <body>
 <div class="container py-4 py-lg-5" style="max-width: 1040px">
