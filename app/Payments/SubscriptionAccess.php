@@ -14,6 +14,8 @@ use Illuminate\Support\Carbon;
  * - grace: the trial or paid period has lapsed but the grace period is still running (until = when it ends).
  * - blocked: the grace period is over; only billing, profile and help pages open.
  *
+ * A workspace run by the platform itself (owned by a super admin) is always active.
+ *
  * SUBSCRIPTION_ENFORCE_FROM postpones every block until that date, so plans that were confirmed
  * by hand before online payments existed get time to pay.
  */
@@ -27,7 +29,7 @@ final readonly class SubscriptionAccess
     public static function for(Workspace $workspace): self
     {
         $subscription = $workspace->subscription;
-        if (! $subscription || $subscription->plan?->isFree()) {
+        if (! $subscription || $subscription->plan?->isFree() || $workspace->isRunByPlatform()) {
             return new self('active');
         }
 

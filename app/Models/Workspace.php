@@ -196,9 +196,16 @@ class Workspace extends Model
         return SubscriptionAccess::for($this);
     }
 
+    /** A workspace owned by a super admin belongs to the people running Zonseob: it never trials, pays or lapses. */
+    public function isRunByPlatform(): bool
+    {
+        return (bool) $this->owner?->is_super_admin;
+    }
+
     public function onTrial(): bool
     {
-        return $this->subscription?->status === 'trialing'
+        return ! $this->isRunByPlatform()
+            && $this->subscription?->status === 'trialing'
             && $this->subscription->trial_ends_at?->isFuture();
     }
 

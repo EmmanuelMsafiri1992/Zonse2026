@@ -479,4 +479,22 @@ class SubscriptionCheckoutTest extends TestCase
         $empty = Workspace::factory()->create();
         $this->assertSame('active', $empty->access()->state);
     }
+
+    public function test_a_super_admins_own_workspace_never_trials_or_lapses(): void
+    {
+        [$admin, $workspace] = $this->ownerWithWorkspace();
+        $admin->forceFill(['is_super_admin' => true])->save();
+        $workspace->enableModules(['invoicing'], $admin);
+
+        $workspace->subscription->forceFill(['trial_ends_at' => now()->addDays(3)])->save();
+        $this->assertSame('active', SubscriptionAccess::for($workspace->fresh())->state);
+        $this->assertFalse($workspace->fresh()->onTrial());
+        $this->actingAs($admin)->get(route('dashboard'))->assertOk()
+            ->assertDontSee('data-subscription-notice', false)
+            ->assertDontSee('of trial left')
+            ->assertSee('Platform workspace, no billing');
+
+        $workspace->subscription->forceFill(['trial_ends_at' => now()->subDays(30)])->save();
+        $this->actingAs($admin)->get(route('invoices.index'))->assertOk();
+    }
 }

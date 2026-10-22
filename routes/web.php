@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ClientsController;
 use App\Http\Controllers\Admin\FacebookController;
 use App\Http\Controllers\Admin\PaymentsController;
 use App\Http\Controllers\AiController;
@@ -155,8 +156,10 @@ Route::middleware(['auth', 'workspace'])->group(function () {
     Route::post('/workspaces', [WorkspaceController::class, 'store'])->name('workspaces.store');
     Route::post('/workspaces/{workspace}/switch', [WorkspaceController::class, 'switch'])->name('workspaces.switch');
 
-    // Running Zonseob itself: payments from every workspace, bank-transfer confirmations, exchange rates.
+    // Running Zonseob itself: everyone who signed up, payments from every workspace, bank-transfer confirmations, exchange rates.
     Route::prefix('admin')->middleware('super-admin')->name('admin.')->group(function () {
+        Route::get('/clients', [ClientsController::class, 'index'])->name('clients.index');
+
         Route::get('/payments', [PaymentsController::class, 'index'])->name('payments.index');
         Route::post('/payments/{checkout}/confirm', [PaymentsController::class, 'confirm'])->name('payments.confirm');
         Route::post('/payments/{checkout}/reject', [PaymentsController::class, 'reject'])->name('payments.reject');

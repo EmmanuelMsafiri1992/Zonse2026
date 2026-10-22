@@ -11,6 +11,7 @@
 
     @php
         $planDelta = match (true) {
+            $workspace->isRunByPlatform() => 'Platform workspace, no billing',
             ! $subscription => 'Choose a plan',
             $workspace->onTrial() => 'Trial, '.$subscription->daysLeftInTrial().' '.\Illuminate\Support\Str::plural('day', $subscription->daysLeftInTrial()).' left',
             default => ucfirst($subscription->status),
