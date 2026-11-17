@@ -26,9 +26,18 @@ class SocialPost extends Model
         return $this->status === self::STATUS_POSTED;
     }
 
-    /** The post on Facebook, for the admin log. Graph returns ids like PAGEID_POSTID, which the site resolves. */
+    /**
+     * The post on its channel, for the admin log. Graph returns ids like PAGEID_POSTID, which
+     * Facebook resolves; LinkedIn returns a post URN.
+     */
     public function permalink(): ?string
     {
-        return $this->external_id ? 'https://www.facebook.com/'.$this->external_id : null;
+        if (! $this->external_id) {
+            return null;
+        }
+
+        return $this->channel === 'linkedin'
+            ? 'https://www.linkedin.com/feed/update/'.$this->external_id.'/'
+            : 'https://www.facebook.com/'.$this->external_id;
     }
 }

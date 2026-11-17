@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\ClientsController;
 use App\Http\Controllers\Admin\FacebookController;
+use App\Http\Controllers\Admin\LinkedInController;
 use App\Http\Controllers\Admin\PaymentsController;
 use App\Http\Controllers\AiController;
 use App\Http\Controllers\ApprovalController;
@@ -172,6 +173,12 @@ Route::middleware(['auth', 'workspace'])->group(function () {
         Route::post('/facebook/check', [FacebookController::class, 'check'])->name('facebook.check');
         Route::post('/facebook/post-now', [FacebookController::class, 'postNow'])->name('facebook.post-now');
         Route::get('/facebook/card/{kind}/{key}.png', [FacebookController::class, 'card'])->whereIn('kind', ['intro', 'suite', 'app'])->name('facebook.card');
+
+        Route::get('/linkedin', [LinkedInController::class, 'index'])->name('linkedin.index');
+        Route::put('/linkedin/settings', [LinkedInController::class, 'update'])->name('linkedin.settings');
+        Route::post('/linkedin/disconnect', [LinkedInController::class, 'disconnect'])->name('linkedin.disconnect');
+        Route::post('/linkedin/check', [LinkedInController::class, 'check'])->name('linkedin.check');
+        Route::post('/linkedin/post-now', [LinkedInController::class, 'postNow'])->name('linkedin.post-now');
     });
 
     Route::middleware('onboarded')->group(function () {

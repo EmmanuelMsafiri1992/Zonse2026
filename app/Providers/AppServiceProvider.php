@@ -12,6 +12,7 @@ use App\Registries\MenuRegistry;
 use App\Registries\ModuleRegistry;
 use App\Registries\SearchRegistry;
 use App\Registries\WidgetRegistry;
+use App\Social\LinkedInPoster;
 use App\Social\SocialPoster;
 use App\Support\Branding;
 use App\Support\Health;
@@ -55,6 +56,7 @@ class AppServiceProvider extends ServiceProvider
         // SocialPoster::tick() checks (at most every five minutes) whether a post is due.
         if (! $this->app->runningInConsole() && ! $this->app->runningUnitTests()) {
             $this->app->terminating(fn () => $this->app->make(SocialPoster::class)->tick());
+            $this->app->terminating(fn () => $this->app->make(LinkedInPoster::class)->tick());
         }
 
         // Super admins can do anything; workspace owners/admins can do anything
@@ -196,6 +198,7 @@ class AppServiceProvider extends ServiceProvider
             ->add(MenuItem::make('Clients', 'admin.clients.index', 'users')->can('administer-platform')->order(34)->active('admin.clients.*'))
             ->add(MenuItem::make('Platform payments', 'admin.payments.index', 'banknote')->can('administer-platform')->order(35)->active('admin.payments.*'))
             ->add(MenuItem::make('Facebook posts', 'admin.facebook.index', 'megaphone')->can('administer-platform')->order(36)->active('admin.facebook.*'))
+            ->add(MenuItem::make('LinkedIn posts', 'admin.linkedin.index', 'megaphone')->can('administer-platform')->order(37)->active('admin.linkedin.*'))
             ->add(MenuItem::make('Text messages', 'sms.index', 'message-square')->can('manage-workspace')->order(40)->active(['sms.*', 'settings.sms.*']));
     }
 }

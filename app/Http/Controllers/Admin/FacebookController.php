@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SocialPost;
+use App\Social\LinkedInPoster;
 use App\Social\PostCard;
 use App\Social\PostPlanner;
 use App\Social\SocialException;
@@ -49,11 +50,14 @@ class FacebookController extends Controller
             abort(404);
         }
         $post = $this->poster->tick();
+        $linkedIn = app(LinkedInPoster::class)->tick();
 
         return response()->json([
             'ok' => true,
             'posted' => $post?->isPosted() ? $post->title : null,
             'failed' => $post && ! $post->isPosted() ? $post->error : null,
+            'linkedin_posted' => $linkedIn?->isPosted() ? $linkedIn->title : null,
+            'linkedin_failed' => $linkedIn && ! $linkedIn->isPosted() ? $linkedIn->error : null,
         ]);
     }
 
