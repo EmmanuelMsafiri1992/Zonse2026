@@ -97,7 +97,10 @@ class _AppointmentCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(appointment.title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                  Text(appointment.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
                   if (starts != null) ...[
                     const SizedBox(height: 4),
                     Row(children: [

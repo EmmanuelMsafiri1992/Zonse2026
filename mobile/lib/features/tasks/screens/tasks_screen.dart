@@ -132,6 +132,8 @@ class _TaskCard extends ConsumerWidget {
                   children: [
                     Text(
                       task.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 15,
@@ -150,13 +152,16 @@ class _TaskCard extends ConsumerWidget {
                   ],
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  StatusBadge(label: task.priorityLabel, color: _priorityColor(task.priority)),
-                  const SizedBox(height: 4),
-                  StatusBadge(label: task.statusLabel, color: StatusBadge.colorForStatus(task.status)),
-                ],
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 110),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    StatusBadge(label: task.priorityLabel, color: _priorityColor(task.priority)),
+                    const SizedBox(height: 4),
+                    StatusBadge(label: task.statusLabel, color: StatusBadge.colorForStatus(task.status)),
+                  ],
+                ),
               ),
             ],
           ),

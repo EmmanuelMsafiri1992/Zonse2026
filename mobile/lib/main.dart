@@ -56,25 +56,16 @@ class _SplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primary,
+      backgroundColor: Colors.white,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Icon(Icons.business_center_rounded, color: Colors.white, size: 40),
-            ),
+            Image.asset('assets/images/logo-mark.png', width: 96, height: 96),
             const SizedBox(height: 20),
-            const Text('Zonseob',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Colors.white)),
-            const SizedBox(height: 32),
-            const CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+            Image.asset('assets/images/logo.png', height: 36, fit: BoxFit.contain),
+            const SizedBox(height: 40),
+            const CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2),
           ],
         ),
       ),
@@ -93,7 +84,7 @@ class _MainShellState extends ConsumerState<_MainShell> {
   int _currentIndex = 0;
 
   static const _tabs = [
-    _Tab(icon: Icons.dashboard_outlined, activeIcon: Icons.dashboard_rounded, label: 'Dashboard'),
+    _Tab(icon: Icons.dashboard_outlined, activeIcon: Icons.dashboard_rounded, label: 'Home'),
     _Tab(icon: Icons.people_outline, activeIcon: Icons.people_rounded, label: 'Contacts'),
     _Tab(icon: Icons.task_alt, activeIcon: Icons.task_alt, label: 'Tasks'),
     _Tab(icon: Icons.event_outlined, activeIcon: Icons.event_rounded, label: 'Calendar'),

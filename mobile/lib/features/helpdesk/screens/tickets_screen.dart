@@ -103,7 +103,12 @@ class _TicketCard extends StatelessWidget {
                   Text('#${ticket.number}', style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
                   if (ticket.requesterName != null) ...[
                     const Text(' · ', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-                    Text(ticket.requesterName!, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                    Flexible(
+                      child: Text(ticket.requesterName!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                    ),
                   ],
                   const Spacer(),
                   StatusBadge(label: ticket.priorityLabel, color: _priorityColor(ticket.priority)),

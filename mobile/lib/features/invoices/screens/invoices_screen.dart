@@ -88,18 +88,26 @@ class _InvoiceCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(invoice.number, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
+                    Text(invoice.number,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
                     if (invoice.dueDate != null)
                       Text('Due ${invoice.dueDate}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
                   ],
                 ),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     '${invoice.currencyCode ?? ''} ${invoice.total.toStringAsFixed(2)}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
                   ),
                   const SizedBox(height: 4),

@@ -138,12 +138,17 @@ class _InvoiceDetail extends StatelessWidget {
   Widget _row(String label, String value) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
-              width: 110,
-              child: Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+              width: 100,
+              child: Text(label,
+                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
             ),
-            Text(value, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13)),
+            Expanded(
+              child: Text(value,
+                  style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13)),
+            ),
           ],
         ),
       );

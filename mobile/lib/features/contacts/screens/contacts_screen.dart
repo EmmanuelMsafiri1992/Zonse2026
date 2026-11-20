@@ -136,11 +136,19 @@ class _ContactCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(contact.displayName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15)),
                     if (contact.email != null)
-                      Text(contact.email!, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                      Text(contact.email!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
                     if (contact.phone != null)
-                      Text(contact.phone!, style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                      Text(contact.phone!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
                   ],
                 ),
               ),

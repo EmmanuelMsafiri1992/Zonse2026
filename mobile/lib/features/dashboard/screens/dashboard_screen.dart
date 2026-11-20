@@ -56,7 +56,7 @@ class DashboardScreen extends ConsumerWidget {
                 crossAxisCount: 2,
                 mainAxisSpacing: 12,
                 crossAxisSpacing: 12,
-                childAspectRatio: 1.5,
+                childAspectRatio: 1.45,
                 children: [
                   _StatCard(
                     title: 'Contacts',
@@ -166,34 +166,30 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
-                  child: Icon(icon, color: color, size: 18),
-                ),
-              ],
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(color: color.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
+              child: Icon(icon, color: color, size: 18),
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 loading
                     ? SizedBox(
-                        height: 24,
+                        height: 22,
                         width: 48,
                         child: LinearProgressIndicator(color: color, backgroundColor: color.withOpacity(0.1)),
                       )
                     : Text(
                         value ?? '—',
-                        style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: color),
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: color),
                       ),
-                Text(title, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
+                Text(title, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
               ],
             ),
           ],
