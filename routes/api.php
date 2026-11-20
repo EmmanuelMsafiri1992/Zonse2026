@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Mobile\AuthController as MobileAuthController;
 use App\Http\Controllers\Api\V1\AppointmentController;
 use App\Http\Controllers\Api\V1\ContactController;
 use App\Http\Controllers\Api\V1\InvoiceController;
@@ -8,6 +9,13 @@ use App\Http\Controllers\Api\V1\RecordController;
 use App\Http\Controllers\Api\V1\TaskController;
 use App\Http\Controllers\Api\V1\TicketController;
 use Illuminate\Support\Facades\Route;
+
+// Mobile app authentication — public endpoints to exchange credentials for a workspace token.
+Route::prefix('mobile')->name('api.mobile.')->middleware('throttle:api')->group(function () {
+    Route::post('workspaces', [MobileAuthController::class, 'workspaces'])->name('workspaces');
+    Route::post('token', [MobileAuthController::class, 'token'])->name('token');
+    Route::delete('token', [MobileAuthController::class, 'logout'])->middleware('auth:sanctum')->name('logout');
+});
 
 // Version 1. Keys are made under Settings > API & webhooks; "read" keys may only use GET.
 // A workspace whose plan has lapsed gets 402 on everything but "me", the same as the web app.
