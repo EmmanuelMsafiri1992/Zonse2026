@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../shared/widgets/loading_widget.dart';
+import '../../../shared/widgets/app_drawer.dart';import '../../../shared/widgets/loading_widget.dart';
 import '../../../shared/widgets/status_badge.dart';
-import '../models/invoice.dart';
+import '../../../shared/widgets/app_drawer.dart';import '../models/invoice.dart';
 import '../providers/invoices_provider.dart';
 import 'invoice_detail_screen.dart';
 
@@ -15,7 +15,14 @@ class InvoicesScreen extends ConsumerWidget {
     final state = ref.watch(invoicesProvider);
 
     return Scaffold(
+      drawer: const AppDrawer(),
       appBar: AppBar(
+        leading: Builder(
+          builder: (ctx) => IconButton(
+            icon: const Icon(Icons.menu_rounded),
+            onPressed: () => Scaffold.of(ctx).openDrawer(),
+          ),
+        ),
         title: const Text('Invoices', style: TextStyle(fontWeight: FontWeight.w700)),
         actions: [
           PopupMenuButton<String?>(

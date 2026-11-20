@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../shared/widgets/loading_widget.dart';
+import '../../../shared/widgets/app_drawer.dart';import '../../../shared/widgets/loading_widget.dart';
 import '../../../shared/widgets/status_badge.dart';
-import '../models/task.dart';
+import '../../../shared/widgets/app_drawer.dart';import '../models/task.dart';
 import '../providers/tasks_provider.dart';
 import 'task_detail_screen.dart';
 import 'task_form_screen.dart';
@@ -47,7 +47,14 @@ class _TasksScreenState extends ConsumerState<TasksScreen> with SingleTickerProv
     final state = ref.watch(tasksProvider);
 
     return Scaffold(
+      drawer: const AppDrawer(),
       appBar: AppBar(
+        leading: Builder(
+          builder: (ctx) => IconButton(
+            icon: const Icon(Icons.menu_rounded),
+            onPressed: () => Scaffold.of(ctx).openDrawer(),
+          ),
+        ),
         title: const Text('Tasks', style: TextStyle(fontWeight: FontWeight.w700)),
         actions: [
           IconButton(

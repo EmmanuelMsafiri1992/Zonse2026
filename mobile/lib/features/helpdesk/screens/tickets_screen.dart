@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../shared/widgets/loading_widget.dart';
+import '../../../shared/widgets/app_drawer.dart';import '../../../shared/widgets/loading_widget.dart';
 import '../../../shared/widgets/status_badge.dart';
-import '../models/ticket.dart';
+import '../../../shared/widgets/app_drawer.dart';import '../models/ticket.dart';
 import '../providers/tickets_provider.dart';
 import 'ticket_detail_screen.dart';
 import 'ticket_form_screen.dart';
@@ -16,7 +16,14 @@ class TicketsScreen extends ConsumerWidget {
     final state = ref.watch(ticketsProvider);
 
     return Scaffold(
+      drawer: const AppDrawer(),
       appBar: AppBar(
+        leading: Builder(
+          builder: (ctx) => IconButton(
+            icon: const Icon(Icons.menu_rounded),
+            onPressed: () => Scaffold.of(ctx).openDrawer(),
+          ),
+        ),
         title: const Text('Helpdesk', style: TextStyle(fontWeight: FontWeight.w700)),
         actions: [
           PopupMenuButton<String?>(

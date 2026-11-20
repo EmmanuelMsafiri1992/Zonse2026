@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'core/providers/navigation_provider.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/screens/login_screen.dart';
@@ -11,6 +12,7 @@ import 'features/appointments/screens/appointments_screen.dart';
 import 'features/invoices/screens/invoices_screen.dart';
 import 'features/helpdesk/screens/tickets_screen.dart';
 import 'features/profile/screens/profile_screen.dart';
+import 'shared/widgets/app_drawer.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -81,8 +83,6 @@ class _MainShell extends ConsumerStatefulWidget {
 }
 
 class _MainShellState extends ConsumerState<_MainShell> {
-  int _currentIndex = 0;
-
   static const _tabs = [
     _Tab(icon: Icons.dashboard_outlined, activeIcon: Icons.dashboard_rounded, label: 'Home'),
     _Tab(icon: Icons.people_outline, activeIcon: Icons.people_rounded, label: 'Contacts'),
@@ -105,17 +105,22 @@ class _MainShellState extends ConsumerState<_MainShell> {
 
   @override
   Widget build(BuildContext context) {
+    final currentIndex = ref.watch(currentTabProvider);
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _pages),
+      drawer: const AppDrawer(),
+      body: IndexedStack(index: currentIndex, children: _pages),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (i) => setState(() => _currentIndex = i),
+        selectedIndex: currentIndex,
+        onDestinationSelected: (i) =>
+            ref.read(currentTabProvider.notifier).state = i,
         labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
-        destinations: _tabs.map((t) => NavigationDestination(
-          icon: Icon(t.icon),
-          selectedIcon: Icon(t.activeIcon),
-          label: t.label,
-        )).toList(),
+        destinations: _tabs
+            .map((t) => NavigationDestination(
+                  icon: Icon(t.icon),
+                  selectedIcon: Icon(t.activeIcon),
+                  label: t.label,
+                ))
+            .toList(),
       ),
     );
   }
