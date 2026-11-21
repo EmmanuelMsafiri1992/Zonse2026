@@ -12,6 +12,14 @@ if (localPropertiesFile.exists()) {
     }
 }
 
+def keyProperties = new Properties()
+def keyPropertiesFile = rootProject.file("key.properties")
+if (keyPropertiesFile.exists()) {
+    keyPropertiesFile.withReader("UTF-8") { reader ->
+        keyProperties.load(reader)
+    }
+}
+
 android {
     namespace "com.zonseob.mobile"
     compileSdk flutter.compileSdkVersion
@@ -38,9 +46,21 @@ android {
         versionName localProperties.getProperty("flutter.versionName") ?: "1.0"
     }
 
+    signingConfigs {
+        release {
+            keyAlias keyProperties["keyAlias"]
+            keyPassword keyProperties["keyPassword"]
+            storeFile keyProperties["storeFile"] ? file(keyProperties["storeFile"]) : null
+            storePassword keyProperties["storePassword"]
+        }
+    }
+
     buildTypes {
         release {
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }
     }
 }
